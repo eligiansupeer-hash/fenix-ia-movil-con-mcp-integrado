@@ -12,7 +12,7 @@ This plan creates the data models, settings repository (DataStore), Hilt DI bind
 
 **Prerequisite**: Plan 1 (project scaffolding) is implemented. The Gradle project compiles, Hilt is configured, and the `AppModule` exists as an empty shell.
 
-### Package base: `com.danielealbano.androidremotecontrolmcp`
+### Package base: `com.fenix.mobilemcp`
 ### Source root: `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/`
 ### Test root: `app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/`
 
@@ -77,7 +77,7 @@ This plan creates the data models, settings repository (DataStore), Hilt DI bind
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/data/model/BindingAddress.kt
 @@ -0,0 +1,20 @@
-+package com.danielealbano.androidremotecontrolmcp.data.model
++package com.fenix.mobilemcp.data.model
 +
 +/**
 + * Represents the network binding address for the MCP server.
@@ -114,7 +114,7 @@ This plan creates the data models, settings repository (DataStore), Hilt DI bind
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/data/model/CertificateSource.kt
 @@ -0,0 +1,17 @@
-+package com.danielealbano.androidremotecontrolmcp.data.model
++package com.fenix.mobilemcp.data.model
 +
 +/**
 + * Represents the source of the HTTPS certificate used by the MCP server.
@@ -166,14 +166,14 @@ This plan creates the data models, settings repository (DataStore), Hilt DI bind
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/data/model/ServerConfig.kt
 @@ -0,0 +1,32 @@
-+package com.danielealbano.androidremotecontrolmcp.data.model
++package com.fenix.mobilemcp.data.model
 +
 +/**
 + * Holds the MCP server configuration.
 + *
 + * All fields have sensible defaults matching the project specification.
 + * The bearer token defaults to an empty string and is auto-generated
-+ * (UUID) on first read by [com.danielealbano.androidremotecontrolmcp.data.repository.SettingsRepositoryImpl].
++ * (UUID) on first read by [com.fenix.mobilemcp.data.repository.SettingsRepositoryImpl].
 + *
 + * @property port The server port (1-65535).
 + * @property bindingAddress The network binding address.
@@ -231,7 +231,7 @@ This plan creates the data models, settings repository (DataStore), Hilt DI bind
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/data/model/ServerStatus.kt
 @@ -0,0 +1,35 @@
-+package com.danielealbano.androidremotecontrolmcp.data.model
++package com.fenix.mobilemcp.data.model
 +
 +/**
 + * Represents the current state of the MCP server lifecycle.
@@ -303,11 +303,11 @@ This plan creates the data models, settings repository (DataStore), Hilt DI bind
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/data/repository/SettingsRepository.kt
 @@ -0,0 +1,78 @@
-+package com.danielealbano.androidremotecontrolmcp.data.repository
++package com.fenix.mobilemcp.data.repository
 +
-+import com.danielealbano.androidremotecontrolmcp.data.model.BindingAddress
-+import com.danielealbano.androidremotecontrolmcp.data.model.CertificateSource
-+import com.danielealbano.androidremotecontrolmcp.data.model.ServerConfig
++import com.fenix.mobilemcp.data.model.BindingAddress
++import com.fenix.mobilemcp.data.model.CertificateSource
++import com.fenix.mobilemcp.data.model.ServerConfig
 +import kotlinx.coroutines.flow.Flow
 +
 +/**
@@ -405,7 +405,7 @@ This plan creates the data models, settings repository (DataStore), Hilt DI bind
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/data/repository/SettingsRepositoryImpl.kt
 @@ -0,0 +1,164 @@
-+package com.danielealbano.androidremotecontrolmcp.data.repository
++package com.fenix.mobilemcp.data.repository
 +
 +import androidx.datastore.core.DataStore
 +import androidx.datastore.preferences.core.Preferences
@@ -413,9 +413,9 @@ This plan creates the data models, settings repository (DataStore), Hilt DI bind
 +import androidx.datastore.preferences.core.edit
 +import androidx.datastore.preferences.core.intPreferencesKey
 +import androidx.datastore.preferences.core.stringPreferencesKey
-+import com.danielealbano.androidremotecontrolmcp.data.model.BindingAddress
-+import com.danielealbano.androidremotecontrolmcp.data.model.CertificateSource
-+import com.danielealbano.androidremotecontrolmcp.data.model.ServerConfig
++import com.fenix.mobilemcp.data.model.BindingAddress
++import com.fenix.mobilemcp.data.model.CertificateSource
++import com.fenix.mobilemcp.data.model.ServerConfig
 +import java.util.UUID
 +import javax.inject.Inject
 +import kotlinx.coroutines.flow.Flow
@@ -600,14 +600,14 @@ This plan creates the data models, settings repository (DataStore), Hilt DI bind
 --- a/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/di/AppModule.kt
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/di/AppModule.kt
 @@ -1,10 +1,41 @@
- package com.danielealbano.androidremotecontrolmcp.di
+ package com.fenix.mobilemcp.di
 
 +import android.content.Context
 +import androidx.datastore.core.DataStore
 +import androidx.datastore.preferences.core.Preferences
 +import androidx.datastore.preferences.preferencesDataStore
-+import com.danielealbano.androidremotecontrolmcp.data.repository.SettingsRepository
-+import com.danielealbano.androidremotecontrolmcp.data.repository.SettingsRepositoryImpl
++import com.fenix.mobilemcp.data.repository.SettingsRepository
++import com.fenix.mobilemcp.data.repository.SettingsRepositoryImpl
 +import dagger.Binds
  import dagger.Module
 +import dagger.Provides
@@ -676,7 +676,7 @@ This plan creates the data models, settings repository (DataStore), Hilt DI bind
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/utils/NetworkUtils.kt
 @@ -0,0 +1,82 @@
-+package com.danielealbano.androidremotecontrolmcp.utils
++package com.fenix.mobilemcp.utils
 +
 +import android.content.Context
 +import android.net.ConnectivityManager
@@ -788,7 +788,7 @@ This plan creates the data models, settings repository (DataStore), Hilt DI bind
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/utils/PermissionUtils.kt
 @@ -0,0 +1,75 @@
-+package com.danielealbano.androidremotecontrolmcp.utils
++package com.fenix.mobilemcp.utils
 +
 +import android.Manifest
 +import android.content.Context
@@ -887,10 +887,10 @@ This plan creates the data models, settings repository (DataStore), Hilt DI bind
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/utils/Logger.kt
 @@ -0,0 +1,98 @@
-+package com.danielealbano.androidremotecontrolmcp.utils
++package com.fenix.mobilemcp.utils
 +
 +import android.util.Log
-+import com.danielealbano.androidremotecontrolmcp.BuildConfig
++import com.fenix.mobilemcp.BuildConfig
 +
 +/**
 + * Logging wrapper that sanitizes sensitive data and respects build type.
@@ -1018,7 +1018,7 @@ This plan creates the data models, settings repository (DataStore), Hilt DI bind
 --- /dev/null
 +++ b/app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/data/model/ServerConfigTest.kt
 @@ -0,0 +1,120 @@
-+package com.danielealbano.androidremotecontrolmcp.data.model
++package com.fenix.mobilemcp.data.model
 +
 +import org.junit.jupiter.api.Assertions.assertEquals
 +import org.junit.jupiter.api.Assertions.assertFalse
@@ -1185,7 +1185,7 @@ This plan creates the data models, settings repository (DataStore), Hilt DI bind
 --- /dev/null
 +++ b/app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/data/model/ServerStatusTest.kt
 @@ -0,0 +1,96 @@
-+package com.danielealbano.androidremotecontrolmcp.data.model
++package com.fenix.mobilemcp.data.model
 +
 +import org.junit.jupiter.api.Assertions.assertEquals
 +import org.junit.jupiter.api.Assertions.assertInstanceOf
@@ -1312,15 +1312,15 @@ This plan creates the data models, settings repository (DataStore), Hilt DI bind
 --- /dev/null
 +++ b/app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/data/repository/SettingsRepositoryImplTest.kt
 @@ -0,0 +1,284 @@
-+package com.danielealbano.androidremotecontrolmcp.data.repository
++package com.fenix.mobilemcp.data.repository
 +
 +import androidx.datastore.core.DataStore
 +import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 +import androidx.datastore.preferences.core.Preferences
 +import app.cash.turbine.test
-+import com.danielealbano.androidremotecontrolmcp.data.model.BindingAddress
-+import com.danielealbano.androidremotecontrolmcp.data.model.CertificateSource
-+import com.danielealbano.androidremotecontrolmcp.data.model.ServerConfig
++import com.fenix.mobilemcp.data.model.BindingAddress
++import com.fenix.mobilemcp.data.model.CertificateSource
++import com.fenix.mobilemcp.data.model.ServerConfig
 +import java.io.File
 +import kotlinx.coroutines.ExperimentalCoroutinesApi
 +import kotlinx.coroutines.flow.first
@@ -1681,7 +1681,7 @@ This plan creates the data models, settings repository (DataStore), Hilt DI bind
 --- /dev/null
 +++ b/app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/utils/NetworkUtilsTest.kt
 @@ -0,0 +1,70 @@
-+package com.danielealbano.androidremotecontrolmcp.utils
++package com.fenix.mobilemcp.utils
 +
 +import java.net.ServerSocket
 +import org.junit.jupiter.api.Assertions.assertEquals
@@ -1771,7 +1771,7 @@ This plan creates the data models, settings repository (DataStore), Hilt DI bind
 --- /dev/null
 +++ b/app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/utils/PermissionUtilsTest.kt
 @@ -0,0 +1,94 @@
-+package com.danielealbano.androidremotecontrolmcp.utils
++package com.fenix.mobilemcp.utils
 +
 +import android.content.ContentResolver
 +import android.content.Context
@@ -1800,7 +1800,7 @@ This plan creates the data models, settings repository (DataStore), Hilt DI bind
 +    @BeforeEach
 +    fun setUp() {
 +        every { mockContext.contentResolver } returns mockContentResolver
-+        every { mockContext.packageName } returns "com.danielealbano.androidremotecontrolmcp"
++        every { mockContext.packageName } returns "com.fenix.mobilemcp"
 +        mockkStatic(Settings.Secure::class)
 +    }
 +
@@ -1815,8 +1815,8 @@ This plan creates the data models, settings repository (DataStore), Hilt DI bind
 +
 +        @Test
 +        fun `returns true when service is in enabled list`() {
-+            val serviceName = "com.danielealbano.androidremotecontrolmcp/" +
-+                "com.danielealbano.androidremotecontrolmcp.services.accessibility.McpAccessibilityService"
++            val serviceName = "com.fenix.mobilemcp/" +
++                "com.fenix.mobilemcp.services.accessibility.McpAccessibilityService"
 +            every {
 +                Settings.Secure.getString(mockContentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
 +            } returns serviceName
@@ -1825,7 +1825,7 @@ This plan creates the data models, settings repository (DataStore), Hilt DI bind
 +                PermissionUtils.isAccessibilityServiceEnabled(
 +                    mockContext,
 +                    Class.forName(
-+                        "com.danielealbano.androidremotecontrolmcp.services.accessibility.McpAccessibilityService",
++                        "com.fenix.mobilemcp.services.accessibility.McpAccessibilityService",
 +                    ),
 +                ),
 +            )
@@ -1894,7 +1894,7 @@ This plan creates the data models, settings repository (DataStore), Hilt DI bind
 --- /dev/null
 +++ b/app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/utils/LoggerTest.kt
 @@ -0,0 +1,57 @@
-+package com.danielealbano.androidremotecontrolmcp.utils
++package com.fenix.mobilemcp.utils
 +
 +import org.junit.jupiter.api.Assertions.assertEquals
 +import org.junit.jupiter.api.DisplayName

@@ -84,7 +84,7 @@ The current flow discovers SAF document providers via `queryIntentContentProvide
 
 **Current** (lines 1-31):
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.data.model
+package com.fenix.mobilemcp.data.model
 
 /**
  * Represents a storage location discovered via the Storage Access Framework.
@@ -106,7 +106,7 @@ data class StorageLocation(
 
 **New**:
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.data.model
+package com.fenix.mobilemcp.data.model
 
 /**
  * Represents a user-managed storage location added via the Storage Access Framework.
@@ -356,10 +356,10 @@ private fun serializeStoredLocationsJson(locations: List<StoredLocation>): Strin
 
 **New**:
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.storage
+package com.fenix.mobilemcp.services.storage
 
 import android.net.Uri
-import com.danielealbano.androidremotecontrolmcp.data.model.StorageLocation
+import com.fenix.mobilemcp.data.model.StorageLocation
 
 /**
  * Manages user-added storage locations.
@@ -461,7 +461,7 @@ interface StorageLocationProvider {
 
 **New** (full replacement):
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.storage
+package com.fenix.mobilemcp.services.storage
 
 import android.content.Context
 import android.content.Intent
@@ -469,8 +469,8 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import android.util.Log
 import androidx.documentfile.provider.DocumentFile
-import com.danielealbano.androidremotecontrolmcp.data.model.StorageLocation
-import com.danielealbano.androidremotecontrolmcp.data.repository.SettingsRepository
+import com.fenix.mobilemcp.data.model.StorageLocation
+import com.fenix.mobilemcp.data.repository.SettingsRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
@@ -745,7 +745,7 @@ Each test follows Arrange-Act-Assert pattern with MockK. Key mock setup notes:
 - [x] **Action 1.5.2**: Run targeted tests
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.services.storage.StorageLocationProviderTest"
+./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.services.storage.StorageLocationProviderTest"
 ```
 
 ---
@@ -790,7 +790,7 @@ SettingsRepositoryImpl — Storage Location Methods
 - [x] **Action 1.6.2**: Run targeted tests
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.data.repository.SettingsRepositoryImplTest"
+./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.data.repository.SettingsRepositoryImplTest"
 ```
 
 ---
@@ -967,7 +967,7 @@ assertFalse(text.contains("provider"))
 - [x] **Action 2.3.3**: Run targeted tests
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.integration.FileToolsIntegrationTest"
+./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.integration.FileToolsIntegrationTest"
 ```
 
 ---
@@ -987,7 +987,7 @@ assertFalse(text.contains("provider"))
 - [x] **Action 2.4.2**: Run targeted tests
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.services.storage.FileOperationProviderTest"
+./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.services.storage.FileOperationProviderTest"
 ```
 
 ---
@@ -1315,7 +1315,7 @@ Remove the `pendingAuthorizationLocationId` import/usage if it was referenced.
 - [x] **Action 3.5.2**: Run targeted tests
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.ui.viewmodels.MainViewModelTest"
+./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.ui.viewmodels.MainViewModelTest"
 ```
 
 ---

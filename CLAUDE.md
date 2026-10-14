@@ -550,7 +550,7 @@ fun `tap with valid coordinates calls actionExecutor and returns success`() = ru
 - Environment variables are stored in `.env` (gitignored). See `.env.example` for required variables.
 - **When running tests via Makefile** (`make test-unit`, `make test-integration`, `make test`): `.env` is sourced automatically if it exists.
 - **When running tests manually** via `./gradlew`: source `.env` first: `set -a && source .env && set +a && ./gradlew :app:test`
-- To run a single integration test: `set -a && source .env && set +a && ./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.integration.NgrokTunnelIntegrationTest"`
+- To run a single integration test: `set -a && source .env && set +a && ./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.integration.NgrokTunnelIntegrationTest"`
 
 ### Fix broken tests rule
 - If you encounter failing tests unrelated to your changes:
@@ -616,12 +616,12 @@ Local development requires Android SDK, emulator/device, and standard Android de
 
 ### APK building
 - **Debug APK**: Build with `make build` or `./gradlew assembleDebug`.
-  - Application ID: `com.danielealbano.androidremotecontrolmcp.debug`.
+  - Application ID: `com.fenix.mobilemcp.debug`.
   - Debuggable: true.
   - Minify: false.
   - Signed with debug keystore.
 - **Release APK**: Build with `make build-release` or `./gradlew assembleRelease`.
-  - Application ID: `com.danielealbano.androidremotecontrolmcp`.
+  - Application ID: `com.fenix.mobilemcp`.
   - Debuggable: false.
   - Minify: false (open source with MIT license, no ProGuard/R8).
   - Signed with release keystore (if configured in `keystore.properties`).

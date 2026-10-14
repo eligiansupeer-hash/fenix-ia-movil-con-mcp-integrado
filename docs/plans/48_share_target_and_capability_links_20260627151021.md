@@ -49,7 +49,7 @@ Lets an agent pull content the user/app shares INTO this app (text, images, PDFs
 
 **Action** — create `services/sharing/CapabilityToken.kt`:
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.sharing
+package com.fenix.mobilemcp.services.sharing
 
 import java.security.MessageDigest
 import java.security.SecureRandom

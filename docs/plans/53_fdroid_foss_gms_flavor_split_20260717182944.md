@@ -24,7 +24,7 @@ Agreed design (do NOT deviate):
 
 ### Decisions locked with the user (do NOT re-decide)
 - Flavors: **`gms`** and **`foss`**, dimension **`distribution`**.
-- applicationId: **same release id for both** (`com.danielealbano.androidremotecontrolmcp`); **debug builds get
+- applicationId: **same release id for both** (`com.fenix.mobilemcp`); **debug builds get
   a per-flavor suffix** so `gms`/`foss` debug builds coexist: `…mcp.gms.debug`, `…mcp.foss.debug`.
 - Migration: **include** the one-time gms migration.
 - Build tooling: **include** Makefile + CI (`.github/workflows/`) changes. **Re-read the CI/Makefile files
@@ -34,7 +34,7 @@ Agreed design (do NOT deviate):
 - `app/src/gms/kotlin/…`, `app/src/gms/res/…`, `app/src/gms/AndroidManifest.xml`
 - `app/src/foss/kotlin/…`
 - `app/src/testGms/kotlin/…` (gms-only unit tests), `app/src/testFoss/kotlin/…` (foss-only unit tests)
-- Same base package `com.danielealbano.androidremotecontrolmcp` across all source sets.
+- Same base package `com.fenix.mobilemcp` across all source sets.
 
 ### Seams (declared/used in `main`, provided by BOTH flavors)
 | Seam | main caller | `gms` provides | `foss` provides |
@@ -78,7 +78,7 @@ existing. Adding flavors also renames the unit-test task and kotlin-classes dir 
   androidComponents {
       onVariants(selector().withBuildType("debug")) { variant ->
           variant.applicationId.set(
-              "com.danielealbano.androidremotecontrolmcp.${variant.flavorName}.debug",
+              "com.fenix.mobilemcp.${variant.flavorName}.debug",
           )
       }
       onVariants { variant ->
@@ -135,7 +135,7 @@ framework-only (GMS-free) and is shared.
 ### Task 2.1 — Extract shared reverse-geocode helper into `main`
 - [x] **Create** `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/location/ReverseGeocoder.kt`:
   ```kotlin
-  package com.danielealbano.androidremotecontrolmcp.services.location
+  package com.fenix.mobilemcp.services.location
 
   import android.content.Context
   import android.location.Address
@@ -261,7 +261,7 @@ data/repository/UI-model code must become geofence-free.
 - [x] **Create** `app/src/gms/kotlin/com/danielealbano/androidremotecontrolmcp/data/model/GeofenceConfig.kt` —
       move the two data classes verbatim (package unchanged):
   ```kotlin
-  package com.danielealbano.androidremotecontrolmcp.data.model
+  package com.fenix.mobilemcp.data.model
 
   import kotlinx.serialization.Serializable
 
@@ -302,10 +302,10 @@ data/repository/UI-model code must become geofence-free.
 - [x] **Create** `app/src/gms/kotlin/com/danielealbano/androidremotecontrolmcp/data/repository/GeofenceConfigRepository.kt`
       (interface):
   ```kotlin
-  package com.danielealbano.androidremotecontrolmcp.data.repository
+  package com.fenix.mobilemcp.data.repository
 
-  import com.danielealbano.androidremotecontrolmcp.data.model.GeofenceChannelConfig
-  import com.danielealbano.androidremotecontrolmcp.data.model.GeofenceZone
+  import com.fenix.mobilemcp.data.model.GeofenceChannelConfig
+  import com.fenix.mobilemcp.data.model.GeofenceZone
   import kotlinx.coroutines.flow.Flow
 
   interface GeofenceConfigRepository {
@@ -445,7 +445,7 @@ service logic moves behind a `main` interface with a real gms impl and a no-op f
 ### Task 5.1 — Define the seam interface in `main`
 - [x] **Create** `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/channel/GeofenceChannelController.kt`:
   ```kotlin
-  package com.danielealbano.androidremotecontrolmcp.services.channel
+  package com.fenix.mobilemcp.services.channel
 
   import android.content.Intent
   import kotlinx.coroutines.CoroutineScope
@@ -542,7 +542,7 @@ created FIRST, because the nav/row seams (Tasks 6.3/6.4) reference them.
       `data object`s from `SettingsRoute`.
 - [x] **Create** `app/src/gms/kotlin/com/danielealbano/androidremotecontrolmcp/ui/navigation/GeofenceRoutes.kt`:
   ```kotlin
-  package com.danielealbano.androidremotecontrolmcp.ui.navigation
+  package com.fenix.mobilemcp.ui.navigation
 
   object GeofenceRoutes {
       const val LIST = "settings/channel/geofence_list"
@@ -611,15 +611,15 @@ created FIRST, because the nav/row seams (Tasks 6.3/6.4) reference them.
     `composable(SettingsRoute.GeofenceMap.route){ … }` blocks.
   - After the existing `composable(...)` destinations inside the `NavGraphBuilder` lambda, add a single call
     `geofenceDestinations(navController)`.
-  - Add import for the seam (`com.danielealbano.androidremotecontrolmcp.ui.screens.settings.geofenceDestinations`).
+  - Add import for the seam (`com.fenix.mobilemcp.ui.screens.settings.geofenceDestinations`).
 - [x] **Create** `app/src/gms/kotlin/…/ui/screens/settings/GeofenceDestinations.kt` — real seam:
   ```kotlin
-  package com.danielealbano.androidremotecontrolmcp.ui.screens.settings
+  package com.fenix.mobilemcp.ui.screens.settings
 
   import androidx.navigation.NavGraphBuilder
   import androidx.navigation.NavHostController
   import androidx.navigation.compose.composable
-  import com.danielealbano.androidremotecontrolmcp.ui.navigation.GeofenceRoutes
+  import com.fenix.mobilemcp.ui.navigation.GeofenceRoutes
   // + hiltViewModel import for GeofenceSettingsViewModel
 
   fun NavGraphBuilder.geofenceDestinations(navController: NavHostController) {
@@ -640,7 +640,7 @@ created FIRST, because the nav/row seams (Tasks 6.3/6.4) reference them.
   ```
 - [x] **Create** `app/src/foss/kotlin/…/ui/screens/settings/GeofenceDestinations.kt` — empty seam:
   ```kotlin
-  package com.danielealbano.androidremotecontrolmcp.ui.screens.settings
+  package com.fenix.mobilemcp.ui.screens.settings
 
   import androidx.navigation.NavGraphBuilder
   import androidx.navigation.NavHostController
@@ -907,8 +907,8 @@ numbers, task names, steps), ADAPT — do NOT blindly apply diffs. If reconcilia
   - The doc comment (line ~20) `./gradlew assembleDebug` → `./gradlew assembleGmsDebug`.
   - Leave the separate `compose-test-app` APK path unchanged (that module has no flavors).
 - [x] **Modify** `e2e-tests/src/test/kotlin/…/e2e/AndroidContainerSetup.kt`:
-  - `APP_PACKAGE` (line ~31) `"com.danielealbano.androidremotecontrolmcp.debug"` →
-    `"com.danielealbano.androidremotecontrolmcp.gms.debug"`.
+  - `APP_PACKAGE` (line ~31) `"com.fenix.mobilemcp.debug"` →
+    `"com.fenix.mobilemcp.gms.debug"`.
   - The two hardcoded receiver FQCNs (lines ~36, ~38) `…mcp.debug.E2EConfigReceiver` /
     `…mcp.debug.OAuthApprovalTestReceiver` → `…mcp.gms.debug.…` (or derive them from `APP_PACKAGE`). The
     `$APP_PACKAGE.E2E_CONFIGURE` action (line ~339) follows `APP_PACKAGE` automatically.
@@ -918,7 +918,7 @@ numbers, task names, steps), ADAPT — do NOT blindly apply diffs. If reconcilia
 ### Task 9.5 — Update build-variants documentation (P53-010)
 - [x] **Modify** `docs/PROJECT.md` — the Build Variants section (~line 559-563): reflect the two flavors
       (`gms`/`foss`) and the per-flavor debug applicationIds (`…mcp.gms.debug`, `…mcp.foss.debug`); the release
-      applicationId stays `com.danielealbano.androidremotecontrolmcp` for both flavors. Update the `build` make-target
+      applicationId stays `com.fenix.mobilemcp` for both flavors. Update the `build` make-target
       command reference (~line 724) `./gradlew assembleDebug` → `./gradlew assembleGmsDebug` if present. Keep edits
       minimal and factual (accuracy only; do not add new documentation sections).
 
@@ -945,7 +945,7 @@ applicationIds are correct, migration works, and all quality gates pass.
       `ACCESS_BACKGROUND_LOCATION`; `ACCESS_FINE_LOCATION` and the `location` FGS type are present (WiFi/get_location).
 - [x] **GMS manifest**: merged `gmsRelease` manifest contains the receiver and `ACCESS_BACKGROUND_LOCATION`.
 - [x] **applicationIds**: `gmsDebug` = `…mcp.gms.debug`, `fossDebug` = `…mcp.foss.debug`, `gmsRelease` =
-      `fossRelease` = `com.danielealbano.androidremotecontrolmcp`.
+      `fossRelease` = `com.fenix.mobilemcp`.
 - [x] **Unit tests both flavors** pass: `:app:testGmsDebugUnitTest` and `:app:testFossDebugUnitTest` (capture via
       `tee`). Fix ANY broken test (even pre-existing) per repo rules.
 - [x] **Migration** test proves legacy geofence zones are preserved into the new key exactly once.
@@ -1030,4 +1030,4 @@ CI unit/integration tests, lint, and CodeQL passed on the first run; the E2E job
 | ID | Sev | Finding | Resolution |
 |----|-----|---------|------------|
 | C53-003 | CRITICAL | The eager `runBlocking(Dispatchers.IO) { migrateIfNeeded() }` in `McpApplication.onCreate` (gms) BLOCKS `Application.onCreate` on-device, stalling app init so no components/MCP server start. All 8 e2e tests failed with "MCP server did not become ready" (empty LISTEN ports, no `MCP:Application initialized` log). | Changed the gms `runFlavorStartupMigrations` seam to launch the migration on a background `CoroutineScope(Dispatchers.IO)` (matching the app's existing non-blocking auth-model migration). Still eager at every startup; data safety unchanged (dedicated key + idempotent `migrateIfNeeded()` re-checked on every geofence-repo access). Task 3.4 amended. |
-| C53-004 | CRITICAL | The e2e harness derived its broadcast ACTION strings from `APP_PACKAGE` (`"$APP_PACKAGE.E2E_START_SERVER"` etc.), which became `…gms.debug.E2E_*` after the applicationId change. But `E2EConfigReceiver`/`OAuthApprovalTestReceiver` hardcode their actions with their SOURCE package (`…androidremotecontrolmcp.debug.E2E_*`), so the receiver ignored the broadcast → MCP server never started → all 8 e2e failed. (Same source-package-vs-applicationId distinction as the receiver-FQCN amendment, missed for the action strings.) | Added `E2E_ACTION_BASE = "com.danielealbano.androidremotecontrolmcp.debug"` in `AndroidContainerSetup` and switched the 3 action strings (E2E_CONFIGURE/E2E_START_SERVER/OAUTH_APPROVE) to it; `$APP_PACKAGE/` component targeting (applicationId) unchanged. |
+| C53-004 | CRITICAL | The e2e harness derived its broadcast ACTION strings from `APP_PACKAGE` (`"$APP_PACKAGE.E2E_START_SERVER"` etc.), which became `…gms.debug.E2E_*` after the applicationId change. But `E2EConfigReceiver`/`OAuthApprovalTestReceiver` hardcode their actions with their SOURCE package (`…androidremotecontrolmcp.debug.E2E_*`), so the receiver ignored the broadcast → MCP server never started → all 8 e2e failed. (Same source-package-vs-applicationId distinction as the receiver-FQCN amendment, missed for the action strings.) | Added `E2E_ACTION_BASE = "com.fenix.mobilemcp.debug"` in `AndroidContainerSetup` and switched the 3 action strings (E2E_CONFIGURE/E2E_START_SERVER/OAUTH_APPROVE) to it; `$APP_PACKAGE/` component targeting (applicationId) unchanged. |

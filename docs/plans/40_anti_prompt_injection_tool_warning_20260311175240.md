@@ -278,9 +278,9 @@ Update existing unit and integration tests to account for the warning prefix in 
 Create a dedicated shared test utility file with a `public` top-level function accessible from both `mcp/tools/` and `integration/` test packages:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.mcp.tools
+package com.fenix.mobilemcp.mcp.tools
 
-import com.danielealbano.androidremotecontrolmcp.mcp.tools.McpToolUtils
+import com.fenix.mobilemcp.mcp.tools.McpToolUtils
 
 /**
  * Strips the [McpToolUtils.UNTRUSTED_CONTENT_WARNING] prefix from tool response text.
@@ -290,7 +290,7 @@ fun stripUntrustedWarning(text: String): String =
     text.removePrefix(McpToolUtils.UNTRUSTED_CONTENT_WARNING + "\n")
 ```
 
-Placed in the `mcp/tools/` test package so it is directly accessible from unit tests in that package, and importable from `integration/` test files via `import com.danielealbano.androidremotecontrolmcp.mcp.tools.stripUntrustedWarning`.
+Placed in the `mcp/tools/` test package so it is directly accessible from unit tests in that package, and importable from `integration/` test files via `import com.fenix.mobilemcp.mcp.tools.stripUntrustedWarning`.
 
 **DoD**:
 - [x] Helper function created as public top-level function in dedicated file

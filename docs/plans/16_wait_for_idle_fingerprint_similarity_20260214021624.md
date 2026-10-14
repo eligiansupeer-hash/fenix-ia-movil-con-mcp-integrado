@@ -74,9 +74,9 @@ Create new file `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/m
 **Contents**:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.mcp.tools
+package com.fenix.mobilemcp.mcp.tools
 
-import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeData
+import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeData
 import kotlin.math.abs
 
 /**
@@ -555,10 +555,10 @@ Create new file `app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/m
 **Test cases to implement**:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.mcp.tools
+package com.fenix.mobilemcp.mcp.tools
 
-import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeData
-import com.danielealbano.androidremotecontrolmcp.services.accessibility.BoundsData
+import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeData
+import com.fenix.mobilemcp.services.accessibility.BoundsData
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows

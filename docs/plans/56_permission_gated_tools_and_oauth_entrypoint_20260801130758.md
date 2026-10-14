@@ -49,7 +49,7 @@ The repo has **no Compose UI test infrastructure** (no `createComposeRule`, no `
 - [x] **Create** `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/data/model/OptionalToolPermission.kt`
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.data.model
+package com.fenix.mobilemcp.data.model
 
 /** Optional Android permissions that gate MCP tools (whole category) or a single tool parameter (Plan 56). */
 enum class OptionalToolPermission {
@@ -182,7 +182,7 @@ val effectivePerms =
 registerAllTools(sdkServer, toolNamePrefix, effectivePerms, config.fileSizeLimitMb)
 ```
 
-Add imports: `com.danielealbano.androidremotecontrolmcp.data.model.OptionalToolPermissions`, `com.danielealbano.androidremotecontrolmcp.utils.PermissionUtils`, `com.danielealbano.androidremotecontrolmcp.services.notifications.McpNotificationListenerService`. (The `OptionalToolPermission` enum is not referenced directly here, so it is NOT imported.)
+Add imports: `com.fenix.mobilemcp.data.model.OptionalToolPermissions`, `com.fenix.mobilemcp.utils.PermissionUtils`, `com.fenix.mobilemcp.services.notifications.McpNotificationListenerService`. (The `OptionalToolPermission` enum is not referenced directly here, so it is NOT imported.)
 
 **DoD**:
 - [x] `config.toolPermissionsConfig` is never mutated; only local `effectivePerms` carries the extra disabled tools/params.
@@ -262,7 +262,7 @@ val WarningAmber = Color(0xFFF9A825)
 
 - [x] **Modify** `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/ui/components/ConnectionInfoCard.kt`:
   - Remove the now-duplicate private definitions `private const val WARNING_AMBER_ARGB = 0xFFF9A825L` and `private val WarningAmber = Color(WARNING_AMBER_ARGB)` (lines ~54-55).
-  - Add import `com.danielealbano.androidremotecontrolmcp.ui.theme.WarningAmber`. The two existing usages (`tint = WarningAmber`, lines ~286 and ~308) then resolve to the shared token.
+  - Add import `com.fenix.mobilemcp.ui.theme.WarningAmber`. The two existing usages (`tint = WarningAmber`, lines ~286 and ~308) then resolve to the shared token.
   - Remove the now-unused import `androidx.compose.ui.graphics.Color` (line ~34). After deleting line 55, `Color` has NO other use in this file (verified: `Color` appears only at the import and the deleted definition — no `: Color` types, no other `Color(...)`/`Color.*` usages), so leaving the import triggers ktlint `standard:no-unused-imports` / detekt `UnusedImports`.
   - This migration is a direct consequence of introducing the shared color — it prevents two identical amber constants coexisting.
 
@@ -324,7 +324,7 @@ val categoryPermissions = category.tools.mapNotNull { OptionalToolPermissions.pe
    - `Switch` `enabled = isEnabled && categoryGranted && paramGranted` (keep `checked` from the stored flag).
    - Show the param note ONLY when `categoryGranted && !paramGranted` (i.e., the tool is available but its option is not) — this prevents the audio note showing at the same time as the Camera category note when both camera and mic are missing. In that case, on the param `ListItem`, add `leadingContent = { Icon(Icons.Default.Warning, tint = WarningAmber, contentDescription = null) }`, `supportingContent = { Text(stringResource(R.string.settings_mcp_tools_param_missing_permission), color = MaterialTheme.colorScheme.onSurfaceVariant) }`, and extend its `modifier` with `.clickable { onNavigateToPermissions() }` (keep the existing `padding(start = 32.dp)`). The icon is decorative (`contentDescription = null`) — the `supportingContent` text conveys the meaning.
 
-Add imports: `com.danielealbano.androidremotecontrolmcp.data.model.OptionalToolPermission`, `com.danielealbano.androidremotecontrolmcp.data.model.OptionalToolPermissions`, `com.danielealbano.androidremotecontrolmcp.ui.theme.WarningAmber`, `androidx.compose.material.icons.filled.Warning`, `androidx.compose.foundation.clickable`, `androidx.compose.foundation.layout.Row`, `androidx.compose.ui.Alignment`, `androidx.compose.runtime.DisposableEffect`, `androidx.compose.ui.platform.LocalContext`, `androidx.lifecycle.compose.LocalLifecycleOwner`, `androidx.lifecycle.LifecycleEventObserver`, `androidx.lifecycle.Lifecycle`. (`Column`, `Icon`, `Text`, `MaterialTheme`, `Modifier`, `padding`, `collectAsStateWithLifecycle`, `stringResource`, `dp` are already imported.)
+Add imports: `com.fenix.mobilemcp.data.model.OptionalToolPermission`, `com.fenix.mobilemcp.data.model.OptionalToolPermissions`, `com.fenix.mobilemcp.ui.theme.WarningAmber`, `androidx.compose.material.icons.filled.Warning`, `androidx.compose.foundation.clickable`, `androidx.compose.foundation.layout.Row`, `androidx.compose.ui.Alignment`, `androidx.compose.runtime.DisposableEffect`, `androidx.compose.ui.platform.LocalContext`, `androidx.lifecycle.compose.LocalLifecycleOwner`, `androidx.lifecycle.LifecycleEventObserver`, `androidx.lifecycle.Lifecycle`. (`Column`, `Icon`, `Text`, `MaterialTheme`, `Modifier`, `padding`, `collectAsStateWithLifecycle`, `stringResource`, `dp` are already imported.)
 
 **DoD**:
 - [x] `viewModel.updateToolEnabled` / `updateParamEnabled` are never called as a side effect of permission state (stored flags untouched).
@@ -389,7 +389,7 @@ val pendingApprovalCount: StateFlow<Int> =
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(FLOW_TIMEOUT_MS), 0)
 ```
 
-Add import: `com.danielealbano.androidremotecontrolmcp.mcp.oauth.OAuthApprovalCoordinator` (only this import is new).
+Add import: `com.fenix.mobilemcp.mcp.oauth.OAuthApprovalCoordinator` (only this import is new).
 
 **DoD**:
 - [x] Hilt still constructs `MainViewModel` (coordinator is already bound in `AppModule`).
@@ -457,7 +457,7 @@ if (pendingApprovalCount > 0) {
 5. The existing private `PermissionWarningCard` keeps referencing `R.string.permission_warning_message` — NO change to the `stringResource` call; the string's TEXT is updated in Task 3.1.
 6. Add a private `PendingApprovalsCard(count: Int, onClick: () -> Unit)` — an `ElevatedCard` (`clickable(onClick = onClick)`) with `Icon(Icons.Default.Notifications, tint = MaterialTheme.colorScheme.primary, contentDescription = null)` + `Text(stringResource(R.string.server_pending_approvals_message, count))`.
 
-Add imports: `com.danielealbano.androidremotecontrolmcp.ui.ApprovalActivity`, `androidx.compose.material.icons.filled.Notifications`. (`Intent`, `LocalContext`, `Icons` are already imported.)
+Add imports: `com.fenix.mobilemcp.ui.ApprovalActivity`, `androidx.compose.material.icons.filled.Notifications`. (`Intent`, `LocalContext`, `Icons` are already imported.)
 
 **DoD**:
 - [x] No unused variables / no new ktlint/detekt warnings after removing the extra collects.

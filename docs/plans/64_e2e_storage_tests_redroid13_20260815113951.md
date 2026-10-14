@@ -13,7 +13,7 @@
 
 **Key infrastructure facts (verified)**:
 - `E2EConfigReceiver` already supports `storage_location_id` + `storage_allow_write`/`storage_allow_delete` broadcast extras. This plan touches the `e2e-tests` module plus ONE debug-source-set addition (new `download_timeout_seconds` and `allow_http_downloads` extras in `E2EConfigReceiver` — required because `ServerConfig.allowHttpDownloads` defaults to `false` and `DownloadUrlValidator` rejects `http://` URLs before connecting, and because the default 60s download timeout would make the slow-endpoint test take >60s). The receiver lives in `app/src/debug` and is absent from the release APK. Main-source-set production code is untouched.
-- `AndroidContainerSetup.execAdb` is `private`; it becomes `internal` so the new storage helper can use it. App package in E2E is `com.danielealbano.androidremotecontrolmcp.gms.debug`; tool prefix `android_`; bearer token `AndroidContainerSetup.E2E_BEARER_TOKEN`; `McpClient(baseUrl, bearerToken)`; `stripUntrustedWarning()` exists for device-content responses.
+- `AndroidContainerSetup.execAdb` is `private`; it becomes `internal` so the new storage helper can use it. App package in E2E is `com.fenix.mobilemcp.gms.debug`; tool prefix `android_`; bearer token `AndroidContainerSetup.E2E_BEARER_TOKEN`; `McpClient(baseUrl, bearerToken)`; `stripUntrustedWarning()` exists for device-content responses.
 - Files seeded via adb shell are NON-OWNED (owner = media provider); files written through the app's MCP tools are OWNED. Seeded files are indexed only after an explicit media scan, and land in the MediaStore collection implied by their file extension.
 - **`builtin:downloads` is permanently owned-only** (its collection has `readMediaPermission = null`, so the owner filter always applies): seeded non-owned files under `Download/` are INVISIBLE to the app by design. Therefore ALL seeded-fixture listing/read tests use permissioned locations (`Pictures/`, `DCIM/`, `Music/`, `Recordings/`) with media extensions (`.jpg`/`.mp4`/`.mp3`/`.m4a` — content bytes are irrelevant to indexing), and `Download/` is exercised via app-OWNED write flows plus one dedicated test asserting the seeded-file invisibility itself.
 - `pm revoke` of a granted runtime permission KILLS the app process — any test revoking must restart the server and refresh the SHARED client (`SharedAndroidContainer.mcpClient` is cached; its session dies with the process, and later test classes use the cached instance).
@@ -53,7 +53,7 @@ Why: shared fixtures/permissions/scan/toggle/restart/HTTP-server plumbing used b
 **Action 1.2.1** — Create `e2e-tests/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/e2e/FixtureHttpServer.kt`:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.e2e
+package com.fenix.mobilemcp.e2e
 
 import com.sun.net.httpserver.HttpServer
 import java.net.InetSocketAddress
@@ -161,7 +161,7 @@ Constraint: the construction/connect call MUST mirror how `ensureInitialized()` 
 **Action 1.4.1** — Create `e2e-tests/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/e2e/StorageE2E.kt`:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.e2e
+package com.fenix.mobilemcp.e2e
 
 import java.util.Base64
 
@@ -177,14 +177,14 @@ import java.util.Base64
  * Fixture names MUST NOT contain double quotes, backticks, or '$' (double-quote shell quoting).
  */
 object StorageE2E {
-    const val APP_PACKAGE = "com.danielealbano.androidremotecontrolmcp.gms.debug"
+    const val APP_PACKAGE = "com.fenix.mobilemcp.gms.debug"
     const val PERM_IMAGES = "android.permission.READ_MEDIA_IMAGES"
     const val PERM_VIDEO = "android.permission.READ_MEDIA_VIDEO"
     const val PERM_AUDIO = "android.permission.READ_MEDIA_AUDIO"
     private const val SDCARD = "/storage/emulated/0"
-    private const val E2E_ACTION_BASE = "com.danielealbano.androidremotecontrolmcp.debug"
+    private const val E2E_ACTION_BASE = "com.fenix.mobilemcp.debug"
     private const val E2E_CONFIG_RECEIVER =
-        "$APP_PACKAGE/com.danielealbano.androidremotecontrolmcp.debug.E2EConfigReceiver"
+        "$APP_PACKAGE/com.fenix.mobilemcp.debug.E2EConfigReceiver"
 
     fun shell(cmd: String): String = AndroidContainerSetup.execAdb("shell", "sh", "-c", cmd)
 

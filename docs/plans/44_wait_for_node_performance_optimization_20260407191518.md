@@ -56,7 +56,7 @@ Add `rawNodeExists()` that walks raw `AccessibilityNodeInfo` trees across all wi
 **Imports to add** (not already in `UtilityTools.kt`):
 ```kotlin
 import android.view.accessibility.AccessibilityNodeInfo
-import com.danielealbano.androidremotecontrolmcp.services.accessibility.FindBy
+import com.fenix.mobilemcp.services.accessibility.FindBy
 ```
 
 Already imported: `AccessibilityServiceProvider`, `AccessibilityTreeParser`, `McpToolException`.

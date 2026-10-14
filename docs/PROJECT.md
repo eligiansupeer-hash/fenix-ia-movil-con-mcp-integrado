@@ -549,7 +549,7 @@ HomeScreen contains a TopAppBar, then a scrollable layout with: ServerStatusCard
 - **Scope**: Full HTTP stack (authentication, JSON-RPC protocol, tool dispatch) via in-process Ktor test server; all 11 tool categories, error code propagation
 - **Mocking**: Mock Android services (`ActionExecutor`, `AccessibilityServiceProvider`, `ScreenCaptureProvider`, `AccessibilityTreeParser`, `ElementFinder`, `TypeInputController`, `StorageLocationProvider`, `FileOperationProvider`, `AppManager`, `CameraProvider`, `LocationProvider`) via interfaces; real SDK `Server` with stateless Streamable HTTP routing (`mcpStatelessStreamableHttp`) and `BearerTokenAuth`
 - **Infrastructure**: `McpIntegrationTestHelper` configures `testApplication` with same routing as production `McpServer`; uses SDK `Client` + `StreamableHttpClientTransport` for type-safe MCP communication
-- **Run**: `make test-integration` or `./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.integration.*"`
+- **Run**: `make test-integration` or `./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.integration.*"`
 - **Note**: JVM-based, no emulator or device required. Runs as part of `make test-unit` since both are under `app/src/test/`
 
 ### E2E Tests
@@ -586,9 +586,9 @@ debug builds get a per-flavor suffix so both can be installed side by side.
 
 | Variant | Application ID | Debuggable | Minify | Logging |
 |---------|---------------|-----------|--------|---------|
-| gmsDebug | `com.danielealbano.androidremotecontrolmcp.gms.debug` | true | false | Verbose |
-| fossDebug | `com.danielealbano.androidremotecontrolmcp.foss.debug` | true | false | Verbose |
-| gmsRelease / fossRelease | `com.danielealbano.androidremotecontrolmcp` | false | false (open source) | Info+ |
+| gmsDebug | `com.fenix.mobilemcp.gms.debug` | true | false | Verbose |
+| fossDebug | `com.fenix.mobilemcp.foss.debug` | true | false | Verbose |
+| gmsRelease / fossRelease | `com.fenix.mobilemcp` | false | false (open source) | Info+ |
 
 ### Versioning
 

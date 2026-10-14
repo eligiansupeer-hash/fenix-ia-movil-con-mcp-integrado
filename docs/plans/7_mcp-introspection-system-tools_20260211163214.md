@@ -20,7 +20,7 @@ This plan implements the first batch of 10 MCP tools (4 screen introspection + 6
 
 ### Package Base
 
-`com.danielealbano.androidremotecontrolmcp`
+`com.fenix.mobilemcp`
 
 ### Path References
 
@@ -107,7 +107,7 @@ This plan implements the first batch of 10 MCP tools (4 screen introspection + 6
 
 > **IMPORTANT — Supersedes Plan 6 definitions**: Plan 6 defined `ToolDefinition` and `ToolHandler` inside `McpProtocolHandler.kt`. This plan **moves** both to `ToolRegistry.kt` as standalone types. At implementation time, **remove** the `ToolDefinition` and `ToolHandler` definitions from `McpProtocolHandler.kt` and replace references with imports from this file. `McpProtocolHandler` should delegate tool execution to `ToolRegistry.execute()` instead of managing its own tool map.
 
-> **Implementation Note — ToolHandler location**: The code imports `ToolHandler` from `com.danielealbano.androidremotecontrolmcp.mcp.ToolHandler` (the `mcp` package), but this plan moves `ToolDefinition` to `ToolRegistry.kt` in `mcp/tools/`. At implementation time, either keep `ToolHandler` in `McpProtocolHandler.kt` (Plan 6) or create a standalone `mcp/ToolHandler.kt` file. The imports already reference the correct package path.
+> **Implementation Note — ToolHandler location**: The code imports `ToolHandler` from `com.fenix.mobilemcp.mcp.ToolHandler` (the `mcp` package), but this plan moves `ToolDefinition` to `ToolRegistry.kt` in `mcp/tools/`. At implementation time, either keep `ToolHandler` in `McpProtocolHandler.kt` (Plan 6) or create a standalone `mcp/ToolHandler.kt` file. The imports already reference the correct package path.
 
 > **Registration pattern evolution**: This plan registers tools via `McpServerService.registerAllTools()` calling into `ToolRegistry`. Plans 8-9 evolve this by adding private helper methods (`registerTouchActionTools()`, `registerGestureTools()`, etc.) inside `ToolRegistry.registerAll()` and expanding the constructor with tool dependencies. The final pattern is: `ToolRegistry.registerAll()` calls private categorized registration methods internally.
 
@@ -119,11 +119,11 @@ The tool handler classes themselves are simple `@Inject constructor()` classes (
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/mcp/tools/ToolRegistry.kt
 @@ -0,0 +1,110 @@
-+package com.danielealbano.androidremotecontrolmcp.mcp.tools
++package com.fenix.mobilemcp.mcp.tools
 +
 +import android.util.Log
-+import com.danielealbano.androidremotecontrolmcp.mcp.McpToolException
-+import com.danielealbano.androidremotecontrolmcp.mcp.ToolHandler
++import com.fenix.mobilemcp.mcp.McpToolException
++import com.fenix.mobilemcp.mcp.ToolHandler
 +import kotlinx.serialization.json.JsonElement
 +import kotlinx.serialization.json.JsonObject
 +import javax.inject.Inject
@@ -224,14 +224,14 @@ The tool handler classes themselves are simple `@Inject constructor()` classes (
 --- a/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/mcp/McpServerService.kt
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/mcp/McpServerService.kt
 @@ -14,6 +14,7 @@
- import com.danielealbano.androidremotecontrolmcp.mcp.CertificateManager
- import com.danielealbano.androidremotecontrolmcp.mcp.McpProtocolHandler
- import com.danielealbano.androidremotecontrolmcp.mcp.McpServer
-+import com.danielealbano.androidremotecontrolmcp.mcp.tools.ToolRegistry
-+import com.danielealbano.androidremotecontrolmcp.mcp.tools.registerScreenIntrospectionTools
-+import com.danielealbano.androidremotecontrolmcp.mcp.tools.registerSystemActionTools
- import com.danielealbano.androidremotecontrolmcp.services.screencapture.ScreenCaptureService
- import com.danielealbano.androidremotecontrolmcp.ui.MainActivity
+ import com.fenix.mobilemcp.mcp.CertificateManager
+ import com.fenix.mobilemcp.mcp.McpProtocolHandler
+ import com.fenix.mobilemcp.mcp.McpServer
++import com.fenix.mobilemcp.mcp.tools.ToolRegistry
++import com.fenix.mobilemcp.mcp.tools.registerScreenIntrospectionTools
++import com.fenix.mobilemcp.mcp.tools.registerSystemActionTools
+ import com.fenix.mobilemcp.services.screencapture.ScreenCaptureService
+ import com.fenix.mobilemcp.ui.MainActivity
  import dagger.hilt.android.AndroidEntryPoint
 @@ -31,6 +32,7 @@
      @Inject lateinit var settingsRepository: SettingsRepository
@@ -320,14 +320,14 @@ This means we also need to update `McpProtocolHandler.handleToolCall()` to handl
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/mcp/tools/ScreenIntrospectionTools.kt
 @@ -0,0 +1,289 @@
-+package com.danielealbano.androidremotecontrolmcp.mcp.tools
++package com.fenix.mobilemcp.mcp.tools
 +
 +import android.util.Log
-+import com.danielealbano.androidremotecontrolmcp.mcp.McpToolException
-+import com.danielealbano.androidremotecontrolmcp.mcp.ToolHandler
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityTreeParser
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.McpAccessibilityService
-+import com.danielealbano.androidremotecontrolmcp.services.mcp.McpServerService
++import com.fenix.mobilemcp.mcp.McpToolException
++import com.fenix.mobilemcp.mcp.ToolHandler
++import com.fenix.mobilemcp.services.accessibility.AccessibilityTreeParser
++import com.fenix.mobilemcp.services.accessibility.McpAccessibilityService
++import com.fenix.mobilemcp.services.mcp.McpServerService
 +import kotlinx.serialization.encodeToString
 +import kotlinx.serialization.json.Json
 +import kotlinx.serialization.json.JsonElement
@@ -382,7 +382,7 @@ This means we also need to update `McpProtocolHandler.handleToolCall()` to handl
 +            val treeJson = buildJsonObject {
 +                putJsonArray("nodes") {
 +                    add(Json.encodeToJsonElement(
-+                        com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeData.serializer(),
++                        com.fenix.mobilemcp.services.accessibility.AccessibilityNodeData.serializer(),
 +                        treeData,
 +                    ))
 +                }
@@ -573,7 +573,7 @@ This means we also need to update `McpProtocolHandler.handleToolCall()` to handl
 +
 +        val screenInfo = service.getScreenInfo()
 +        val resultJson = Json.encodeToString(
-+            com.danielealbano.androidremotecontrolmcp.services.accessibility.ScreenInfo.serializer(),
++            com.fenix.mobilemcp.services.accessibility.ScreenInfo.serializer(),
 +            screenInfo,
 +        )
 +
@@ -614,7 +614,7 @@ This means we also need to update `McpProtocolHandler.handleToolCall()` to handl
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/mcp/McpToolException.kt
 @@ -0,0 +1,30 @@
-+package com.danielealbano.androidremotecontrolmcp.mcp
++package com.fenix.mobilemcp.mcp
 +
 +/**
 + * Sealed exception hierarchy for MCP tool errors.
@@ -662,7 +662,7 @@ This means we also need to update `McpProtocolHandler.handleToolCall()` to handl
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/mcp/tools/McpContentBuilder.kt
 @@ -0,0 +1,52 @@
-+package com.danielealbano.androidremotecontrolmcp.mcp.tools
++package com.fenix.mobilemcp.mcp.tools
 +
 +import kotlinx.serialization.json.JsonElement
 +import kotlinx.serialization.json.buildJsonArray
@@ -734,7 +734,7 @@ This means we also need to update `McpProtocolHandler.handleToolCall()` to handl
 --- a/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/mcp/McpProtocolHandler.kt
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/mcp/McpProtocolHandler.kt
 @@ -1,5 +1,6 @@
- package com.danielealbano.androidremotecontrolmcp.mcp
+ package com.fenix.mobilemcp.mcp
 
 +// McpToolException is in the same package (mcp/McpToolException.kt), no extra import needed
  // ... (existing imports)
@@ -794,12 +794,12 @@ Note: `ActionExecutor` methods return `Result<Unit>`. On failure, the `Result` c
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/mcp/tools/SystemActionTools.kt
 @@ -0,0 +1,262 @@
-+package com.danielealbano.androidremotecontrolmcp.mcp.tools
++package com.fenix.mobilemcp.mcp.tools
 +
-+import com.danielealbano.androidremotecontrolmcp.mcp.McpToolException
-+import com.danielealbano.androidremotecontrolmcp.mcp.ToolHandler
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.ActionExecutor
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.McpAccessibilityService
++import com.fenix.mobilemcp.mcp.McpToolException
++import com.fenix.mobilemcp.mcp.ToolHandler
++import com.fenix.mobilemcp.services.accessibility.ActionExecutor
++import com.fenix.mobilemcp.services.accessibility.McpAccessibilityService
 +import kotlinx.serialization.json.JsonElement
 +import kotlinx.serialization.json.JsonObject
 +import kotlinx.serialization.json.buildJsonObject
@@ -1238,18 +1238,18 @@ Note: `ActionExecutor` methods return `Result<Unit>`. On failure, the `Result` c
 --- /dev/null
 +++ b/app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/mcp/tools/ScreenIntrospectionToolsTest.kt
 @@ -0,0 +1,380 @@
-+package com.danielealbano.androidremotecontrolmcp.mcp.tools
++package com.fenix.mobilemcp.mcp.tools
 +
 +import android.view.accessibility.AccessibilityNodeInfo
-+import com.danielealbano.androidremotecontrolmcp.mcp.McpProtocolHandler
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeData
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityTreeParser
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.BoundsData
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.McpAccessibilityService
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.ScreenInfo
-+import com.danielealbano.androidremotecontrolmcp.services.mcp.McpServerService
-+import com.danielealbano.androidremotecontrolmcp.services.screencapture.ScreenCaptureService
-+import com.danielealbano.androidremotecontrolmcp.services.screencapture.ScreenshotData
++import com.fenix.mobilemcp.mcp.McpProtocolHandler
++import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeData
++import com.fenix.mobilemcp.services.accessibility.AccessibilityTreeParser
++import com.fenix.mobilemcp.services.accessibility.BoundsData
++import com.fenix.mobilemcp.services.accessibility.McpAccessibilityService
++import com.fenix.mobilemcp.services.accessibility.ScreenInfo
++import com.fenix.mobilemcp.services.mcp.McpServerService
++import com.fenix.mobilemcp.services.screencapture.ScreenCaptureService
++import com.fenix.mobilemcp.services.screencapture.ScreenshotData
 +import io.mockk.coEvery
 +import io.mockk.every
 +import io.mockk.mockk
@@ -1689,11 +1689,11 @@ Note: `ActionExecutor` methods return `Result<Unit>`. On failure, the `Result` c
 --- /dev/null
 +++ b/app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/mcp/tools/SystemActionToolsTest.kt
 @@ -0,0 +1,310 @@
-+package com.danielealbano.androidremotecontrolmcp.mcp.tools
++package com.fenix.mobilemcp.mcp.tools
 +
-+import com.danielealbano.androidremotecontrolmcp.mcp.McpProtocolHandler
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.ActionExecutor
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.McpAccessibilityService
++import com.fenix.mobilemcp.mcp.McpProtocolHandler
++import com.fenix.mobilemcp.services.accessibility.ActionExecutor
++import com.fenix.mobilemcp.services.accessibility.McpAccessibilityService
 +import io.mockk.coEvery
 +import io.mockk.coVerify
 +import io.mockk.mockk
@@ -2905,7 +2905,7 @@ After implementing all tasks in order, run the following commands to verify the 
 
 ```bash
 # Run unit tests (targeted for this plan's files)
-./gradlew test --tests "com.danielealbano.androidremotecontrolmcp.mcp.tools.*"
+./gradlew test --tests "com.fenix.mobilemcp.mcp.tools.*"
 
 # Run all unit tests
 make test-unit

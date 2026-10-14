@@ -386,11 +386,11 @@ gradle/wrapper/gradle-wrapper.properties (config)
 +val versionCodeProp = (project.findProperty("VERSION_CODE") as String?)?.toInt() ?: 1
 +
 +android {
-+    namespace = "com.danielealbano.androidremotecontrolmcp"
++    namespace = "com.fenix.mobilemcp"
 +    compileSdk = 34
 +
 +    defaultConfig {
-+        applicationId = "com.danielealbano.androidremotecontrolmcp"
++        applicationId = "com.fenix.mobilemcp"
 +        minSdk = 26
 +        targetSdk = 34
 +        versionCode = versionCodeProp
@@ -735,7 +735,7 @@ gradle/wrapper/gradle-wrapper.properties (config)
 +    android:canRetrieveWindowContent="true"
 +    android:description="@string/accessibility_service_description"
 +    android:notificationTimeout="100"
-+    android:settingsActivity="com.danielealbano.androidremotecontrolmcp.ui.MainActivity" />
++    android:settingsActivity="com.fenix.mobilemcp.ui.MainActivity" />
 ```
 
 ---
@@ -873,7 +873,7 @@ gradle/wrapper/gradle-wrapper.properties (config)
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/McpApplication.kt
 @@ -0,0 +1,12 @@
-+package com.danielealbano.androidremotecontrolmcp
++package com.fenix.mobilemcp
 +
 +import android.app.Application
 +import dagger.hilt.android.HiltAndroidApp
@@ -901,7 +901,7 @@ gradle/wrapper/gradle-wrapper.properties (config)
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/di/AppModule.kt
 @@ -0,0 +1,10 @@
-+package com.danielealbano.androidremotecontrolmcp.di
++package com.fenix.mobilemcp.di
 +
 +import dagger.Module
 +import dagger.hilt.InstallIn
@@ -929,7 +929,7 @@ gradle/wrapper/gradle-wrapper.properties (config)
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/ui/MainActivity.kt
 @@ -0,0 +1,22 @@
-+package com.danielealbano.androidremotecontrolmcp.ui
++package com.fenix.mobilemcp.ui
 +
 +import android.os.Bundle
 +import androidx.activity.ComponentActivity
@@ -959,7 +959,7 @@ gradle/wrapper/gradle-wrapper.properties (config)
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/mcp/McpServerService.kt
 @@ -0,0 +1,14 @@
-+package com.danielealbano.androidremotecontrolmcp.services.mcp
++package com.fenix.mobilemcp.services.mcp
 +
 +import android.app.Service
 +import android.content.Intent
@@ -981,7 +981,7 @@ gradle/wrapper/gradle-wrapper.properties (config)
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/screencapture/ScreenCaptureService.kt
 @@ -0,0 +1,14 @@
-+package com.danielealbano.androidremotecontrolmcp.services.screencapture
++package com.fenix.mobilemcp.services.screencapture
 +
 +import android.app.Service
 +import android.content.Intent
@@ -1003,7 +1003,7 @@ gradle/wrapper/gradle-wrapper.properties (config)
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/accessibility/McpAccessibilityService.kt
 @@ -0,0 +1,18 @@
-+package com.danielealbano.androidremotecontrolmcp.services.accessibility
++package com.fenix.mobilemcp.services.accessibility
 +
 +import android.accessibilityservice.AccessibilityService
 +import android.view.accessibility.AccessibilityEvent
@@ -1029,7 +1029,7 @@ gradle/wrapper/gradle-wrapper.properties (config)
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/mcp/BootCompletedReceiver.kt
 @@ -0,0 +1,15 @@
-+package com.danielealbano.androidremotecontrolmcp.services.mcp
++package com.fenix.mobilemcp.services.mcp
 +
 +import android.content.BroadcastReceiver
 +import android.content.Context
@@ -1101,7 +1101,7 @@ gradle/wrapper/gradle-wrapper.properties (config)
 +# Variables
 +GRADLE := ./gradlew
 +ADB := adb
-+APP_ID := com.danielealbano.androidremotecontrolmcp
++APP_ID := com.fenix.mobilemcp
 +APP_ID_DEBUG := $(APP_ID).debug
 +EMULATOR_NAME := mcp_test_emulator
 +EMULATOR_DEVICE := pixel_6

@@ -36,11 +36,11 @@ New Android service extending `NotificationListenerService` + `NotificationProvi
 **Action 1.1.1**: Create service following `McpAccessibilityService` singleton pattern:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.notifications
+package com.fenix.mobilemcp.services.notifications
 
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
-import com.danielealbano.androidremotecontrolmcp.utils.Logger
+import com.fenix.mobilemcp.utils.Logger
 
 class McpNotificationListenerService : NotificationListenerService() {
 
@@ -113,7 +113,7 @@ class McpNotificationListenerService : NotificationListenerService() {
 **Action 1.2.1**: Create interface and data models:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.notifications
+package com.fenix.mobilemcp.services.notifications
 
 data class NotificationData(
     val notificationId: String,      // 6 hex char hash of key
@@ -164,7 +164,7 @@ interface NotificationProvider {
 **Action 1.3.1**: Create implementation:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.notifications
+package com.fenix.mobilemcp.services.notifications
 
 import android.app.Notification
 import android.app.PendingIntent
@@ -173,7 +173,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.service.notification.StatusBarNotification
-import com.danielealbano.androidremotecontrolmcp.utils.Logger
+import com.fenix.mobilemcp.utils.Logger
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.security.MessageDigest
 import javax.inject.Inject
@@ -1132,8 +1132,8 @@ Test cases:
 
 **Action 4.1.1**: Add imports:
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.mcp.tools.registerNotificationTools
-+import com.danielealbano.androidremotecontrolmcp.services.notifications.NotificationProvider
++import com.fenix.mobilemcp.mcp.tools.registerNotificationTools
++import com.fenix.mobilemcp.services.notifications.NotificationProvider
 ```
 
 **Action 4.1.2**: Add field:
@@ -1157,8 +1157,8 @@ Test cases:
 
 **Action 4.2.1**: Add imports:
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.services.notifications.NotificationProvider
-+import com.danielealbano.androidremotecontrolmcp.mcp.tools.registerNotificationTools
++import com.fenix.mobilemcp.services.notifications.NotificationProvider
++import com.fenix.mobilemcp.mcp.tools.registerNotificationTools
 ```
 
 **Action 4.2.2**: Add to `MockDependencies`:

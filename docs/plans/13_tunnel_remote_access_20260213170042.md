@@ -69,7 +69,7 @@ Add tunnel support to the MCP server so users can expose the server over the int
 **File**: `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/data/model/TunnelProviderType.kt` (NEW)
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.data.model
+package com.fenix.mobilemcp.data.model
 
 /**
  * Available tunnel provider types for remote access.
@@ -91,7 +91,7 @@ enum class TunnelProviderType {
 **File**: `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/data/model/TunnelStatus.kt` (NEW)
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.data.model
+package com.fenix.mobilemcp.data.model
 
 /**
  * Represents the current state of the tunnel connection.
@@ -134,10 +134,10 @@ sealed class TunnelStatus {
 **File**: `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/tunnel/TunnelProvider.kt` (NEW)
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.tunnel
+package com.fenix.mobilemcp.services.tunnel
 
-import com.danielealbano.androidremotecontrolmcp.data.model.ServerConfig
-import com.danielealbano.androidremotecontrolmcp.data.model.TunnelStatus
+import com.fenix.mobilemcp.data.model.ServerConfig
+import com.fenix.mobilemcp.data.model.TunnelStatus
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -225,7 +225,7 @@ Add 4 new fields to the data class. No import is needed because `TunnelProviderT
 Add import for `TunnelProviderType`. Add 4 new update methods:
 
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.data.model.TunnelProviderType
++import com.fenix.mobilemcp.data.model.TunnelProviderType
 
  interface SettingsRepository {
      // ... existing methods ...
@@ -553,7 +553,7 @@ Note: `useLegacyPackaging = true` ensures `.so` files are stored uncompressed in
 Create an injectable interface to resolve the cloudflared binary path. This decouples `CloudflareTunnelProvider` from Android's `Context` and enables testability (the integration test on JVM can provide a host-native binary path):
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.tunnel
+package com.fenix.mobilemcp.services.tunnel
 
 /**
  * Resolves the filesystem path to the cloudflared binary.
@@ -570,7 +570,7 @@ interface CloudflaredBinaryResolver {
 **File**: `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/tunnel/AndroidCloudflareBinaryResolver.kt` (NEW)
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.tunnel
+package com.fenix.mobilemcp.services.tunnel
 
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -842,9 +842,9 @@ No explicit module binding needed — Hilt can provide `javax.inject.Provider<T>
 Add injection and companion-level SharedFlow for log events. This follows the exact same architectural pattern as the existing `serverStatus` companion-level `StateFlow` — the service emits events via a companion flow, and `MainViewModel` collects from it. Services must NOT depend on ViewModels.
 
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.data.model.ServerLogEntry
-+import com.danielealbano.androidremotecontrolmcp.data.model.TunnelStatus
-+import com.danielealbano.androidremotecontrolmcp.services.tunnel.TunnelManager
++import com.fenix.mobilemcp.data.model.ServerLogEntry
++import com.fenix.mobilemcp.data.model.TunnelStatus
++import com.fenix.mobilemcp.services.tunnel.TunnelManager
 +import kotlinx.coroutines.flow.MutableSharedFlow
 +import kotlinx.coroutines.flow.SharedFlow
 +import kotlinx.coroutines.flow.asSharedFlow

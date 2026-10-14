@@ -475,7 +475,7 @@ Uses `penaltyDropBox()` which sends violations to Android's DropBoxManager — t
 **Note on `penaltyListener()` (API 28+):** An alternative to `penaltyDropBox()` is `penaltyListener(executor) { violation -> ... }` which provides structured `Violation` objects. This could be used in the future for more precise collection. For now, `penaltyDropBox()` is simpler and works with the existing `dumpsys dropbox` collection approach.
 
 ```diff
- package com.danielealbano.androidremotecontrolmcp
+ package com.fenix.mobilemcp
 
  import android.app.Application
  import android.app.NotificationChannel
@@ -550,7 +550,7 @@ Uses `penaltyDropBox()` which sends violations to Android's DropBoxManager — t
 **Explanation:** Extract the crash report format construction into a shared utility so the format contract is defined in one place. Both `McpApplication` (writer) and `CrashReportFormatTest` (reader) use this, preventing format drift.
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.diagnostics
+package com.fenix.mobilemcp.diagnostics
 
 import java.io.PrintWriter
 import java.io.StringWriter
@@ -649,7 +649,7 @@ Add the new method after `setupStrictMode()`:
 Add import at top of file:
 
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.diagnostics.CrashReportFormatter
++import com.fenix.mobilemcp.diagnostics.CrashReportFormatter
 ```
 
 - [ ] Done
@@ -666,7 +666,7 @@ Verify these imports are at the top of the file:
 import android.os.Handler
 import android.os.Looper
 import android.os.StrictMode
-import com.danielealbano.androidremotecontrolmcp.diagnostics.CrashReportFormatter
+import com.fenix.mobilemcp.diagnostics.CrashReportFormatter
 ```
 
 - [ ] Done
@@ -697,7 +697,7 @@ import com.danielealbano.androidremotecontrolmcp.diagnostics.CrashReportFormatte
 **Explanation:** Tests call `CrashReportFormatter.format()` (the same production code used by `McpApplication`) and verify the output contains expected sections. This prevents format drift between writer and reader — if the format changes, both the crash handler and these tests follow automatically.
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.diagnostics
+package com.fenix.mobilemcp.diagnostics
 
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -804,7 +804,7 @@ class CrashReportFormatTest {
 - [ ] Collects from `dumpsys dropbox` (crashes, ANRs, StrictMode)
 - [ ] Collects LeakCanary heap dump file names (`.hprof` in `cache/leakcanary/`) — list only, not binary content
 - [ ] Collects crash handler log file
-- [ ] Filters by app package name (`com.danielealbano.androidremotecontrolmcp.debug`)
+- [ ] Filters by app package name (`com.fenix.mobilemcp.debug`)
 - [ ] Returns structured `DiagnosticsResult` with categorized findings
 - [ ] Parsing logic extracted into `internal` methods with unit tests
 - [ ] Output is compact (small strings, not raw logcat)
@@ -816,7 +816,7 @@ class CrashReportFormatTest {
 **Explanation:** Data class holding categorized diagnostics findings.
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.e2e
+package com.fenix.mobilemcp.e2e
 
 /**
  * Structured results from runtime diagnostics collection.
@@ -881,7 +881,7 @@ data class DiagnosticsResult(
 Parsing logic is extracted into `internal` companion methods (`parseDropBoxOutput`, `parseLeakCanaryFileList`, `parseCrashHandlerLog`) so they can be unit-tested independently without mocking the Docker container.
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.e2e
+package com.fenix.mobilemcp.e2e
 
 import org.testcontainers.containers.GenericContainer
 
@@ -897,7 +897,7 @@ import org.testcontainers.containers.GenericContainer
  */
 object DiagnosticsCollector {
 
-    internal const val APP_PACKAGE = "com.danielealbano.androidremotecontrolmcp.debug"
+    internal const val APP_PACKAGE = "com.fenix.mobilemcp.debug"
 
     /**
      * Collect all runtime diagnostics from the container.
@@ -1052,7 +1052,7 @@ object DiagnosticsCollector {
 **Explanation:** Unit tests for the extracted parsing methods (`parseDropBoxOutput`, `parseLeakCanaryFileList`, `parseCrashHandlerLog`). These are pure JVM tests with no Docker dependency — they test string parsing only. This prevents parsing bugs from silently discarding real diagnostics.
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.e2e
+package com.fenix.mobilemcp.e2e
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -1072,7 +1072,7 @@ class DiagnosticsCollectorParsingTest {
     fun `parseDropBoxOutput filters entries by app package`() {
         val output = """
             2026-02-17 12:00:00 data_app_crash
-            Process: com.danielealbano.androidremotecontrolmcp.debug
+            Process: com.fenix.mobilemcp.debug
             java.lang.RuntimeException: test crash
             
             2026-02-17 12:01:00 data_app_crash
@@ -1082,7 +1082,7 @@ class DiagnosticsCollectorParsingTest {
 
         val entries = DiagnosticsCollector.parseDropBoxOutput(output, DiagnosticsCollector.APP_PACKAGE)
         assertEquals(1, entries.size)
-        assertTrue(entries[0].contains("com.danielealbano.androidremotecontrolmcp.debug"))
+        assertTrue(entries[0].contains("com.fenix.mobilemcp.debug"))
     }
 
     @Test
@@ -1294,7 +1294,7 @@ Update the shutdown hook to collect diagnostics before stopping:
 Uses `assertNotNull` instead of `?: return` to avoid silently passing when the container wasn't initialized — if no container exists, something went wrong and the test should fail explicitly.
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.e2e
+package com.fenix.mobilemcp.e2e
 
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull

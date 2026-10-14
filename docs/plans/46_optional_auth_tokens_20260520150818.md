@@ -591,7 +591,7 @@ Out of scope:
   ```
   # Clear the bearer token (disables authentication; see Security section)
   adb shell am broadcast \
-    -a com.danielealbano.androidremotecontrolmcp.action.CONFIGURE \
+    -a com.fenix.mobilemcp.action.CONFIGURE \
     --es bearer_token ""
   ```
 

@@ -1,4 +1,6 @@
-# Android Remote Control MCP
+# Fénix Mobile MCP
+
+> Fork de [danielealbano/android-remote-control-mcp](https://github.com/danielealbano/android-remote-control-mcp) (MIT) como base del ecosistema Fénix: malla de nodos Android autónomos e interconectados (slugs por dispositivo), sin root/ADB/Dev, con memoria persistente, conectores y skills Fénix. Ver `docs/` del proyecto Fénix para el plan maestro.
 
 [![CI](https://github.com/danielealbano/android-remote-control-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/danielealbano/android-remote-control-mcp/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -381,19 +383,19 @@ Enable the tunnel in the app's "Remote Access" section. The public URL is displa
 The app can be fully configured and controlled from the command line without opening the UI. This is useful for automated setups, CI pipelines, or headless devices.
 
 Replace `<app-id>` with the application ID for your build:
-- **Debug**: `com.danielealbano.androidremotecontrolmcp.debug`
-- **Release**: `com.danielealbano.androidremotecontrolmcp`
+- **Debug**: `com.fenix.mobilemcp.debug`
+- **Release**: `com.fenix.mobilemcp`
 
 #### Grant Permissions
 
 ```bash
 # Enable Accessibility Service (required for UI introspection, actions, and screenshots)
 adb shell settings put secure enabled_accessibility_services \
-  <app-id>/com.danielealbano.androidremotecontrolmcp.services.accessibility.McpAccessibilityService
+  <app-id>/com.fenix.mobilemcp.services.accessibility.McpAccessibilityService
 
 # Enable Notification Listener Service (required for notification tools)
 adb shell cmd notification allow_listener \
-  <app-id>/com.danielealbano.androidremotecontrolmcp.services.notifications.McpNotificationListenerService
+  <app-id>/com.fenix.mobilemcp.services.notifications.McpNotificationListenerService
 
 # Grant notification permission (Android 13+)
 adb shell pm grant <app-id> android.permission.POST_NOTIFICATIONS
@@ -431,8 +433,8 @@ All extras are optional — only the ones provided are updated. The app does **n
 
 ```bash
 adb shell am broadcast \
-  -a com.danielealbano.androidremotecontrolmcp.ADB_CONFIGURE \
-  -n <app-id>/com.danielealbano.androidremotecontrolmcp.services.mcp.AdbConfigReceiver \
+  -a com.fenix.mobilemcp.ADB_CONFIGURE \
+  -n <app-id>/com.fenix.mobilemcp.services.mcp.AdbConfigReceiver \
   --es bearer_token "my-secret-token" \
   --es binding_address "0.0.0.0" \
   --ei port 8080 \
@@ -460,8 +462,8 @@ adb shell am broadcast \
 # Disable bearer authentication (use only on trusted networks; the server is open
 # only if OAuth is also disabled — see the Security section)
 adb shell am broadcast \
-  -a com.danielealbano.androidremotecontrolmcp.ADB_CONFIGURE \
-  -n <app-id>/com.danielealbano.androidremotecontrolmcp.services.mcp.AdbConfigReceiver \
+  -a com.fenix.mobilemcp.ADB_CONFIGURE \
+  -n <app-id>/com.fenix.mobilemcp.services.mcp.AdbConfigReceiver \
   --ez bearer_token_enabled false
 ```
 
@@ -503,7 +505,7 @@ The server must be started via a trampoline Activity (required on Android 12+ to
 
 ```bash
 adb shell am start \
-  -n <app-id>/com.danielealbano.androidremotecontrolmcp.services.mcp.AdbServiceTrampolineActivity \
+  -n <app-id>/com.fenix.mobilemcp.services.mcp.AdbServiceTrampolineActivity \
   --es action start
 ```
 
@@ -511,7 +513,7 @@ adb shell am start \
 
 ```bash
 adb shell am start \
-  -n <app-id>/com.danielealbano.androidremotecontrolmcp.services.mcp.AdbServiceTrampolineActivity \
+  -n <app-id>/com.fenix.mobilemcp.services.mcp.AdbServiceTrampolineActivity \
   --es action stop
 ```
 

@@ -18,7 +18,7 @@ kotlin {
 }
 
 application {
-    mainClass.set("com.danielealbano.androidremotecontrolmcp.benchmark.BenchmarkMainKt")
+    mainClass.set("com.fenix.mobilemcp.benchmark.BenchmarkMainKt")
 }
 
 tasks.named<JavaExec>("run") {

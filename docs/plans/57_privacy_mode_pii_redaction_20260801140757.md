@@ -99,7 +99,7 @@ Definition of Done:
 
 - [x] **Action**: create `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/privacy/PiiCategory.kt`.
   ```kotlin
-  package com.danielealbano.androidremotecontrolmcp.privacy
+  package com.fenix.mobilemcp.privacy
 
   enum class PiiCategory(val placeholderToken: String, val requiresModel: Boolean) {
       CREDENTIALS("CREDENTIAL", requiresModel = false),
@@ -113,9 +113,9 @@ Definition of Done:
   ```
 - [x] **Action**: create `.../data/model/PrivacyModeConfig.kt` (package `data.model`, mirrors `ToolPermissionsConfig` JSON persistence).
   ```kotlin
-  package com.danielealbano.androidremotecontrolmcp.data.model
+  package com.fenix.mobilemcp.data.model
 
-  import com.danielealbano.androidremotecontrolmcp.privacy.PiiCategory
+  import com.fenix.mobilemcp.privacy.PiiCategory
   import kotlinx.serialization.Serializable
   import kotlinx.serialization.json.Json
 
@@ -271,7 +271,7 @@ Acceptance criteria:
 
 - [x] **Action**: create `.../privacy/PiiDetection.kt`:
   ```kotlin
-  package com.danielealbano.androidremotecontrolmcp.privacy
+  package com.fenix.mobilemcp.privacy
 
   data class PiiDetection(
       val category: PiiCategory,
@@ -306,9 +306,9 @@ Acceptance criteria:
   ```
 - [x] **Action**: create `.../privacy/ContextExtractor.kt`:
   ```kotlin
-  package com.danielealbano.androidremotecontrolmcp.privacy
+  package com.fenix.mobilemcp.privacy
 
-  import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeData
+  import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeData
   import javax.inject.Inject
 
   class ContextExtractor @Inject constructor() {
@@ -381,10 +381,10 @@ Acceptance criteria:
   - `fun matches(context: DetectionContext, keywords: Set<String>): Boolean`.
 - [x] **Action**: create `.../privacy/detectors/DeterministicDetector.kt`:
   ```kotlin
-  package com.danielealbano.androidremotecontrolmcp.privacy.detectors
+  package com.fenix.mobilemcp.privacy.detectors
 
-  import com.danielealbano.androidremotecontrolmcp.privacy.DetectionContext
-  import com.danielealbano.androidremotecontrolmcp.privacy.PiiDetection
+  import com.fenix.mobilemcp.privacy.DetectionContext
+  import com.fenix.mobilemcp.privacy.PiiDetection
 
   interface DeterministicDetector {
       fun detect(text: String, context: DetectionContext): List<PiiDetection>
@@ -437,7 +437,7 @@ All in `.../privacy/detectors/`, each `class X @Inject constructor() : Determini
 
 - [x] **Action**: create `.../privacy/DeterministicEngine.kt`:
   ```kotlin
-  package com.danielealbano.androidremotecontrolmcp.privacy
+  package com.fenix.mobilemcp.privacy
 
   class DeterministicEngine @Inject constructor(
       credentialDetector: CredentialDetector,

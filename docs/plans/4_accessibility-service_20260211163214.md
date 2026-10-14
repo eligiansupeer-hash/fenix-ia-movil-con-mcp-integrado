@@ -18,7 +18,7 @@ This plan implements the Android AccessibilityService, accessibility tree parser
 
 ### Package Base
 
-`com.danielealbano.androidremotecontrolmcp`
+`com.fenix.mobilemcp`
 
 ### Path References
 
@@ -103,7 +103,7 @@ This plan implements the Android AccessibilityService, accessibility tree parser
 --- a/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/accessibility/McpAccessibilityService.kt
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/accessibility/McpAccessibilityService.kt
 @@ -1,18 +1,139 @@
- package com.danielealbano.androidremotecontrolmcp.services.accessibility
+ package com.fenix.mobilemcp.services.accessibility
 
 +import android.accessibilityservice.AccessibilityService
  import android.accessibilityservice.AccessibilityServiceInfo
@@ -302,7 +302,7 @@ Node ID generation must be deterministic so that IDs returned by `find_elements`
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/accessibility/AccessibilityTreeParser.kt
 @@ -0,0 +1,174 @@
-+package com.danielealbano.androidremotecontrolmcp.services.accessibility
++package com.fenix.mobilemcp.services.accessibility
 +
 +import android.graphics.Rect
 +import android.util.Log
@@ -542,7 +542,7 @@ Node ID generation must be deterministic so that IDs returned by `find_elements`
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/accessibility/ElementFinder.kt
 @@ -0,0 +1,146 @@
-+package com.danielealbano.androidremotecontrolmcp.services.accessibility
++package com.fenix.mobilemcp.services.accessibility
 +
 +import kotlinx.serialization.Serializable
 +import javax.inject.Inject
@@ -752,7 +752,7 @@ All gesture methods (`tap`, `swipe`, `pinch`, etc.) use Android's `dispatchGestu
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/accessibility/ActionExecutor.kt
 @@ -0,0 +1,505 @@
-+package com.danielealbano.androidremotecontrolmcp.services.accessibility
++package com.fenix.mobilemcp.services.accessibility
 +
 +import android.accessibilityservice.GestureDescription
 +import android.graphics.Path
@@ -1497,7 +1497,7 @@ All gesture methods (`tap`, `swipe`, `pinch`, etc.) use Android's `dispatchGestu
 --- /dev/null
 +++ b/app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/services/accessibility/AccessibilityTreeParserTest.kt
 @@ -0,0 +1,282 @@
-+package com.danielealbano.androidremotecontrolmcp.services.accessibility
++package com.fenix.mobilemcp.services.accessibility
 +
 +import android.graphics.Rect
 +import android.view.accessibility.AccessibilityNodeInfo
@@ -1864,7 +1864,7 @@ All gesture methods (`tap`, `swipe`, `pinch`, etc.) use Android's `dispatchGestu
 --- /dev/null
 +++ b/app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/services/accessibility/ElementFinderTest.kt
 @@ -0,0 +1,288 @@
-+package com.danielealbano.androidremotecontrolmcp.services.accessibility
++package com.fenix.mobilemcp.services.accessibility
 +
 +import org.junit.jupiter.api.Assertions.assertEquals
 +import org.junit.jupiter.api.Assertions.assertNotNull
@@ -2241,7 +2241,7 @@ For coordinate validation and service unavailability, we can test directly witho
 --- /dev/null
 +++ b/app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/services/accessibility/ActionExecutorTest.kt
 @@ -0,0 +1,253 @@
-+package com.danielealbano.androidremotecontrolmcp.services.accessibility
++package com.fenix.mobilemcp.services.accessibility
 +
 +import android.accessibilityservice.AccessibilityService
 +import android.accessibilityservice.GestureDescription

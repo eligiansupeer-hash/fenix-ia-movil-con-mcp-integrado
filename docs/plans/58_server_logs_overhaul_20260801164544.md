@@ -107,9 +107,9 @@ DoD:
 - [x] **Create** `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/data/repository/ServerLogRepository.kt`:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.data.repository
+package com.fenix.mobilemcp.data.repository
 
-import com.danielealbano.androidremotecontrolmcp.data.model.ServerLogEntry
+import com.fenix.mobilemcp.data.model.ServerLogEntry
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -170,9 +170,9 @@ DoD:
 - [x] **Create** `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/data/repository/ServerLogSegmentedStore.kt`:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.data.repository
+package com.fenix.mobilemcp.data.repository
 
-import com.danielealbano.androidremotecontrolmcp.data.model.ServerLogEntry
+import com.fenix.mobilemcp.data.model.ServerLogEntry
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.File
@@ -453,13 +453,13 @@ DoD:
 - [x] **Create** `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/data/repository/ServerLogRepositoryImpl.kt`:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.data.repository
+package com.fenix.mobilemcp.data.repository
 
 import android.content.Context
 import android.util.Log
-import com.danielealbano.androidremotecontrolmcp.data.model.ServerLogEntry
-import com.danielealbano.androidremotecontrolmcp.di.IoDispatcher
-import com.danielealbano.androidremotecontrolmcp.utils.Logger
+import com.fenix.mobilemcp.data.model.ServerLogEntry
+import com.fenix.mobilemcp.di.IoDispatcher
+import com.fenix.mobilemcp.utils.Logger
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -597,11 +597,11 @@ DoD:
 - [x] **Create** `app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/testutil/RecordingServerLogRepository.kt` (shared by unit + integration tests):
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.testutil
+package com.fenix.mobilemcp.testutil
 
-import com.danielealbano.androidremotecontrolmcp.data.model.ServerLogEntry
-import com.danielealbano.androidremotecontrolmcp.data.repository.ServerLogIndexEntry
-import com.danielealbano.androidremotecontrolmcp.data.repository.ServerLogRepository
+import com.fenix.mobilemcp.data.model.ServerLogEntry
+import com.fenix.mobilemcp.data.repository.ServerLogIndexEntry
+import com.fenix.mobilemcp.data.repository.ServerLogRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -866,10 +866,10 @@ Acceptance criteria:
 - [x] **Create** `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/mcp/tools/LoggedToolRegistration.kt`:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.mcp.tools
+package com.fenix.mobilemcp.mcp.tools
 
-import com.danielealbano.androidremotecontrolmcp.data.model.ServerLogEntry
-import com.danielealbano.androidremotecontrolmcp.data.repository.ServerLogRepository
+import com.fenix.mobilemcp.data.model.ServerLogEntry
+import com.fenix.mobilemcp.data.repository.ServerLogRepository
 import io.modelcontextprotocol.kotlin.sdk.server.Server
 import io.modelcontextprotocol.kotlin.sdk.types.CallToolRequest
 import io.modelcontextprotocol.kotlin.sdk.types.CallToolResult
@@ -1317,10 +1317,10 @@ Acceptance criteria:
 - [x] **Create** `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/data/repository/SettingsChangeLogger.kt`:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.data.repository
+package com.fenix.mobilemcp.data.repository
 
-import com.danielealbano.androidremotecontrolmcp.data.model.ServerLogEntry
-import com.danielealbano.androidremotecontrolmcp.di.IoDispatcher
+import com.fenix.mobilemcp.data.model.ServerLogEntry
+import com.fenix.mobilemcp.di.IoDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -1655,14 +1655,14 @@ Task DoD:
 - [x] **Create** `ui/viewmodels/LogsViewModel.kt`:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.ui.viewmodels
+package com.fenix.mobilemcp.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.danielealbano.androidremotecontrolmcp.data.model.ServerLogEntry
-import com.danielealbano.androidremotecontrolmcp.data.repository.ServerLogIndexEntry
-import com.danielealbano.androidremotecontrolmcp.data.repository.ServerLogRepository
-import com.danielealbano.androidremotecontrolmcp.di.IoDispatcher
+import com.fenix.mobilemcp.data.model.ServerLogEntry
+import com.fenix.mobilemcp.data.repository.ServerLogIndexEntry
+import com.fenix.mobilemcp.data.repository.ServerLogRepository
+import com.fenix.mobilemcp.di.IoDispatcher
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
@@ -1765,7 +1765,7 @@ Task DoD:
 ```kotlin
 @file:Suppress("FunctionNaming", "LongMethod", "MagicNumber")
 
-package com.danielealbano.androidremotecontrolmcp.ui.screens
+package com.fenix.mobilemcp.ui.screens
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
@@ -1805,10 +1805,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.danielealbano.androidremotecontrolmcp.R
-import com.danielealbano.androidremotecontrolmcp.data.model.ServerLogEntry
-import com.danielealbano.androidremotecontrolmcp.data.repository.ServerLogIndexEntry
-import com.danielealbano.androidremotecontrolmcp.ui.viewmodels.LogsViewModel
+import com.fenix.mobilemcp.R
+import com.fenix.mobilemcp.data.model.ServerLogEntry
+import com.fenix.mobilemcp.data.repository.ServerLogIndexEntry
+import com.fenix.mobilemcp.ui.viewmodels.LogsViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -2096,7 +2096,7 @@ sealed class ServerRoute(
 ```kotlin
 @file:Suppress("FunctionNaming")
 
-package com.danielealbano.androidremotecontrolmcp.ui.screens
+package com.fenix.mobilemcp.ui.screens
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -2104,8 +2104,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.danielealbano.androidremotecontrolmcp.ui.navigation.ServerRoute
-import com.danielealbano.androidremotecontrolmcp.ui.viewmodels.MainViewModel
+import com.fenix.mobilemcp.ui.navigation.ServerRoute
+import com.fenix.mobilemcp.ui.viewmodels.MainViewModel
 
 @Composable
 fun ServerTabScreen(

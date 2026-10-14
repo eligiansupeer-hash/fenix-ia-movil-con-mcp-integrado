@@ -213,11 +213,11 @@ configurations.matching { it.name.startsWith("ktlint") }.configureEach {
 }
 
 android {
-    namespace = "com.danielealbano.androidremotecontrolmcp"
+    namespace = "com.fenix.mobilemcp"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.danielealbano.androidremotecontrolmcp"
+        applicationId = "com.fenix.mobilemcp"
         minSdk = 33
         targetSdk = 34
         versionCode = versionCodeProp
@@ -475,10 +475,10 @@ val generateLocationDb =
 
 androidComponents {
     // Per-flavor debug applicationId (`…mcp.gms.debug` / `…mcp.foss.debug`) so both debug builds coexist, while
-    // the release applicationId stays identical across flavors (`com.danielealbano.androidremotecontrolmcp`).
+    // the release applicationId stays identical across flavors (`com.fenix.mobilemcp`).
     onVariants(selector().withBuildType("debug")) { variant ->
         variant.applicationId.set(
-            "com.danielealbano.androidremotecontrolmcp.${variant.flavorName}.debug",
+            "com.fenix.mobilemcp.${variant.flavorName}.debug",
         )
     }
     onVariants { variant ->

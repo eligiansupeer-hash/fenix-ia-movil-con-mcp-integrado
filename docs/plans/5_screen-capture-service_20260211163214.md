@@ -19,7 +19,7 @@ This plan implements the ScreenCaptureService as a bound foreground service that
 
 ### Package Base
 
-`com.danielealbano.androidremotecontrolmcp`
+`com.fenix.mobilemcp`
 
 ### Path References
 
@@ -101,7 +101,7 @@ This plan implements the ScreenCaptureService as a bound foreground service that
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/screencapture/ScreenshotData.kt
 @@ -0,0 +1,22 @@
-+package com.danielealbano.androidremotecontrolmcp.services.screencapture
++package com.fenix.mobilemcp.services.screencapture
 +
 +import kotlinx.serialization.Serializable
 +
@@ -157,7 +157,7 @@ This plan implements the ScreenCaptureService as a bound foreground service that
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/screencapture/ScreenshotEncoder.kt
 @@ -0,0 +1,100 @@
-+package com.danielealbano.androidremotecontrolmcp.services.screencapture
++package com.fenix.mobilemcp.services.screencapture
 +
 +import android.graphics.Bitmap
 +import android.media.Image
@@ -293,7 +293,7 @@ This plan implements the ScreenCaptureService as a bound foreground service that
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/screencapture/MediaProjectionHelper.kt
 @@ -0,0 +1,99 @@
-+package com.danielealbano.androidremotecontrolmcp.services.screencapture
++package com.fenix.mobilemcp.services.screencapture
 +
 +import android.content.Context
 +import android.content.Intent
@@ -433,7 +433,7 @@ This plan implements the ScreenCaptureService as a bound foreground service that
 --- a/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/screencapture/ScreenCaptureService.kt
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/screencapture/ScreenCaptureService.kt
 @@ -1,14 +1,259 @@
- package com.danielealbano.androidremotecontrolmcp.services.screencapture
+ package com.fenix.mobilemcp.services.screencapture
 
 -import android.app.Service
 +import android.app.Notification
@@ -721,7 +721,7 @@ This plan implements the ScreenCaptureService as a bound foreground service that
  }
 ```
 
-> **Implementation Note on R class import**: The `R.string.*` and `R.drawable.*` references resolve to `com.danielealbano.androidremotecontrolmcp.R` automatically because the file is in the same package namespace. If the build fails with unresolved `R` references, add an explicit import: `import com.danielealbano.androidremotecontrolmcp.R`.
+> **Implementation Note on R class import**: The `R.string.*` and `R.drawable.*` references resolve to `com.fenix.mobilemcp.R` automatically because the file is in the same package namespace. If the build fails with unresolved `R` references, add an explicit import: `import com.fenix.mobilemcp.R`.
 
 > **Implementation Note on `@AndroidEntryPoint` and Hilt injection**: The `ScreenCaptureService` is annotated with `@AndroidEntryPoint`, which enables Hilt field injection for `ScreenshotEncoder` and `MediaProjectionHelper`. Hilt's `@AndroidEntryPoint` supports `Service` subclasses since Hilt 2.28+. Both injected classes have `@Inject constructor()` making them directly injectable. If `@AndroidEntryPoint` does not work on this Service subclass (unlikely), fall back to `EntryPointAccessors.fromApplication()` to manually obtain dependencies.
 
@@ -770,7 +770,7 @@ This plan implements the ScreenCaptureService as a bound foreground service that
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/accessibility/ScreenInfo.kt
 @@ -0,0 +1,24 @@
-+package com.danielealbano.androidremotecontrolmcp.services.accessibility
++package com.fenix.mobilemcp.services.accessibility
 +
 +import kotlinx.serialization.Serializable
 +
@@ -828,7 +828,7 @@ This plan implements the ScreenCaptureService as a bound foreground service that
 The following additions should be made to the existing file. The exact line numbers depend on the current state of the file after Plan 4 implementation.
 
 ```diff
- package com.danielealbano.androidremotecontrolmcp.services.accessibility
+ package com.fenix.mobilemcp.services.accessibility
 
 +import android.content.res.Configuration
 +import android.os.Build
@@ -1067,7 +1067,7 @@ The following additions should be made to the existing file:
 --- /dev/null
 +++ b/app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/services/screencapture/ScreenshotEncoderTest.kt
 @@ -0,0 +1,160 @@
-+package com.danielealbano.androidremotecontrolmcp.services.screencapture
++package com.fenix.mobilemcp.services.screencapture
 +
 +import android.graphics.Bitmap
 +import android.media.Image
@@ -1340,7 +1340,7 @@ The following additions should be made to the existing file:
 --- /dev/null
 +++ b/app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/services/screencapture/ScreenCaptureServiceTest.kt
 @@ -0,0 +1,132 @@
-+package com.danielealbano.androidremotecontrolmcp.services.screencapture
++package com.fenix.mobilemcp.services.screencapture
 +
 +import android.media.projection.MediaProjection
 +import io.mockk.every

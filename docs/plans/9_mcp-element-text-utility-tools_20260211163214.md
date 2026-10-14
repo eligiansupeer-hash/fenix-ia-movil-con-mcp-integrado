@@ -23,7 +23,7 @@ This plan implements the remaining 12 MCP tools: 5 element action tools, 3 text 
 
 ### Package Base
 
-`com.danielealbano.androidremotecontrolmcp`
+`com.fenix.mobilemcp`
 
 ### Path References
 
@@ -168,18 +168,18 @@ For `scroll_to_element`, the approach is: find the element by ID in the parsed t
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/mcp/tools/ElementActionTools.kt
 @@ -0,0 +1,390 @@
-+package com.danielealbano.androidremotecontrolmcp.mcp.tools
++package com.fenix.mobilemcp.mcp.tools
 +
 +import android.util.Log
-+import com.danielealbano.androidremotecontrolmcp.mcp.McpToolException
-+import com.danielealbano.androidremotecontrolmcp.mcp.ToolHandler
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeData
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityTreeParser
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.ActionExecutor
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.ElementFinder
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.FindBy
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.McpAccessibilityService
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.ScrollDirection
++import com.fenix.mobilemcp.mcp.McpToolException
++import com.fenix.mobilemcp.mcp.ToolHandler
++import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeData
++import com.fenix.mobilemcp.services.accessibility.AccessibilityTreeParser
++import com.fenix.mobilemcp.services.accessibility.ActionExecutor
++import com.fenix.mobilemcp.services.accessibility.ElementFinder
++import com.fenix.mobilemcp.services.accessibility.FindBy
++import com.fenix.mobilemcp.services.accessibility.McpAccessibilityService
++import com.fenix.mobilemcp.services.accessibility.ScrollDirection
 +import kotlinx.serialization.json.Json
 +import kotlinx.serialization.json.JsonElement
 +import kotlinx.serialization.json.JsonObject
@@ -483,7 +483,7 @@ For `scroll_to_element`, the approach is: find the element by ID in the parsed t
 +// ─────────────────────────────────────────────────────────────────────────────
 +
 +// NOTE: Uses McpToolException sealed class defined in Plan 7 (mcp/McpToolException.kt).
-+// Import: com.danielealbano.androidremotecontrolmcp.mcp.McpToolException
++// Import: com.fenix.mobilemcp.mcp.McpToolException
 +// Subtypes used: McpToolException.InvalidParams, McpToolException.PermissionDenied,
 +//                McpToolException.ActionFailed, McpToolException.ElementNotFound,
 +//                McpToolException.Timeout
@@ -611,17 +611,17 @@ For finding the focused node, we add a helper `findFocusedEditableNode()` that t
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/mcp/tools/TextInputTools.kt
 @@ -0,0 +1,295 @@
-+package com.danielealbano.androidremotecontrolmcp.mcp.tools
++package com.fenix.mobilemcp.mcp.tools
 +
 +import android.os.Build
 +import android.os.Bundle
 +import android.util.Log
 +import android.view.accessibility.AccessibilityNodeInfo
-+import com.danielealbano.androidremotecontrolmcp.mcp.McpToolException
-+import com.danielealbano.androidremotecontrolmcp.mcp.ToolHandler
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityTreeParser
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.ActionExecutor
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.McpAccessibilityService
++import com.fenix.mobilemcp.mcp.McpToolException
++import com.fenix.mobilemcp.mcp.ToolHandler
++import com.fenix.mobilemcp.services.accessibility.AccessibilityTreeParser
++import com.fenix.mobilemcp.services.accessibility.ActionExecutor
++import com.fenix.mobilemcp.services.accessibility.McpAccessibilityService
 +import kotlinx.serialization.json.JsonElement
 +import kotlinx.serialization.json.JsonObject
 +import kotlinx.serialization.json.buildJsonObject
@@ -970,17 +970,17 @@ For finding the focused node, we add a helper `findFocusedEditableNode()` that t
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/mcp/tools/UtilityTools.kt
 @@ -0,0 +1,310 @@
-+package com.danielealbano.androidremotecontrolmcp.mcp.tools
++package com.fenix.mobilemcp.mcp.tools
 +
 +import android.content.ClipData
 +import android.content.ClipboardManager
 +import android.util.Log
-+import com.danielealbano.androidremotecontrolmcp.mcp.McpToolException
-+import com.danielealbano.androidremotecontrolmcp.mcp.ToolHandler
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeData
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityTreeParser
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.ElementFinder
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.McpAccessibilityService
++import com.fenix.mobilemcp.mcp.McpToolException
++import com.fenix.mobilemcp.mcp.ToolHandler
++import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeData
++import com.fenix.mobilemcp.services.accessibility.AccessibilityTreeParser
++import com.fenix.mobilemcp.services.accessibility.ElementFinder
++import com.fenix.mobilemcp.services.accessibility.McpAccessibilityService
 +import kotlinx.coroutines.delay
 +import kotlinx.serialization.json.Json
 +import kotlinx.serialization.json.JsonElement
@@ -1589,18 +1589,18 @@ For finding the focused node, we add a helper `findFocusedEditableNode()` that t
 --- /dev/null
 +++ b/app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/mcp/tools/ElementActionToolsTest.kt
 @@ -0,0 +1,350 @@
-+package com.danielealbano.androidremotecontrolmcp.mcp.tools
++package com.fenix.mobilemcp.mcp.tools
 +
 +import android.view.accessibility.AccessibilityNodeInfo
-+import com.danielealbano.androidremotecontrolmcp.mcp.McpProtocolHandler
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeData
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityTreeParser
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.ActionExecutor
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.BoundsData
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.ElementFinder
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.ElementInfo
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.FindBy
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.McpAccessibilityService
++import com.fenix.mobilemcp.mcp.McpProtocolHandler
++import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeData
++import com.fenix.mobilemcp.services.accessibility.AccessibilityTreeParser
++import com.fenix.mobilemcp.services.accessibility.ActionExecutor
++import com.fenix.mobilemcp.services.accessibility.BoundsData
++import com.fenix.mobilemcp.services.accessibility.ElementFinder
++import com.fenix.mobilemcp.services.accessibility.ElementInfo
++import com.fenix.mobilemcp.services.accessibility.FindBy
++import com.fenix.mobilemcp.services.accessibility.McpAccessibilityService
 +import io.mockk.coEvery
 +import io.mockk.every
 +import io.mockk.mockk
@@ -1895,16 +1895,16 @@ For finding the focused node, we add a helper `findFocusedEditableNode()` that t
 --- /dev/null
 +++ b/app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/mcp/tools/TextInputToolsTest.kt
 @@ -0,0 +1,230 @@
-+package com.danielealbano.androidremotecontrolmcp.mcp.tools
++package com.fenix.mobilemcp.mcp.tools
 +
 +import android.os.Bundle
 +import android.view.accessibility.AccessibilityNodeInfo
-+import com.danielealbano.androidremotecontrolmcp.mcp.McpProtocolHandler
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeData
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityTreeParser
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.ActionExecutor
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.BoundsData
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.McpAccessibilityService
++import com.fenix.mobilemcp.mcp.McpProtocolHandler
++import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeData
++import com.fenix.mobilemcp.services.accessibility.AccessibilityTreeParser
++import com.fenix.mobilemcp.services.accessibility.ActionExecutor
++import com.fenix.mobilemcp.services.accessibility.BoundsData
++import com.fenix.mobilemcp.services.accessibility.McpAccessibilityService
 +import io.mockk.coEvery
 +import io.mockk.every
 +import io.mockk.mockk
@@ -2105,19 +2105,19 @@ For finding the focused node, we add a helper `findFocusedEditableNode()` that t
 --- /dev/null
 +++ b/app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/mcp/tools/UtilityToolsTest.kt
 @@ -0,0 +1,280 @@
-+package com.danielealbano.androidremotecontrolmcp.mcp.tools
++package com.fenix.mobilemcp.mcp.tools
 +
 +import android.content.ClipData
 +import android.content.ClipboardManager
 +import android.view.accessibility.AccessibilityNodeInfo
-+import com.danielealbano.androidremotecontrolmcp.mcp.McpProtocolHandler
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeData
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityTreeParser
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.BoundsData
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.ElementFinder
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.ElementInfo
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.FindBy
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.McpAccessibilityService
++import com.fenix.mobilemcp.mcp.McpProtocolHandler
++import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeData
++import com.fenix.mobilemcp.services.accessibility.AccessibilityTreeParser
++import com.fenix.mobilemcp.services.accessibility.BoundsData
++import com.fenix.mobilemcp.services.accessibility.ElementFinder
++import com.fenix.mobilemcp.services.accessibility.ElementInfo
++import com.fenix.mobilemcp.services.accessibility.FindBy
++import com.fenix.mobilemcp.services.accessibility.McpAccessibilityService
 +import io.mockk.every
 +import io.mockk.mockk
 +import io.mockk.mockkObject

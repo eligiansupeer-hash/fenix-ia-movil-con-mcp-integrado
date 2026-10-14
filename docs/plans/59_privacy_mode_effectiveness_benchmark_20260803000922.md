@@ -161,7 +161,7 @@ DoD: `./gradlew :privacy:build` succeeds (module empty at this point).
 
 ### T1.2 — Move accessibility data classes
 
-- [x] A1.2.1 — Create `privacy/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/accessibility/AccessibilityData.kt`: move the four `@Serializable` data classes `BoundsData`, `AccessibilityNodeData`, `WindowData`, `MultiWindowResult` VERBATIM (including KDoc) out of `app/src/main/kotlin/.../services/accessibility/AccessibilityTreeParser.kt`. Package stays `com.danielealbano.androidremotecontrolmcp.services.accessibility`; only import needed is `kotlinx.serialization.Serializable`.
+- [x] A1.2.1 — Create `privacy/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/accessibility/AccessibilityData.kt`: move the four `@Serializable` data classes `BoundsData`, `AccessibilityNodeData`, `WindowData`, `MultiWindowResult` VERBATIM (including KDoc) out of `app/src/main/kotlin/.../services/accessibility/AccessibilityTreeParser.kt`. Package stays `com.fenix.mobilemcp.services.accessibility`; only import needed is `kotlinx.serialization.Serializable`.
 - [x] A1.2.2 — Modify `AccessibilityTreeParser.kt`: delete the four moved class definitions (and the now-unused `Serializable` import if no other use remains). Everything else unchanged.
 
 DoD: no duplicate class definitions; `:app` still compiles once A1.5.1 adds the module dependency (compile check deferred to end of US1 per plan workflow).
@@ -206,9 +206,9 @@ DoD: no duplicate class definitions; `:app` still compiles once A1.5.1 adds the 
 - [x] A1.3.3 — Move + refactor `privacy/model/PrivacyModelStore.kt` to `privacy/src/main/kotlin/.../privacy/model/PrivacyModelStore.kt`: replace the Android `Context` with a plain base directory. Class loses `@Singleton`/`@Inject` (scoping moves to the `:app` provider in A1.3.4). Only the header changes; every method body stays verbatim:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.privacy.model
+package com.fenix.mobilemcp.privacy.model
 
-import com.danielealbano.androidremotecontrolmcp.privacy.model.PrivacyModelAssets.ModelAsset
+import com.fenix.mobilemcp.privacy.model.PrivacyModelAssets.ModelAsset
 import java.io.File
 
 /**
@@ -248,14 +248,14 @@ DoD: all listed files exist only under `privacy/`; `AppModule` provides the stor
 - [x] A1.4.2 — Create `privacy/src/main/kotlin/.../privacy/RedactionEngine.kt`. The bodies of `detect`/`runModel`/`redactTree`/`collectFields`/`rebuild`/`FieldRef` are MOVED from the current `PrivacyPipelineImpl` — the ONLY behavioral difference is that `runModel` no longer catches `PrivacyModelException` (it propagates; `PrivacyPipelineImpl` maps it):
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.privacy
+package com.fenix.mobilemcp.privacy
 
-import com.danielealbano.androidremotecontrolmcp.data.model.PrivacyModeConfig
-import com.danielealbano.androidremotecontrolmcp.privacy.ner.NerEngine
-import com.danielealbano.androidremotecontrolmcp.privacy.ner.NerSegment
-import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeData
-import com.danielealbano.androidremotecontrolmcp.services.accessibility.BoundsData
-import com.danielealbano.androidremotecontrolmcp.services.accessibility.MultiWindowResult
+import com.fenix.mobilemcp.data.model.PrivacyModeConfig
+import com.fenix.mobilemcp.privacy.ner.NerEngine
+import com.fenix.mobilemcp.privacy.ner.NerSegment
+import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeData
+import com.fenix.mobilemcp.services.accessibility.BoundsData
+import com.fenix.mobilemcp.services.accessibility.MultiWindowResult
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -264,7 +264,7 @@ import javax.inject.Singleton
  * it) one batched model pass, category filter BEFORE merge, rendering via [Redactor], and the
  * accessibility-tree walk. Contains NO enable/readiness gating and NO MCP error mapping —
  * [PrivacyPipelineImpl] gates and maps
- * [com.danielealbano.androidremotecontrolmcp.privacy.ner.PrivacyModelException]; the effectiveness
+ * [com.fenix.mobilemcp.privacy.ner.PrivacyModelException]; the effectiveness
  * benchmark drives this class directly so published numbers measure the production code path.
  */
 @Singleton
@@ -346,12 +346,12 @@ class RedactionEngine
 - [x] A1.4.3 — Replace `app/src/main/kotlin/.../privacy/PrivacyPipelineImpl.kt` in full:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.privacy
+package com.fenix.mobilemcp.privacy
 
-import com.danielealbano.androidremotecontrolmcp.data.model.PrivacyModeConfig
-import com.danielealbano.androidremotecontrolmcp.mcp.McpToolException
-import com.danielealbano.androidremotecontrolmcp.privacy.ner.PrivacyModelException
-import com.danielealbano.androidremotecontrolmcp.services.accessibility.MultiWindowResult
+import com.fenix.mobilemcp.data.model.PrivacyModeConfig
+import com.fenix.mobilemcp.mcp.McpToolException
+import com.fenix.mobilemcp.privacy.ner.PrivacyModelException
+import com.fenix.mobilemcp.services.accessibility.MultiWindowResult
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -533,7 +533,7 @@ kotlin {
 }
 
 application {
-    mainClass.set("com.danielealbano.androidremotecontrolmcp.benchmark.BenchmarkMainKt")
+    mainClass.set("com.fenix.mobilemcp.benchmark.BenchmarkMainKt")
 }
 
 tasks.named<JavaExec>("run") {
@@ -583,10 +583,10 @@ No jacoco coverage gate on this module — user-approved decision (review findin
 - [x] A2.2.1 — Create `privacy-benchmark/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/benchmark/BenchmarkAssets.kt`:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.benchmark
+package com.fenix.mobilemcp.benchmark
 
-import com.danielealbano.androidremotecontrolmcp.privacy.model.PrivacyModelAssets
-import com.danielealbano.androidremotecontrolmcp.privacy.model.PrivacyModelAssets.ModelAsset
+import com.fenix.mobilemcp.privacy.model.PrivacyModelAssets
+import com.fenix.mobilemcp.privacy.model.PrivacyModelAssets.ModelAsset
 
 /** Benchmark inputs, pinned to immutable revisions so published numbers stay reproducible. */
 object BenchmarkAssets {
@@ -611,9 +611,9 @@ object BenchmarkAssets {
 - [x] A2.2.2 — Create `.../benchmark/BenchmarkDownloader.kt`: `java.net.http` streaming downloader with `.part` + sha256 verify, no extra dependencies:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.benchmark
+package com.fenix.mobilemcp.benchmark
 
-import com.danielealbano.androidremotecontrolmcp.privacy.model.PrivacyModelAssets.ModelAsset
+import com.fenix.mobilemcp.privacy.model.PrivacyModelAssets.ModelAsset
 import java.io.File
 import java.net.URI
 import java.net.http.HttpClient
@@ -699,10 +699,10 @@ Model + tokenizer are ensured into `cacheDir/privacy_model/` (i.e. `PrivacyModel
 - [x] A2.3.1 — Create `.../benchmark/corpus/BenchmarkSample.kt`:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.benchmark.corpus
+package com.fenix.mobilemcp.benchmark.corpus
 
-import com.danielealbano.androidremotecontrolmcp.privacy.DetectionContext
-import com.danielealbano.androidremotecontrolmcp.privacy.PiiCategory
+import com.fenix.mobilemcp.privacy.DetectionContext
+import com.fenix.mobilemcp.privacy.PiiCategory
 
 /** A gold PII span; [category] null = out-of-scope label (excluded from scoring per the plan rules). */
 data class GoldSpan(
@@ -731,10 +731,10 @@ data class LoadedCorpus(
 - [x] A2.3.2 — Create `.../benchmark/corpus/Ai4PrivacyCorpusLoader.kt`:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.benchmark.corpus
+package com.fenix.mobilemcp.benchmark.corpus
 
-import com.danielealbano.androidremotecontrolmcp.privacy.DetectionContext
-import com.danielealbano.androidremotecontrolmcp.privacy.PiiCategory
+import com.fenix.mobilemcp.privacy.DetectionContext
+import com.fenix.mobilemcp.privacy.PiiCategory
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -879,9 +879,9 @@ Non-derivable constraints baked into the code below (do not change them):
 - [x] A3.1.1 — Create `.../benchmark/corpus/FieldKind.kt`:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.benchmark.corpus
+package com.fenix.mobilemcp.benchmark.corpus
 
-import com.danielealbano.androidremotecontrolmcp.privacy.PiiCategory
+import com.fenix.mobilemcp.privacy.PiiCategory
 
 enum class ContextStyle { LABELED_BY, GEOMETRIC, RESOURCE_ID, HINT, NONE }
 
@@ -911,7 +911,7 @@ enum class FieldKind(
 - [x] A3.1.2 — Create `.../benchmark/corpus/RandomText.kt`:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.benchmark.corpus
+package com.fenix.mobilemcp.benchmark.corpus
 
 import kotlin.random.Random
 
@@ -960,7 +960,7 @@ object RandomText {
 - [x] A3.1.3 — Create `.../benchmark/corpus/IdValueGenerators.kt`:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.benchmark.corpus
+package com.fenix.mobilemcp.benchmark.corpus
 
 import java.util.Locale
 import kotlin.random.Random
@@ -1124,9 +1124,9 @@ object IdValueGenerators {
 - [x] A3.1.4 — Create `.../benchmark/corpus/UiValueFactory.kt`:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.benchmark.corpus
+package com.fenix.mobilemcp.benchmark.corpus
 
-import com.danielealbano.androidremotecontrolmcp.privacy.PiiCategory
+import com.fenix.mobilemcp.privacy.PiiCategory
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import java.util.Locale
 import kotlin.random.Random
@@ -1407,11 +1407,11 @@ class UiValueFactory {
 - [x] A3.1.5 — Create `.../benchmark/corpus/UiCorpusGenerator.kt`:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.benchmark.corpus
+package com.fenix.mobilemcp.benchmark.corpus
 
-import com.danielealbano.androidremotecontrolmcp.privacy.ContextExtractor
-import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeData
-import com.danielealbano.androidremotecontrolmcp.services.accessibility.BoundsData
+import com.fenix.mobilemcp.privacy.ContextExtractor
+import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeData
+import com.fenix.mobilemcp.services.accessibility.BoundsData
 import kotlin.random.Random
 
 /**
@@ -1666,10 +1666,10 @@ Acceptance criteria:
 - [x] A4.1.1 — Create `.../benchmark/corpus/AdversarialCorpusLoader.kt`:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.benchmark.corpus
+package com.fenix.mobilemcp.benchmark.corpus
 
-import com.danielealbano.androidremotecontrolmcp.privacy.DetectionContext
-import com.danielealbano.androidremotecontrolmcp.privacy.PiiCategory
+import com.fenix.mobilemcp.privacy.DetectionContext
+import com.fenix.mobilemcp.privacy.PiiCategory
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -1771,28 +1771,28 @@ Acceptance criteria:
 - [x] A5.1.1 — Create `.../benchmark/BenchmarkPipeline.kt`:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.benchmark
+package com.fenix.mobilemcp.benchmark
 
-import com.danielealbano.androidremotecontrolmcp.benchmark.corpus.BenchmarkSample
-import com.danielealbano.androidremotecontrolmcp.data.model.PrivacyModeConfig
-import com.danielealbano.androidremotecontrolmcp.privacy.ContextExtractor
-import com.danielealbano.androidremotecontrolmcp.privacy.DeterministicEngine
-import com.danielealbano.androidremotecontrolmcp.privacy.PiiDetection
-import com.danielealbano.androidremotecontrolmcp.privacy.PseudonymStore
-import com.danielealbano.androidremotecontrolmcp.privacy.Redactor
-import com.danielealbano.androidremotecontrolmcp.privacy.RedactionEngine
-import com.danielealbano.androidremotecontrolmcp.privacy.TextItem
-import com.danielealbano.androidremotecontrolmcp.privacy.detectors.CardDetector
-import com.danielealbano.androidremotecontrolmcp.privacy.detectors.CredentialDetector
-import com.danielealbano.androidremotecontrolmcp.privacy.detectors.EmailDetector
-import com.danielealbano.androidremotecontrolmcp.privacy.detectors.IbanDetector
-import com.danielealbano.androidremotecontrolmcp.privacy.detectors.NationalIdDetector
-import com.danielealbano.androidremotecontrolmcp.privacy.detectors.PhoneDetector
-import com.danielealbano.androidremotecontrolmcp.privacy.model.PrivacyModelStore
-import com.danielealbano.androidremotecontrolmcp.privacy.ner.NerCache
-import com.danielealbano.androidremotecontrolmcp.privacy.ner.NerEngine
-import com.danielealbano.androidremotecontrolmcp.privacy.ner.NerSegment
-import com.danielealbano.androidremotecontrolmcp.privacy.ner.OrtPiiModelRunner
+import com.fenix.mobilemcp.benchmark.corpus.BenchmarkSample
+import com.fenix.mobilemcp.data.model.PrivacyModeConfig
+import com.fenix.mobilemcp.privacy.ContextExtractor
+import com.fenix.mobilemcp.privacy.DeterministicEngine
+import com.fenix.mobilemcp.privacy.PiiDetection
+import com.fenix.mobilemcp.privacy.PseudonymStore
+import com.fenix.mobilemcp.privacy.Redactor
+import com.fenix.mobilemcp.privacy.RedactionEngine
+import com.fenix.mobilemcp.privacy.TextItem
+import com.fenix.mobilemcp.privacy.detectors.CardDetector
+import com.fenix.mobilemcp.privacy.detectors.CredentialDetector
+import com.fenix.mobilemcp.privacy.detectors.EmailDetector
+import com.fenix.mobilemcp.privacy.detectors.IbanDetector
+import com.fenix.mobilemcp.privacy.detectors.NationalIdDetector
+import com.fenix.mobilemcp.privacy.detectors.PhoneDetector
+import com.fenix.mobilemcp.privacy.model.PrivacyModelStore
+import com.fenix.mobilemcp.privacy.ner.NerCache
+import com.fenix.mobilemcp.privacy.ner.NerEngine
+import com.fenix.mobilemcp.privacy.ner.NerSegment
+import com.fenix.mobilemcp.privacy.ner.OrtPiiModelRunner
 import java.io.File
 
 enum class Layer { DETERMINISTIC, MODEL, FULL }
@@ -1891,7 +1891,7 @@ class BenchmarkPipeline(
 }
 ```
 
-(Add `import com.danielealbano.androidremotecontrolmcp.privacy.ner.PiiModelInference` to the import list above.)
+(Add `import com.fenix.mobilemcp.privacy.ner.PiiModelInference` to the import list above.)
 
 - [x] T5.1 tests — **File**: `.../benchmark/BenchmarkPipelineTest.kt` — **Setup**: `BenchmarkPipeline(tempDir, fakeInference)` where `fakeInference` is a hand-written `PiiModelInference` stub returning preset `NerResult`s; the real model/store are never touched
 
@@ -1907,11 +1907,11 @@ class BenchmarkPipeline(
 - [x] A5.2.1 — Create `.../benchmark/scoring/Scorer.kt` implementing EXACTLY the plan's scoring rules:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.benchmark.scoring
+package com.fenix.mobilemcp.benchmark.scoring
 
-import com.danielealbano.androidremotecontrolmcp.benchmark.corpus.BenchmarkSample
-import com.danielealbano.androidremotecontrolmcp.benchmark.corpus.GoldSpan
-import com.danielealbano.androidremotecontrolmcp.privacy.PiiDetection
+import com.fenix.mobilemcp.benchmark.corpus.BenchmarkSample
+import com.fenix.mobilemcp.benchmark.corpus.GoldSpan
+import com.fenix.mobilemcp.privacy.PiiDetection
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -2225,7 +2225,7 @@ class Scorer {
 - [x] A5.3.1 — Create `.../benchmark/scoring/ReportWriter.kt`:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.benchmark.scoring
+package com.fenix.mobilemcp.benchmark.scoring
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -2333,18 +2333,18 @@ class ReportWriter {
 - [x] A5.3.2 — Create `.../benchmark/BenchmarkMain.kt`:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.benchmark
+package com.fenix.mobilemcp.benchmark
 
-import com.danielealbano.androidremotecontrolmcp.benchmark.corpus.Ai4PrivacyCorpusLoader
-import com.danielealbano.androidremotecontrolmcp.benchmark.corpus.AdversarialCorpusLoader
-import com.danielealbano.androidremotecontrolmcp.benchmark.corpus.LoadedCorpus
-import com.danielealbano.androidremotecontrolmcp.benchmark.corpus.UiCorpusGenerator
-import com.danielealbano.androidremotecontrolmcp.benchmark.scoring.BenchmarkReport
-import com.danielealbano.androidremotecontrolmcp.benchmark.scoring.CorpusScore
-import com.danielealbano.androidremotecontrolmcp.benchmark.scoring.LayerScore
-import com.danielealbano.androidremotecontrolmcp.benchmark.scoring.ReportWriter
-import com.danielealbano.androidremotecontrolmcp.benchmark.scoring.Scorer
-import com.danielealbano.androidremotecontrolmcp.privacy.PiiDetection
+import com.fenix.mobilemcp.benchmark.corpus.Ai4PrivacyCorpusLoader
+import com.fenix.mobilemcp.benchmark.corpus.AdversarialCorpusLoader
+import com.fenix.mobilemcp.benchmark.corpus.LoadedCorpus
+import com.fenix.mobilemcp.benchmark.corpus.UiCorpusGenerator
+import com.fenix.mobilemcp.benchmark.scoring.BenchmarkReport
+import com.fenix.mobilemcp.benchmark.scoring.CorpusScore
+import com.fenix.mobilemcp.benchmark.scoring.LayerScore
+import com.fenix.mobilemcp.benchmark.scoring.ReportWriter
+import com.fenix.mobilemcp.benchmark.scoring.Scorer
+import com.fenix.mobilemcp.privacy.PiiDetection
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.time.Instant

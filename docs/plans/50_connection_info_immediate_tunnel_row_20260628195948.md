@@ -89,9 +89,9 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
-import com.danielealbano.androidremotecontrolmcp.data.model.ServerStatus
-import com.danielealbano.androidremotecontrolmcp.data.model.TunnelProviderType
-import com.danielealbano.androidremotecontrolmcp.data.model.TunnelStatus
+import com.fenix.mobilemcp.data.model.ServerStatus
+import com.fenix.mobilemcp.data.model.TunnelProviderType
+import com.fenix.mobilemcp.data.model.TunnelStatus
 ```
 
 **Action 1.1.3** — modify [ConnectionInfoCard.kt](../../app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/ui/components/ConnectionInfoCard.kt): extract the connection-string builder into a pure `internal` top-level function (placed next to `tunnelRowState`) so the exact production string — including the empty-token conditional — is unit-testable without a Compose runtime and is the single source of truth shared by the composable and the test.
@@ -342,7 +342,7 @@ ConnectionInfoCard(
 )
 ```
 
-**Action 1.3.2** — modify [ServerScreen.kt:44](../../app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/ui/screens/ServerScreen.kt#L44): remove the now-unused `import com.danielealbano.androidremotecontrolmcp.data.model.TunnelStatus` (the `TunnelStatus.Connected` cast is the only reference and it is being removed). The `serverStatus` and `tunnelStatus` values are already collected at lines 64 and 66 and need no new imports.
+**Action 1.3.2** — modify [ServerScreen.kt:44](../../app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/ui/screens/ServerScreen.kt#L44): remove the now-unused `import com.fenix.mobilemcp.data.model.TunnelStatus` (the `TunnelStatus.Connected` cast is the only reference and it is being removed). The `serverStatus` and `tunnelStatus` values are already collected at lines 64 and 66 and need no new imports.
 
 **Definition of Done:**
 - [x] ServerScreen passes `tunnelEnabled`, `serverStatus`, `tunnelStatus`; no `tunnelUrl` argument remains.
@@ -353,8 +353,8 @@ ConnectionInfoCard(
 **File:** `app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/ui/components/ConnectionInfoCardTest.kt`
 
 **Setup:**
-- `tunnelRowState`, `TunnelRowState`, and `buildConnectionString` are `internal` top-level declarations in the same package (`com.danielealbano.androidremotecontrolmcp.ui.components`) as this test, so they are callable directly with no import.
-- Add imports for `com.danielealbano.androidremotecontrolmcp.data.model.ServerStatus`, `TunnelStatus`, and `TunnelProviderType`. Use `ServerStatus.Running(port = 8080, bindingAddress = "127.0.0.1")` and `TunnelStatus.Connected(url, TunnelProviderType.CLOUDFLARE)` where a populated state is needed.
+- `tunnelRowState`, `TunnelRowState`, and `buildConnectionString` are `internal` top-level declarations in the same package (`com.fenix.mobilemcp.ui.components`) as this test, so they are callable directly with no import.
+- Add imports for `com.fenix.mobilemcp.data.model.ServerStatus`, `TunnelStatus`, and `TunnelProviderType`. Use `ServerStatus.Running(port = 8080, bindingAddress = "127.0.0.1")` and `TunnelStatus.Connected(url, TunnelProviderType.CLOUDFLARE)` where a populated state is needed.
 - **Remove** the test's private `buildConnectionString(serverUrl, bearerToken, tunnelUrl)` helper (lines 19-28) — it is a re-implementation that diverged from production by always appending the bearer-token line. The four existing connection-string tests (`tunnelUrl includes mcp suffix in connection string`, `copyAll always uses real bearer token`, `connectionString format without tunnel`, `connectionString format with tunnel`) MUST be updated to call the production `buildConnectionString`. The production function has **no default** for `tunnelUrl`, so the two calls that previously omitted it — `copyAll always uses real bearer token` and `connectionString format without tunnel` — MUST be updated to pass `tunnelUrl = null` explicitly; the other two already pass a `tunnelUrl` value. All four use named arguments matching the production parameter names and their assertions remain valid (all use non-empty tokens).
 - The private `buildServerUrl(scheme, displayAddress, port)` helper and its two tests (`serverUrl includes mcp suffix`, `serverUrl includes mcp suffix with https`) stay unchanged (out of scope — not flagged).
 
@@ -395,7 +395,7 @@ Add the cases below as new `@Test` functions:
 
 **Action 2.1.2** — Run the quality gates, capturing output to `/tmp/` per the global rule:
 - `make lint 2>&1 | tee /tmp/p50-lint.log | tail -20`
-- `./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.ui.components.ConnectionInfoCardTest" 2>&1 | tee /tmp/p50-test-card.log | tail -20`
+- `./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.ui.components.ConnectionInfoCardTest" 2>&1 | tee /tmp/p50-test-card.log | tail -20`
 - `./gradlew build 2>&1 | tee /tmp/p50-build.log | tail -30`
 
 **Action 2.1.3** — Fix any failure found by 2.1.1–2.1.2 at the root cause (no suppression), then re-run the affected gate from its captured-log workflow until clean.

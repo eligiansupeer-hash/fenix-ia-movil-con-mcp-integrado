@@ -34,7 +34,7 @@ Two new MCP tools for sending Android intents. `android_send_intent` provides fu
 
 **Action 1.1.1**:
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.intents
+package com.fenix.mobilemcp.services.intents
 
 interface IntentDispatcher {
     suspend fun sendIntent(
@@ -67,14 +67,14 @@ interface IntentDispatcher {
 **Action 1.2.1**: Create class with this structure:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.intents
+package com.fenix.mobilemcp.services.intents
 
 import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import com.danielealbano.androidremotecontrolmcp.utils.Logger
+import com.fenix.mobilemcp.utils.Logger
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
@@ -469,8 +469,8 @@ Test cases:
 
 **Action 3.1.1**: Add import:
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.mcp.tools.registerIntentTools
-+import com.danielealbano.androidremotecontrolmcp.services.intents.IntentDispatcher
++import com.fenix.mobilemcp.mcp.tools.registerIntentTools
++import com.fenix.mobilemcp.services.intents.IntentDispatcher
 ```
 
 **Action 3.1.2**: Add field (after `cameraProvider`):
@@ -494,8 +494,8 @@ Test cases:
 
 **Action 3.2.1**: Add imports:
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.services.intents.IntentDispatcher
-+import com.danielealbano.androidremotecontrolmcp.mcp.tools.registerIntentTools
++import com.fenix.mobilemcp.services.intents.IntentDispatcher
++import com.fenix.mobilemcp.mcp.tools.registerIntentTools
 ```
 
 **Action 3.2.2**: Add to `MockDependencies`:

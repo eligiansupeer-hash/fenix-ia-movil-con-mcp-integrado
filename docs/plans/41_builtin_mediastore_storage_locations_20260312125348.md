@@ -46,7 +46,7 @@ Add 4 built-in storage locations backed by Android MediaStore (no SAF picker nee
 **File**: `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/data/model/StorageBackend.kt` — **create**
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.data.model
+package com.fenix.mobilemcp.data.model
 
 /**
  * Identifies the storage API backend for a storage location.
@@ -69,11 +69,11 @@ enum class StorageBackend {
 **File**: `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/data/model/BuiltinStorageLocation.kt` — **create**
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.data.model
+package com.fenix.mobilemcp.data.model
 
 import android.net.Uri
 import android.provider.MediaStore
-import com.danielealbano.androidremotecontrolmcp.mcp.McpToolException
+import com.fenix.mobilemcp.mcp.McpToolException
 
 /**
  * Defines the built-in storage locations backed by MediaStore.
@@ -189,7 +189,7 @@ enum class BuiltinStorageLocation(
 **File**: `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/data/model/BuiltinPermissions.kt` — **create**
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.data.model
+package com.fenix.mobilemcp.data.model
 
 /**
  * Permission overrides for a built-in storage location.
@@ -209,7 +209,7 @@ data class BuiltinPermissions(
 **File**: `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/storage/PermissionChecker.kt` — **create**
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.storage
+package com.fenix.mobilemcp.services.storage
 
 /**
  * Abstracts Android runtime permission checks for testability.
@@ -223,7 +223,7 @@ interface PermissionChecker {
 **File**: `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/storage/PermissionCheckerImpl.kt` — **create**
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.storage
+package com.fenix.mobilemcp.services.storage
 
 import android.content.Context
 import android.content.pm.PackageManager
@@ -301,7 +301,7 @@ suspend fun updateBuiltinLocationAllowDelete(locationId: String, allowDelete: Bo
 
 Add import and DataStore key:
 ```kotlin
-import com.danielealbano.androidremotecontrolmcp.data.model.BuiltinPermissions
+import com.fenix.mobilemcp.data.model.BuiltinPermissions
 
 private val BUILTIN_LOCATION_PERMISSIONS_KEY = stringPreferencesKey("builtin_location_permissions")
 ```
@@ -420,9 +420,9 @@ suspend fun isAllFilesMode(locationId: String): Boolean
 1. Add imports:
    ```kotlin
    import android.os.Environment
-   import com.danielealbano.androidremotecontrolmcp.data.model.BuiltinPermissions
-   import com.danielealbano.androidremotecontrolmcp.data.model.BuiltinStorageLocation
-   import com.danielealbano.androidremotecontrolmcp.data.model.StorageBackend
+   import com.fenix.mobilemcp.data.model.BuiltinPermissions
+   import com.fenix.mobilemcp.data.model.BuiltinStorageLocation
+   import com.fenix.mobilemcp.data.model.StorageBackend
    ```
 
 2. Add `PermissionChecker` as constructor dependency:
@@ -579,7 +579,7 @@ suspend fun isAllFilesMode(locationId: String): Boolean
 **File**: `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/storage/MediaStoreFileOperations.kt` — **create**
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.storage
+package com.fenix.mobilemcp.services.storage
 
 import android.net.Uri
 
@@ -615,7 +615,7 @@ interface MediaStoreFileOperations {
 **File**: `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/storage/MediaStoreFileOperationsImpl.kt` — **create**
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.storage
+package com.fenix.mobilemcp.services.storage
 
 import android.content.ContentValues
 import android.content.Context
@@ -624,10 +624,10 @@ import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
-import com.danielealbano.androidremotecontrolmcp.data.model.BuiltinStorageLocation
-import com.danielealbano.androidremotecontrolmcp.data.model.FileInfo
-import com.danielealbano.androidremotecontrolmcp.data.repository.SettingsRepository
-import com.danielealbano.androidremotecontrolmcp.mcp.McpToolException
+import com.fenix.mobilemcp.data.model.BuiltinStorageLocation
+import com.fenix.mobilemcp.data.model.FileInfo
+import com.fenix.mobilemcp.data.repository.SettingsRepository
+import com.fenix.mobilemcp.mcp.McpToolException
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -1220,7 +1220,7 @@ class MediaStoreFileOperationsImpl
 
     private fun parseAndValidateUrl(
         url: String,
-        config: com.danielealbano.androidremotecontrolmcp.data.model.ServerConfig,
+        config: com.fenix.mobilemcp.data.model.ServerConfig,
     ): URL {
         val parsedUrl = try {
             URL(url)
@@ -1264,7 +1264,7 @@ class MediaStoreFileOperationsImpl
 **File**: `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/storage/MimeTypeUtils.kt` — **create**
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.storage
+package com.fenix.mobilemcp.services.storage
 
 /**
  * Shared MIME type mapping for file operations.
@@ -1313,7 +1313,7 @@ object MimeTypeUtils {
 Extract `configurePermissiveSsl` from `FileOperationProviderImpl` into a shared object (also used by `MediaStoreFileOperationsImpl`):
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.storage
+package com.fenix.mobilemcp.services.storage
 
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
@@ -1371,7 +1371,7 @@ object SslUtils {
 
 Add import and `MediaStoreFileOperations` as constructor dependency:
 ```kotlin
-import com.danielealbano.androidremotecontrolmcp.data.model.BuiltinStorageLocation
+import com.fenix.mobilemcp.data.model.BuiltinStorageLocation
 ```
 ```kotlin
 class FileOperationProviderImpl

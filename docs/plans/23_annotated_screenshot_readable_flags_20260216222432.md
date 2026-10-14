@@ -66,8 +66,8 @@ node_e5f6	Button	Hidden	-	-	100,2600,300,2660	off,clk,ena
 - [x] An offscreen hint note line is always present in the TSV output
 - [x] The old single-letter `v` flag is removed and replaced by `on`/`off`
 - [x] `ScreenIntrospectionToolsTest.sampleCompactOutput` fixture updated with new flag format and note lines
-- [x] All unit tests pass: `./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.services.accessibility.CompactTreeFormatterTest"`
-- [x] All integration tests pass: `./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.integration.ScreenIntrospectionIntegrationTest"`
+- [x] All unit tests pass: `./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.services.accessibility.CompactTreeFormatterTest"`
+- [x] All integration tests pass: `./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.integration.ScreenIntrospectionIntegrationTest"`
 - [x] Lint passes on changed files
 
 ---
@@ -244,7 +244,7 @@ node_e5f6	Button	Hidden	-	-	100,2600,300,2660	off,clk,ena
 - [x] All `buildFlags` tests updated to expect new comma-separated format
 - [x] All `format` tests updated to expect new note lines and correct line indices
 - [x] New test cases added for `on`/`off` flags
-- [x] Tests pass: `./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.services.accessibility.CompactTreeFormatterTest"`
+- [x] Tests pass: `./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.services.accessibility.CompactTreeFormatterTest"`
 
 #### Action 1.2.1: Update `buildFlags` tests
 
@@ -550,7 +550,7 @@ Key changes:
 
 **Acceptance Criteria**:
 - [x] Integration test assertions updated for new note lines and flag format
-- [x] Tests pass: `./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.integration.ScreenIntrospectionIntegrationTest"`
+- [x] Tests pass: `./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.integration.ScreenIntrospectionIntegrationTest"`
 
 #### Action 1.3.1: Update assertion in `get_screen_state returns compact flat TSV with metadata`
 
@@ -604,7 +604,7 @@ Key changes:
 - [x] `sampleCompactOutput` fixture updated to use new flag format and note lines
 - [x] Screenshot tests updated to mock `captureScreenshotBitmap` instead of `captureScreenshot`
 - [x] `GetScreenStateHandler` constructor call updated with new dependencies (mocked)
-- [x] Tests pass: `./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.mcp.tools.ScreenIntrospectionToolsTest"`
+- [x] Tests pass: `./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.mcp.tools.ScreenIntrospectionToolsTest"`
 
 **Note**: This task has a cross-story dependency on US2 (new constructor parameters for `GetScreenStateHandler`, added in Task 2.3). The fixture data update (`sampleCompactOutput`) belongs to US1, but the constructor and mock changes depend on US2. During implementation, the constructor update and mock additions MUST be applied AFTER Task 2.3 (Action 2.3.1) is complete. The recommended approach is to update the fixture now as part of US1, then apply the constructor/mock changes together with Task 2.3.
 
@@ -635,8 +635,8 @@ Key changes:
 **New mock fields** (add after existing mock declarations):
 ```diff
 +import android.graphics.Bitmap
-+import com.danielealbano.androidremotecontrolmcp.services.screencapture.ScreenshotAnnotator
-+import com.danielealbano.androidremotecontrolmcp.services.screencapture.ScreenshotEncoder
++import com.fenix.mobilemcp.services.screencapture.ScreenshotAnnotator
++import com.fenix.mobilemcp.services.screencapture.ScreenshotEncoder
 
 +    private lateinit var mockScreenshotAnnotator: ScreenshotAnnotator
 +    private lateinit var mockScreenshotEncoder: ScreenshotEncoder
@@ -725,9 +725,9 @@ Key changes:
 - [x] `ScreenshotAnnotator` is a new injectable class under `services/screencapture/` with testable helper methods
 - [x] `ScreenshotAnnotator` creates Paint objects ONCE before the element loop
 - [x] `collectOnScreenElements` uses accumulator pattern (no intermediate list allocations)
-- [x] All unit tests pass: `./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.services.screencapture.ScreenshotAnnotatorTest"`
-- [x] All unit tests pass: `./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.services.screencapture.ScreenCaptureProviderImplTest"`
-- [x] All integration tests pass: `./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.integration.ScreenIntrospectionIntegrationTest"`
+- [x] All unit tests pass: `./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.services.screencapture.ScreenshotAnnotatorTest"`
+- [x] All unit tests pass: `./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.services.screencapture.ScreenCaptureProviderImplTest"`
+- [x] All integration tests pass: `./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.integration.ScreenIntrospectionIntegrationTest"`
 - [x] Integration test for annotation failure / bitmap cleanup passes
 - [x] Lint passes on changed files
 
@@ -753,7 +753,7 @@ Key changes:
 **What**: Simple interface and default implementation for reading the device API level.
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.screencapture
+package com.fenix.mobilemcp.services.screencapture
 
 import android.os.Build
 import javax.inject.Inject
@@ -787,9 +787,9 @@ class DefaultApiLevelProvider
 
 ```diff
 -import android.os.Build
- import com.danielealbano.androidremotecontrolmcp.data.model.ScreenshotData
- import com.danielealbano.androidremotecontrolmcp.mcp.McpToolException
- import com.danielealbano.androidremotecontrolmcp.services.accessibility.McpAccessibilityService
+ import com.fenix.mobilemcp.data.model.ScreenshotData
+ import com.fenix.mobilemcp.mcp.McpToolException
+ import com.fenix.mobilemcp.services.accessibility.McpAccessibilityService
  import javax.inject.Inject
 
  class ScreenCaptureProviderImpl
@@ -823,8 +823,8 @@ class DefaultApiLevelProvider
 **What**: Add a `@Binds` entry for `ApiLevelProvider`.
 
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.services.screencapture.ApiLevelProvider
-+import com.danielealbano.androidremotecontrolmcp.services.screencapture.DefaultApiLevelProvider
++import com.fenix.mobilemcp.services.screencapture.ApiLevelProvider
++import com.fenix.mobilemcp.services.screencapture.DefaultApiLevelProvider
 
  abstract class ServiceModule {
 +    @Binds
@@ -1000,7 +1000,7 @@ class DefaultApiLevelProvider
 **Note**: `ScreenshotAnnotator` receives the already-filtered list of elements from the caller (`GetScreenStateHandler.collectOnScreenElements`). It does NOT perform its own filtering — the `shouldKeepNode` logic stays in `CompactTreeFormatter`, and element collection stays in `GetScreenStateHandler`.
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.screencapture
+package com.fenix.mobilemcp.services.screencapture
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -1009,7 +1009,7 @@ import android.graphics.DashPathEffect
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
-import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeData
+import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeData
 import javax.inject.Inject
 
 /**
@@ -1236,8 +1236,8 @@ class ScreenshotAnnotator
 **What**: Add `ScreenshotAnnotator` and `ScreenshotEncoder` parameters. Pass them to `GetScreenStateHandler`.
 
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.services.screencapture.ScreenshotAnnotator
-+import com.danielealbano.androidremotecontrolmcp.services.screencapture.ScreenshotEncoder
++import com.fenix.mobilemcp.services.screencapture.ScreenshotAnnotator
++import com.fenix.mobilemcp.services.screencapture.ScreenshotEncoder
 
  @Suppress("LongParameterList")
  fun registerScreenIntrospectionTools(
@@ -1263,8 +1263,8 @@ class ScreenshotAnnotator
 **What**: Add `@Inject lateinit var screenshotAnnotator: ScreenshotAnnotator` and `@Inject lateinit var screenshotEncoder: ScreenshotEncoder` fields. Pass them in `registerAllTools`.
 
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.services.screencapture.ScreenshotAnnotator
-+import com.danielealbano.androidremotecontrolmcp.services.screencapture.ScreenshotEncoder
++import com.fenix.mobilemcp.services.screencapture.ScreenshotAnnotator
++import com.fenix.mobilemcp.services.screencapture.ScreenshotEncoder
 
  @Inject lateinit var compactTreeFormatter: CompactTreeFormatter
 +@Inject lateinit var screenshotAnnotator: ScreenshotAnnotator
@@ -1292,8 +1292,8 @@ class ScreenshotAnnotator
 **Step 1**: Update `MockDependencies` data class (lines 252-261):
 
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.services.screencapture.ScreenshotAnnotator
-+import com.danielealbano.androidremotecontrolmcp.services.screencapture.ScreenshotEncoder
++import com.fenix.mobilemcp.services.screencapture.ScreenshotAnnotator
++import com.fenix.mobilemcp.services.screencapture.ScreenshotEncoder
 
  data class MockDependencies(
      val actionExecutor: ActionExecutor,
@@ -1381,7 +1381,7 @@ private fun collectOnScreenElements(
 }
 ```
 
-Note: `shouldKeepNode` is `internal` visibility in `CompactTreeFormatter`. Since `ScreenIntrospectionTools.kt` is in package `com.danielealbano.androidremotecontrolmcp.mcp.tools` and `CompactTreeFormatter` is in `com.danielealbano.androidremotecontrolmcp.services.accessibility`, `internal` means module-internal (same Gradle module), so this is accessible. Verify at compile time.
+Note: `shouldKeepNode` is `internal` visibility in `CompactTreeFormatter`. Since `ScreenIntrospectionTools.kt` is in package `com.fenix.mobilemcp.mcp.tools` and `CompactTreeFormatter` is in `com.fenix.mobilemcp.services.accessibility`, `internal` means module-internal (same Gradle module), so this is accessible. Verify at compile time.
 
 #### Action 2.4.2: Rewrite the screenshot capture section of `execute()`
 
@@ -1457,8 +1457,8 @@ Note: `shouldKeepNode` is `internal` visibility in `CompactTreeFormatter`. Since
 Add the necessary imports at the top of the file:
 ```diff
 +import android.graphics.Bitmap
-+import com.danielealbano.androidremotecontrolmcp.services.screencapture.ScreenshotAnnotator
-+import com.danielealbano.androidremotecontrolmcp.services.screencapture.ScreenshotEncoder
++import com.fenix.mobilemcp.services.screencapture.ScreenshotAnnotator
++import com.fenix.mobilemcp.services.screencapture.ScreenshotEncoder
 ```
 
 ---
@@ -1468,7 +1468,7 @@ Add the necessary imports at the top of the file:
 **Acceptance Criteria**:
 - [x] New test file `app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/services/screencapture/ScreenshotAnnotatorTest.kt`
 - [x] Tests cover: empty elements list, single element, multiple elements, coordinate mapping, bounds clamping, element outside bitmap, ID hash extraction
-- [x] Tests pass: `./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.services.screencapture.ScreenshotAnnotatorTest"`
+- [x] Tests pass: `./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.services.screencapture.ScreenshotAnnotatorTest"`
 
 **Note on testability**: The `computeScaledBounds` and `extractLabel` methods were already defined as `internal` in Action 2.2.1 (`ScreenshotAnnotator.kt`). No additional code changes are needed — this task only creates the tests.
 
@@ -1481,13 +1481,13 @@ Add the necessary imports at the top of the file:
 **Test file structure**: The outer class has a `private val annotator = ScreenshotAnnotator()` and a local `makeNode` helper:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.screencapture
+package com.fenix.mobilemcp.services.screencapture
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.RectF
-import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeData
-import com.danielealbano.androidremotecontrolmcp.services.accessibility.BoundsData
+import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeData
+import com.fenix.mobilemcp.services.accessibility.BoundsData
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -1735,7 +1735,7 @@ inner class AnnotateTests {
 **Acceptance Criteria**:
 - [x] New test class/inner class covering `captureScreenshotBitmap` in the existing `ScreenCaptureProviderImplTest.kt` (or a new file if it doesn't exist)
 - [x] Tests cover: success path, failure path (null bitmap), bitmap recycling when resize produces new bitmap, bitmap NOT recycled when resize returns same bitmap
-- [x] Tests pass: `./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.services.screencapture.ScreenCaptureProviderImplTest"`
+- [x] Tests pass: `./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.services.screencapture.ScreenCaptureProviderImplTest"`
 
 #### Action 2.6.1: Add `captureScreenshotBitmap` tests
 
@@ -1746,10 +1746,10 @@ inner class AnnotateTests {
 - Verify bitmap recycling behavior
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.screencapture
+package com.fenix.mobilemcp.services.screencapture
 
 import android.graphics.Bitmap
-import com.danielealbano.androidremotecontrolmcp.services.accessibility.McpAccessibilityService
+import com.fenix.mobilemcp.services.accessibility.McpAccessibilityService
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -1905,7 +1905,7 @@ class ScreenCaptureProviderImplTest {
 **Acceptance Criteria**:
 - [x] Integration test for screenshot now mocks `captureScreenshotBitmap`, `screenshotAnnotator.annotate()`, and `screenshotEncoder.bitmapToScreenshotData()` instead of `captureScreenshot`
 - [x] No Android framework mocking needed (no `mockkStatic(Bitmap::class)`)
-- [x] Tests pass: `./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.integration.ScreenIntrospectionIntegrationTest"`
+- [x] Tests pass: `./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.integration.ScreenIntrospectionIntegrationTest"`
 
 #### Action 2.7.1: Update `get_screen_state with include_screenshot returns text and image`
 
@@ -2022,7 +2022,7 @@ This is clean, avoids all Android framework mocking, and isolates each component
 
 **Acceptance Criteria**:
 - [x] New test verifies that when `screenshotAnnotator.annotate()` throws an exception, the tool returns an error and both bitmaps are still recycled
-- [x] Tests pass: `./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.integration.ScreenIntrospectionIntegrationTest"`
+- [x] Tests pass: `./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.integration.ScreenIntrospectionIntegrationTest"`
 
 #### Action 2.8.1: Add `get_screen_state with screenshot annotation failure returns error`
 

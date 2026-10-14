@@ -1429,8 +1429,8 @@ multi-window data.
 **Imports to add** (if not already present):
 ```kotlin
 import android.view.accessibility.AccessibilityWindowInfo
-import com.danielealbano.androidremotecontrolmcp.services.accessibility.MultiWindowResult
-import com.danielealbano.androidremotecontrolmcp.services.accessibility.WindowData
+import com.fenix.mobilemcp.services.accessibility.MultiWindowResult
+import com.fenix.mobilemcp.services.accessibility.WindowData
 ```
 
 Add after the existing `getFreshTree()` function. Once all tools are migrated to `getFreshWindows()` (Tasks 6.2–6.5), remove `getFreshTree()` entirely — it will have no remaining callers:
@@ -1601,8 +1601,8 @@ internal fun getFreshWindows(
 
 **Imports to add** (if not already present):
 ```kotlin
-import com.danielealbano.androidremotecontrolmcp.services.accessibility.MultiWindowResult
-import com.danielealbano.androidremotecontrolmcp.services.accessibility.WindowData
+import com.fenix.mobilemcp.services.accessibility.MultiWindowResult
+import com.fenix.mobilemcp.services.accessibility.WindowData
 ```
 
 (`getFreshWindows` is in the same `mcp.tools` package — no import needed.)
@@ -1908,8 +1908,8 @@ The existing `findScrollableAncestor()` and `findPathToNode()` remain unchanged 
 
 **Imports to add** (if not already present — once per file, applies to all tools in this file):
 ```kotlin
-import com.danielealbano.androidremotecontrolmcp.services.accessibility.MultiWindowResult
-import com.danielealbano.androidremotecontrolmcp.services.accessibility.WindowData
+import com.fenix.mobilemcp.services.accessibility.MultiWindowResult
+import com.fenix.mobilemcp.services.accessibility.WindowData
 ```
 
 (`getFreshWindows` is in the same `mcp.tools` package — no import needed.)
@@ -1942,7 +1942,7 @@ Same pattern.
 
 **Imports to add** (if not already present — once per file, applies to all tools in this file):
 ```kotlin
-import com.danielealbano.androidremotecontrolmcp.services.accessibility.WindowData
+import com.fenix.mobilemcp.services.accessibility.WindowData
 ```
 
 (`getFreshWindows` is in the same `mcp.tools` package — no import needed.)
@@ -1961,7 +1961,7 @@ Change `val tree = getFreshTree(...)` to `val result = getFreshWindows(...)`. Th
 
 **Import to add to `TreeFingerprint.kt`** (if not already present):
 ```kotlin
-import com.danielealbano.androidremotecontrolmcp.services.accessibility.WindowData
+import com.fenix.mobilemcp.services.accessibility.WindowData
 ```
 
 The implementor should generate the fingerprint by walking all windows' trees sequentially (same as walking one big tree). Add a helper method to `TreeFingerprint`:

@@ -8,10 +8,10 @@ The commands below require a device or emulator reachable over `adb` where the a
 
 Replace `<app-id>` with the application ID for your build:
 
-- **Debug**: `com.danielealbano.androidremotecontrolmcp.debug`
-- **Release**: `com.danielealbano.androidremotecontrolmcp`
+- **Debug**: `com.fenix.mobilemcp.debug`
+- **Release**: `com.fenix.mobilemcp`
 
-> **Note**: the debug build adds the `.debug` suffix to the **application ID**, but the **class names do not change**. The Accessibility and Notification Listener component names below always use the unsuffixed class package (`com.danielealbano.androidremotecontrolmcp.services.*`), regardless of build type.
+> **Note**: the debug build adds the `.debug` suffix to the **application ID**, but the **class names do not change**. The Accessibility and Notification Listener component names below always use the unsuffixed class package (`com.fenix.mobilemcp.services.*`), regardless of build type.
 
 ## Permission categories
 
@@ -53,7 +53,7 @@ Required for UI introspection, action execution, and screenshots (core functiona
 
 ```bash
 adb shell settings put secure enabled_accessibility_services \
-  <app-id>/com.danielealbano.androidremotecontrolmcp.services.accessibility.McpAccessibilityService
+  <app-id>/com.fenix.mobilemcp.services.accessibility.McpAccessibilityService
 adb shell settings put secure accessibility_enabled 1
 ```
 
@@ -63,14 +63,14 @@ Required for the notification tools (reading and managing notifications).
 
 ```bash
 adb shell cmd notification allow_listener \
-  <app-id>/com.danielealbano.androidremotecontrolmcp.services.notifications.McpNotificationListenerService
+  <app-id>/com.fenix.mobilemcp.services.notifications.McpNotificationListenerService
 ```
 
 If `cmd notification allow_listener` is unavailable on your platform image, use the secure setting instead:
 
 ```bash
 adb shell settings put secure enabled_notification_listeners \
-  <app-id>/com.danielealbano.androidremotecontrolmcp.services.notifications.McpNotificationListenerService
+  <app-id>/com.fenix.mobilemcp.services.notifications.McpNotificationListenerService
 ```
 
 ## One-shot script
@@ -81,11 +81,11 @@ The following script grants every runtime permission and enables both special-ac
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Set to com.danielealbano.androidremotecontrolmcp for a release build
-APP_ID="com.danielealbano.androidremotecontrolmcp.debug"
+# Set to com.fenix.mobilemcp for a release build
+APP_ID="com.fenix.mobilemcp.debug"
 
-ACCESSIBILITY_SERVICE="$APP_ID/com.danielealbano.androidremotecontrolmcp.services.accessibility.McpAccessibilityService"
-NOTIFICATION_LISTENER="$APP_ID/com.danielealbano.androidremotecontrolmcp.services.notifications.McpNotificationListenerService"
+ACCESSIBILITY_SERVICE="$APP_ID/com.fenix.mobilemcp.services.accessibility.McpAccessibilityService"
+NOTIFICATION_LISTENER="$APP_ID/com.fenix.mobilemcp.services.notifications.McpNotificationListenerService"
 
 # Runtime permissions
 for perm in \

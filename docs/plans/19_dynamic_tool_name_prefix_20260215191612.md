@@ -89,7 +89,7 @@ The MCP server name (`Implementation.name`) also includes the slug when set:
 - [x] `ServerConfigTest` has tests for `deviceSlug` default value and new companion constants
 - [x] `SettingsRepository` has `updateDeviceSlug(slug: String)` and `validateDeviceSlug(slug: String): Result<String>`
 - [x] `SettingsRepositoryImpl` persists slug via DataStore and maps it in `mapPreferencesToServerConfig()`
-- [x] All unit tests pass: `./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.data.*"`
+- [x] All unit tests pass: `./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.data.*"`
 - [x] Lint passes on changed files
 
 ---
@@ -474,7 +474,7 @@ The MCP server name (`Implementation.name`) also includes the slug when set:
 - [x] All individual tool `register()` methods accept a `toolNamePrefix: String` parameter and use it
 - [x] `McpServerService.registerAllTools()` computes the prefix from `config.deviceSlug` and passes it
 - [x] MCP server name includes the slug when set
-- [x] All unit tests pass: `./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.mcp.tools.McpToolUtilsTest"`
+- [x] All unit tests pass: `./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.mcp.tools.McpToolUtilsTest"`
 - [x] Lint passes on changed files
 
 ---
@@ -843,7 +843,7 @@ For `registerAppManagementTools()`:
                          Implementation(
 -                            name = "android-remote-control-mcp",
 +                            name = McpToolUtils.buildServerName(config.deviceSlug),
-                             version = com.danielealbano.androidremotecontrolmcp.BuildConfig.VERSION_NAME,
+                             version = com.fenix.mobilemcp.BuildConfig.VERSION_NAME,
                          ),
 ```
 
@@ -854,7 +854,7 @@ For `registerAppManagementTools()`:
 
 **Note**: Add import for `McpToolUtils` if not already imported:
 ```kotlin
-import com.danielealbano.androidremotecontrolmcp.mcp.tools.McpToolUtils
+import com.fenix.mobilemcp.mcp.tools.McpToolUtils
 ```
 
 **Explanation**: The prefix is computed once from the config using `buildToolNamePrefix()` and passed down to all tool registrations. The server name uses the slug via `buildServerName()`.
@@ -873,7 +873,7 @@ import com.danielealbano.androidremotecontrolmcp.mcp.tools.McpToolUtils
 - [x] Validation errors display below the field (invalid chars, too long)
 - [x] Valid input is persisted to DataStore via SettingsRepository
 - [x] ViewModel handles input, validation, and persistence
-- [x] All unit tests pass: `./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.ui.viewmodels.MainViewModelTest"`
+- [x] All unit tests pass: `./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.ui.viewmodels.MainViewModelTest"`
 - [x] Lint passes on changed files
 
 ---
@@ -1180,7 +1180,7 @@ import com.danielealbano.androidremotecontrolmcp.mcp.tools.McpToolUtils
 - [x] `McpProtocolIntegrationTest` uses prefixed expected tool names
 - [x] All integration tests use prefixed tool names in `client.callTool(name = ...)` calls
 - [x] At least one dedicated test verifies slug-based tool names work
-- [x] All integration tests pass: `./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.integration.*"`
+- [x] All integration tests pass: `./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.integration.*"`
 - [x] Lint passes on changed files
 
 ---
@@ -1300,7 +1300,7 @@ import com.danielealbano.androidremotecontrolmcp.mcp.tools.McpToolUtils
 
 Add import for `McpToolUtils`:
 ```kotlin
-import com.danielealbano.androidremotecontrolmcp.mcp.tools.McpToolUtils
+import com.fenix.mobilemcp.mcp.tools.McpToolUtils
 ```
 
 **Explanation**: The helper accepts only `deviceSlug` and derives the prefix internally. This eliminates the risk of passing inconsistent `toolNamePrefix`/`deviceSlug` combinations. The default slug is empty, resulting in the `"android_"` prefix.

@@ -99,7 +99,7 @@ if the cache misses or `refresh()` returns `false` (node stale).
 **Action**: Create new file with the `CachedNode` data class and the `AccessibilityNodeCache` interface:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.accessibility
+package com.fenix.mobilemcp.services.accessibility
 
 import android.view.accessibility.AccessibilityNodeInfo
 
@@ -178,7 +178,7 @@ interface AccessibilityNodeCache {
 **Action**: Create new file with the implementation:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.accessibility
+package com.fenix.mobilemcp.services.accessibility
 
 import android.util.Log
 import java.util.concurrent.atomic.AtomicReference
@@ -256,8 +256,8 @@ class AccessibilityNodeCacheImpl
 **Action**: Add binding in `ServiceModule`:
 
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeCache
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeCacheImpl
++import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeCache
++import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeCacheImpl
 
  abstract class ServiceModule {
 +    @Binds
@@ -625,8 +625,8 @@ Also update the `getFreshWindows` function-level KDoc — the existing "**Perfor
 
 **Imports required** (add at the top of `ElementActionTools.kt`):
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeCache
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.CachedNode
++import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeCache
++import com.fenix.mobilemcp.services.accessibility.CachedNode
 ```
 
 ```diff
@@ -824,7 +824,7 @@ and update its `getFreshWindows` call. Update `registerScreenIntrospectionTools`
 
 **Import required** (add at the top of `ScreenIntrospectionTools.kt`, after existing accessibility imports):
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeCache
++import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeCache
 ```
 
 ```diff
@@ -880,7 +880,7 @@ Update `registerScreenIntrospectionTools`:
 
 **Import required** (add at the top of `TextInputTools.kt`, after existing accessibility imports):
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeCache
++import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeCache
 ```
 
 **Action**: Add `nodeCache: AccessibilityNodeCache` to the constructor of all 4 tool classes
@@ -952,7 +952,7 @@ ktlint to require multi-line wrapping:
 
 **Import required** (add at the top of `UtilityTools.kt`, after existing accessibility imports):
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeCache
++import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeCache
 ```
 
 **Action**: Add `nodeCache: AccessibilityNodeCache` to the constructor of all 3 tool classes
@@ -1024,7 +1024,7 @@ auto-format output). The function gains a 6th parameter, which exceeds detekt's 
 Pass `nodeCache` to all 4 affected register function calls.
 
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeCache
++import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeCache
 +
  // ... existing @Inject fields ...
  @Inject lateinit var typeInputController: TypeInputController
@@ -1082,7 +1082,7 @@ Pass `nodeCache` to all 4 affected register function calls.
 
 **1. Add import** (at the top of the file, after existing accessibility imports):
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeCache
++import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeCache
 ```
 
 **2. Add `nodeCache` field to `MockDependencies` data class** (line 314-327):
@@ -1208,7 +1208,7 @@ This task updates all 8 files. Changes follow a mechanical pattern:
 All 5 unit test files share the same change pattern:
 
 1. **Add `mockNodeCache` field** — `private val mockNodeCache = mockk<AccessibilityNodeCache>(relaxed = true)`
-2. **Add import** — `import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeCache`
+2. **Add import** — `import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeCache`
 3. **Update `parseTree` mocks** — from 2-arg to 3-arg by adding `any()` for `nodeMap`
 4. **Remove `rootNode.recycle()` mocks from setUp** (where they exist) — root nodes are no longer recycled by `getFreshWindows`. Applies to `ElementActionToolsTest`, `TextInputToolsTest`, `UtilityToolsTest`. Does NOT apply to `GetElementDetailsToolTest` or `ScreenIntrospectionToolsTest` (which have no `every { mockRootNode.recycle() }` setup — `ScreenIntrospectionToolsTest` has `verify` calls instead, handled separately below).
 
@@ -1226,7 +1226,7 @@ All 5 unit test files share the same change pattern:
 **File 1: `ElementActionToolsTest.kt`**
 
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeCache
++import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeCache
 
  class ElementActionToolsTest {
      private val mockTreeParser = mockk<AccessibilityTreeParser>()
@@ -1267,7 +1267,7 @@ Also update the `scrollsToElementInNonPrimaryWindow` test's local `parseTree` mo
 **File 2: `TextInputToolsTest.kt`**
 
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeCache
++import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeCache
 
  class TextInputToolsTest {
      private val mockTreeParser = mockk<AccessibilityTreeParser>()
@@ -1301,7 +1301,7 @@ Tool constructor updates (4 classes):
 **File 3: `ScreenIntrospectionToolsTest.kt`**
 
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeCache
++import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeCache
 
  class ScreenIntrospectionToolsTest {
      // ... existing fields ...
@@ -1379,7 +1379,7 @@ Update `getFreshWindowsFallbackPathReturnsDegradedOutput` test:
 **File 4: `UtilityToolsTest.kt`**
 
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeCache
++import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeCache
 
  class UtilityToolsTest {
      private val mockTreeParser = mockk<AccessibilityTreeParser>()
@@ -1414,7 +1414,7 @@ This applies to 2 test methods: `detects idle with match_percentage below 100` a
 **File 5: `GetElementDetailsToolTest.kt`**
 
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeCache
++import com.fenix.mobilemcp.services.accessibility.AccessibilityNodeCache
 
  class GetElementDetailsToolTest {
      // ... existing fields ...
@@ -1867,7 +1867,7 @@ it cannot use standard Hilt `@Inject`. Instead, use `EntryPointAccessors` to get
 
 ```diff
 +// NOTE: AccessibilityNodeCache is NOT imported — it is in the same package
-+// (com.danielealbano.androidremotecontrolmcp.services.accessibility).
++// (com.fenix.mobilemcp.services.accessibility).
 +// ktlint would flag a same-package import as unnecessary.
 +import dagger.hilt.EntryPoint
 +import dagger.hilt.InstallIn

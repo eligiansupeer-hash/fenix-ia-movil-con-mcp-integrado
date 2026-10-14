@@ -19,7 +19,7 @@ This plan implements 7 MCP tools for coordinate-based touch interactions and adv
 
 ### Package Base
 
-`com.danielealbano.androidremotecontrolmcp`
+`com.fenix.mobilemcp`
 
 ### Path References
 
@@ -116,14 +116,14 @@ The `McpProtocolHandler.handleToolCall()` catch block was updated in Plan 7 (Act
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/mcp/tools/TouchActionTools.kt
 @@ -0,0 +1,362 @@
-+package com.danielealbano.androidremotecontrolmcp.mcp.tools
++package com.fenix.mobilemcp.mcp.tools
 +
 +import android.util.Log
-+import com.danielealbano.androidremotecontrolmcp.mcp.McpToolException
-+import com.danielealbano.androidremotecontrolmcp.mcp.ToolHandler
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.ActionExecutor
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.ScrollAmount
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.ScrollDirection
++import com.fenix.mobilemcp.mcp.McpToolException
++import com.fenix.mobilemcp.mcp.ToolHandler
++import com.fenix.mobilemcp.services.accessibility.ActionExecutor
++import com.fenix.mobilemcp.services.accessibility.ScrollAmount
++import com.fenix.mobilemcp.services.accessibility.ScrollDirection
 +import kotlinx.serialization.json.JsonElement
 +import kotlinx.serialization.json.JsonObject
 +import kotlinx.serialization.json.JsonPrimitive
@@ -133,7 +133,7 @@ The `McpProtocolHandler.handleToolCall()` catch block was updated in Plan 7 (Act
 +import javax.inject.Inject
 +
 +// NOTE: Uses McpToolException sealed class defined in Plan 7 (mcp/McpToolException.kt).
-+// Import: com.danielealbano.androidremotecontrolmcp.mcp.McpToolException
++// Import: com.fenix.mobilemcp.mcp.McpToolException
 +// Subtypes used: McpToolException.InvalidParams, McpToolException.PermissionDenied,
 +//                McpToolException.ActionFailed, McpToolException.InternalError
 +
@@ -468,7 +468,7 @@ The `McpProtocolHandler.handleToolCall()` catch block was updated in Plan 7 (Act
 > - `McpToolUtils.requireFloat()` uses `toFloatOrNull()` on the `JsonPrimitive.content` string, which handles both integer (`"500"`) and floating-point (`"500.5"`) JSON numbers transparently.
 > - `McpToolUtils.optionalLong()` first parses as `Double` then converts to `Long` with `toLong()`. This handles JSON numbers like `300` (which kotlinx.serialization may represent as `300.0` internally) as well as explicit integers.
 > - `McpToolUtils.handleActionResult()` inspects the `Result.failure` exception type: `IllegalStateException` with "not available" in the message indicates the accessibility service is not enabled (maps to `-32001`), while all other failures map to `-32003`.
-> - `McpToolException` is the sealed class hierarchy defined in Plan 7 (`mcp/McpToolException.kt`). This file imports it via `import com.danielealbano.androidremotecontrolmcp.mcp.McpToolException`. Subtypes used: `InvalidParams`, `PermissionDenied`, `ActionFailed`.
+> - `McpToolException` is the sealed class hierarchy defined in Plan 7 (`mcp/McpToolException.kt`). This file imports it via `import com.fenix.mobilemcp.mcp.McpToolException`. Subtypes used: `InvalidParams`, `PermissionDenied`, `ActionFailed`.
 > - `ScrollTool` uses `lowercase()` for case-insensitive matching of direction and amount strings.
 > - All coordinate values displayed in response messages use `toInt()` for clean integer display.
 
@@ -505,8 +505,8 @@ No diff required -- already handled by Plan 7 Action 7.2.4.
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/mcp/tools/ToolRegistry.kt (from Plan 7)
 @@ -XX,6 +XX,8 @@
 
- import com.danielealbano.androidremotecontrolmcp.mcp.McpProtocolHandler
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.ActionExecutor
+ import com.fenix.mobilemcp.mcp.McpProtocolHandler
++import com.fenix.mobilemcp.services.accessibility.ActionExecutor
  import kotlinx.serialization.json.buildJsonObject
 +import kotlinx.serialization.json.putJsonArray
  import kotlinx.serialization.json.putJsonObject
@@ -701,13 +701,13 @@ No diff required -- already handled by Plan 7 Action 7.2.4.
 --- /dev/null
 +++ b/app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/mcp/tools/GestureTools.kt
 @@ -0,0 +1,174 @@
-+package com.danielealbano.androidremotecontrolmcp.mcp.tools
++package com.fenix.mobilemcp.mcp.tools
 +
 +import android.util.Log
-+import com.danielealbano.androidremotecontrolmcp.mcp.McpToolException
-+import com.danielealbano.androidremotecontrolmcp.mcp.ToolHandler
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.ActionExecutor
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.GesturePoint
++import com.fenix.mobilemcp.mcp.McpToolException
++import com.fenix.mobilemcp.mcp.ToolHandler
++import com.fenix.mobilemcp.services.accessibility.ActionExecutor
++import com.fenix.mobilemcp.services.accessibility.GesturePoint
 +import kotlinx.serialization.json.JsonArray
 +import kotlinx.serialization.json.JsonElement
 +import kotlinx.serialization.json.JsonObject
@@ -1022,11 +1022,11 @@ No diff required -- already handled by Plan 7 Action 7.2.4.
 --- /dev/null
 +++ b/app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/mcp/tools/TouchActionToolsTest.kt
 @@ -0,0 +1,470 @@
-+package com.danielealbano.androidremotecontrolmcp.mcp.tools
++package com.fenix.mobilemcp.mcp.tools
 +
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.ActionExecutor
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.ScrollAmount
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.ScrollDirection
++import com.fenix.mobilemcp.services.accessibility.ActionExecutor
++import com.fenix.mobilemcp.services.accessibility.ScrollAmount
++import com.fenix.mobilemcp.services.accessibility.ScrollDirection
 +import io.mockk.coEvery
 +import io.mockk.coVerify
 +import io.mockk.mockk
@@ -1581,10 +1581,10 @@ No diff required -- already handled by Plan 7 Action 7.2.4.
 --- /dev/null
 +++ b/app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/mcp/tools/GestureToolsTest.kt
 @@ -0,0 +1,380 @@
-+package com.danielealbano.androidremotecontrolmcp.mcp.tools
++package com.fenix.mobilemcp.mcp.tools
 +
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.ActionExecutor
-+import com.danielealbano.androidremotecontrolmcp.services.accessibility.GesturePoint
++import com.fenix.mobilemcp.services.accessibility.ActionExecutor
++import com.fenix.mobilemcp.services.accessibility.GesturePoint
 +import io.mockk.coEvery
 +import io.mockk.coVerify
 +import io.mockk.mockk

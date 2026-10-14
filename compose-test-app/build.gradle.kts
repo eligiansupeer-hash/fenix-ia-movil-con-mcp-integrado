@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.danielealbano.composetestapp"
+    namespace = "com.fenix.composetestapp"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.danielealbano.composetestapp"
+        applicationId = "com.fenix.composetestapp"
         minSdk = 33
         targetSdk = 34
         versionCode = 1

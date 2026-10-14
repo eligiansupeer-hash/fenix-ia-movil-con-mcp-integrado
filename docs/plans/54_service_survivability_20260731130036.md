@@ -33,7 +33,7 @@ US1 is sequenced before US2 because the two user stories are code-independent an
 
 - [x] **Action** — CREATE `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/power/BatteryOptimizationManager.kt`
   ```kotlin
-  package com.danielealbano.androidremotecontrolmcp.services.power
+  package com.fenix.mobilemcp.services.power
 
   /** Flavor-gated access to the Doze battery-optimization exemption. */
   interface BatteryOptimizationManager {
@@ -52,7 +52,7 @@ US1 is sequenced before US2 because the two user stories are code-independent an
   (Rationale for no `Activity` param: the codebase avoids holding `Activity` in ViewModels; the Singleton impl already has an injected `@ApplicationContext`, and the request is triggered from a foreground button tap, so a background-activity-start restriction does not apply.)
 - [x] **Action** — CREATE `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/power/BatteryOptimizationState.kt` (shared check, avoids duplication across flavor impls)
   ```kotlin
-  package com.danielealbano.androidremotecontrolmcp.services.power
+  package com.fenix.mobilemcp.services.power
 
   import android.content.Context
   import android.os.PowerManager
@@ -69,7 +69,7 @@ US1 is sequenced before US2 because the two user stories are code-independent an
 
 - [x] **Action** — CREATE `app/src/gms/kotlin/com/danielealbano/androidremotecontrolmcp/services/power/GmsBatteryOptimizationManagerImpl.kt`
   ```kotlin
-  package com.danielealbano.androidremotecontrolmcp.services.power
+  package com.fenix.mobilemcp.services.power
 
   import android.content.ActivityNotFoundException
   import android.content.Context
@@ -115,10 +115,10 @@ US1 is sequenced before US2 because the two user stories are code-independent an
 - [x] **Action** — MODIFY `app/src/gms/AndroidManifest.xml`: add, at the top-level `<manifest>` scope (beside the existing `ACCESS_BACKGROUND_LOCATION`), `<uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />`. MUST NOT be added to `src/main` or `src/foss`.
 - [x] **Action** — CREATE `app/src/gms/kotlin/com/danielealbano/androidremotecontrolmcp/di/GmsBatteryModule.kt` (mirror `GmsLocationModule`)
   ```kotlin
-  package com.danielealbano.androidremotecontrolmcp.di
+  package com.fenix.mobilemcp.di
 
-  import com.danielealbano.androidremotecontrolmcp.services.power.BatteryOptimizationManager
-  import com.danielealbano.androidremotecontrolmcp.services.power.GmsBatteryOptimizationManagerImpl
+  import com.fenix.mobilemcp.services.power.BatteryOptimizationManager
+  import com.fenix.mobilemcp.services.power.GmsBatteryOptimizationManagerImpl
   import dagger.Binds
   import dagger.Module
   import dagger.hilt.InstallIn
@@ -143,7 +143,7 @@ US1 is sequenced before US2 because the two user stories are code-independent an
 
 - [x] **Action** — CREATE `app/src/foss/kotlin/com/danielealbano/androidremotecontrolmcp/services/power/FossBatteryOptimizationManagerImpl.kt`
   ```kotlin
-  package com.danielealbano.androidremotecontrolmcp.services.power
+  package com.fenix.mobilemcp.services.power
 
   import android.content.Context
   import android.content.Intent
@@ -211,7 +211,7 @@ US1 is sequenced before US2 because the two user stories are code-independent an
 
 - [x] **Action** — CREATE `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/ui/components/BatteryOptimizationCard.kt`: a stateless composable `BatteryOptimizationCard(onRequestExemption: () -> Unit, modifier: Modifier = Modifier)` styled to match `ServerStatusCard`/`ConnectionInfoCard` (`ElevatedCard`, title + body via `stringResource(R.string.battery_optimization_card_*)`, a button calling `onRequestExemption`).
 - [x] **Action** — MODIFY `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/ui/screens/ServerScreen.kt`
-  - Add import: `com.danielealbano.androidremotecontrolmcp.ui.components.BatteryOptimizationCard`.
+  - Add import: `com.fenix.mobilemcp.ui.components.BatteryOptimizationCard`.
   - Collect state: `val isBatteryOptimizationIgnored by viewModel.isBatteryOptimizationIgnored.collectAsStateWithLifecycle()`.
   - In the screen's scrolling `Column`, render the card ONLY when not exempt (no `Activity` cast needed):
     ```kotlin
@@ -323,13 +323,13 @@ US1 is sequenced before US2 because the two user stories are code-independent an
 
 - [x] **Action** — CREATE `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/mcp/McpServerRestart.kt` — `internal` helpers so the restart DECISIONS are unit-testable (only the raw platform callbacks remain untestable). `ForegroundServiceStartNotAllowedException` is API 31+, safe on `minSdk = 33`:
   ```kotlin
-  package com.danielealbano.androidremotecontrolmcp.services.mcp
+  package com.fenix.mobilemcp.services.mcp
 
   import android.app.ForegroundServiceStartNotAllowedException
   import android.content.Context
   import android.content.Intent
   import android.util.Log
-  import com.danielealbano.androidremotecontrolmcp.data.repository.SettingsRepository
+  import com.fenix.mobilemcp.data.repository.SettingsRepository
   import kotlinx.coroutines.flow.first
 
   private const val TAG = "MCP:ServerRestart"

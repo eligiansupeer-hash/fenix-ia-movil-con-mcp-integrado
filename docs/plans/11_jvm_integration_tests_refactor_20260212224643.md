@@ -628,7 +628,7 @@ debugImplementation(libs.compose.ui.test.manifest)  // line 172 — technically 
 
 Also remove `testInstrumentationRunner` from `defaultConfig` (line 30):
 ```kotlin
-testInstrumentationRunner = "com.danielealbano.androidremotecontrolmcp.HiltTestRunner"
+testInstrumentationRunner = "com.fenix.mobilemcp.HiltTestRunner"
 ```
 This references the `HiltTestRunner` class being deleted. Removing this line entirely is safe — Gradle falls back to the default `AndroidJUnitRunner`, and since we have no androidTest sources, it's never used.
 
@@ -675,7 +675,7 @@ test-integration: ## Run integration tests (requires Docker)
 to:
 ```makefile
 test-integration: ## Run integration tests (JVM-based, no emulator required)
-	$(GRADLE) :app:test --tests "com.danielealbano.androidremotecontrolmcp.integration.*"
+	$(GRADLE) :app:test --tests "com.fenix.mobilemcp.integration.*"
 ```
 
 Also update line 104-105 help text to reflect that `test-unit` now implicitly includes integration tests:
@@ -695,7 +695,7 @@ test-unit: ## Run unit tests (includes integration tests since both are JVM-base
 **Acceptance Criteria**:
 - [x] Integration test base helper exists that configures a Ktor `testApplication` with: McpServer routing, BearerTokenAuth, mocked tool registry
 - [x] Helper provides methods to send JSON-RPC requests and parse responses
-- [x] Tests are in package `com.danielealbano.androidremotecontrolmcp.integration`
+- [x] Tests are in package `com.fenix.mobilemcp.integration`
 
 #### Action 2.4.1: Create integration test helper
 

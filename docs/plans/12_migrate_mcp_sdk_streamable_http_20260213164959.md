@@ -364,7 +364,7 @@ import io.modelcontextprotocol.kotlin.sdk.types.ToolSchema
 
 Remove old imports:
 ```kotlin
-// REMOVE: import com.danielealbano.androidremotecontrolmcp.mcp.ToolHandler
+// REMOVE: import com.fenix.mobilemcp.mcp.ToolHandler
 ```
 
 #### Action 4.1: Adapt `TouchActionTools.kt` (5 tools: tap, long_press, double_tap, swipe, scroll)
@@ -771,7 +771,7 @@ This file provides the `Application.mcpStreamableHttp {}` extension that wires u
 **Key design choice: `enableJsonResponse = true` (no SSE).** Per the MCP Streamable HTTP spec, the server MAY respond with `Content-Type: application/json` instead of SSE. Since all 29 of our tools are synchronous request-response (no server-initiated notifications, no streaming), pure JSON mode is sufficient. This ensures compatibility with cloudflared tunnels which only support standard HTTP requests.
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.mcp
+package com.fenix.mobilemcp.mcp
 
 import android.util.Log
 import io.ktor.http.HttpStatusCode
@@ -964,7 +964,7 @@ Remove:
 
 Add imports:
 ```kotlin
-import com.danielealbano.androidremotecontrolmcp.mcp.mcpStreamableHttp
+import com.fenix.mobilemcp.mcp.mcpStreamableHttp
 import io.modelcontextprotocol.kotlin.sdk.types.McpJson
 ```
 
@@ -998,8 +998,8 @@ Remove injections:
 Remove imports:
 ```kotlin
 // REMOVE:
-import com.danielealbano.androidremotecontrolmcp.mcp.McpProtocolHandler
-import com.danielealbano.androidremotecontrolmcp.mcp.tools.ToolRegistry
+import com.fenix.mobilemcp.mcp.McpProtocolHandler
+import com.fenix.mobilemcp.mcp.tools.ToolRegistry
 ```
 
 #### Action 7.2: Create SDK `Server` instance in `startServer()`
@@ -1020,7 +1020,7 @@ import io.modelcontextprotocol.kotlin.sdk.types.ServerCapabilities
 val sdkServer = Server(
     serverInfo = Implementation(
         name = "android-remote-control-mcp",
-        version = com.danielealbano.androidremotecontrolmcp.BuildConfig.VERSION_NAME,
+        version = com.fenix.mobilemcp.BuildConfig.VERSION_NAME,
     ),
     options = ServerOptions(
         capabilities = ServerCapabilities(
@@ -1124,7 +1124,7 @@ Run `./gradlew assembleDebug` and verify it succeeds with **no errors**. Warning
 
 ### Task 9: Update Unit Tests
 
-**Definition of Done:** All unit tests pass (`./gradlew test --tests "com.danielealbano.androidremotecontrolmcp.mcp.*"`).
+**Definition of Done:** All unit tests pass (`./gradlew test --tests "com.fenix.mobilemcp.mcp.*"`).
 
 #### Action 9.1: Delete `McpProtocolHandlerTest.kt`
 
@@ -1237,13 +1237,13 @@ Add tests for `CaptureScreenshotHandler`:
 
 - [x] **Completed** _(was deferred; ran successfully after Task 10 completion — all 396 tests pass)_
 
-Run `./gradlew test --tests "com.danielealbano.androidremotecontrolmcp.mcp.*" --tests "com.danielealbano.androidremotecontrolmcp.services.screencapture.*"` and verify all pass.
+Run `./gradlew test --tests "com.fenix.mobilemcp.mcp.*" --tests "com.fenix.mobilemcp.services.screencapture.*"` and verify all pass.
 
 ---
 
 ### Task 10: Rewrite Integration Tests
 
-**Definition of Done:** All integration tests pass (`./gradlew test --tests "com.danielealbano.androidremotecontrolmcp.integration.*"`).
+**Definition of Done:** All integration tests pass (`./gradlew test --tests "com.fenix.mobilemcp.integration.*"`).
 
 #### Action 10.1: Rewrite `McpIntegrationTestHelper.kt`
 
@@ -1281,7 +1281,7 @@ suspend fun withTestApplication(
 
 Inside, use the testApplication's test HTTP client to create the SDK transport:
 ```kotlin
-import com.danielealbano.androidremotecontrolmcp.mcp.mcpStreamableHttp
+import com.fenix.mobilemcp.mcp.mcpStreamableHttp
 import io.modelcontextprotocol.kotlin.sdk.types.McpJson
 
 testApplication {
@@ -1383,7 +1383,7 @@ Error handling changes significantly:
 
 - [x] **Completed**
 
-Run `./gradlew test --tests "com.danielealbano.androidremotecontrolmcp.integration.*"` and verify all pass.
+Run `./gradlew test --tests "com.fenix.mobilemcp.integration.*"` and verify all pass.
 
 ---
 

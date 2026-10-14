@@ -13,7 +13,7 @@
 ANDROID_HOME ?= $(HOME)/Android/Sdk
 GRADLE := ./gradlew
 ADB := adb
-APP_ID := com.danielealbano.androidremotecontrolmcp
+APP_ID := com.fenix.mobilemcp
 APP_ID_DEBUG := $(APP_ID).debug
 EMULATOR_NAME := mcp_test_emulator
 EMULATOR_DEVICE := pixel_6
@@ -148,7 +148,7 @@ test-unit: ## Run unit tests (includes integration tests since both are JVM-base
 	$(if $(wildcard .env),set -a && . ./.env && set +a &&,) $(GRADLE) :app:test :privacy:test :privacy-benchmark:test
 
 test-integration: ## Run integration tests (JVM-based, no emulator required)
-	$(if $(wildcard .env),set -a && . ./.env && set +a &&,) $(GRADLE) :app:testGmsDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.integration.*"
+	$(if $(wildcard .env),set -a && . ./.env && set +a &&,) $(GRADLE) :app:testGmsDebugUnitTest --tests "com.fenix.mobilemcp.integration.*"
 
 test-e2e: ## Run E2E tests (requires rootful podman socket)
 	$(if $(wildcard .env),set -a && . ./.env && set +a &&,) DOCKER_HOST=unix:///run/podman/podman.sock TESTCONTAINERS_RYUK_DISABLED=true $(GRADLE) :e2e-tests:cleanTest :e2e-tests:test
@@ -191,12 +191,12 @@ grant-permissions: ## Grant permissions via adb (accessibility + notification li
 	@echo ""
 	@echo "1. Enabling Accessibility Service..."
 	$(ADB) shell settings put secure enabled_accessibility_services \
-		$(APP_ID_DEBUG)/com.danielealbano.androidremotecontrolmcp.services.accessibility.McpAccessibilityService
+		$(APP_ID_DEBUG)/com.fenix.mobilemcp.services.accessibility.McpAccessibilityService
 	@echo "   Done."
 	@echo ""
 	@echo "2. Enabling Notification Listener Service..."
 	$(ADB) shell cmd notification allow_listener \
-		$(APP_ID_DEBUG)/com.danielealbano.androidremotecontrolmcp.services.notifications.McpNotificationListenerService
+		$(APP_ID_DEBUG)/com.fenix.mobilemcp.services.notifications.McpNotificationListenerService
 	@echo "   Done."
 	@echo ""
 	@echo "3. Granting POST_NOTIFICATIONS permission..."

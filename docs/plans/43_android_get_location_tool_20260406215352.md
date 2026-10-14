@@ -107,7 +107,7 @@ Add after the existing `<uses-feature>` declarations:
 **Action 1** — Create `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/data/model/LocationData.kt`
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.data.model
+package com.fenix.mobilemcp.data.model
 
 data class LocationData(
     val latitude: Double,
@@ -128,9 +128,9 @@ data class LocationData(
 **Action 1** — Create `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/location/LocationProvider.kt`
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.location
+package com.fenix.mobilemcp.services.location
 
-import com.danielealbano.androidremotecontrolmcp.data.model.LocationData
+import com.fenix.mobilemcp.data.model.LocationData
 
 interface LocationProvider {
     companion object {
@@ -170,7 +170,7 @@ Note on `@SuppressLint("MissingPermission")`: **Justified exception per CLAUDE.m
 Note on `@Suppress("TooGenericExceptionCaught")`: **Justified exception per CLAUDE.md no-suppression rule** — Used on `getLocation()` and `reverseGeocode()`. Google Play Services and Android Geocoder can throw various undocumented runtime exceptions (beyond the specific `TimeoutCancellationException` handled separately). Catching generic `Exception` at these boundaries is an established project pattern (36 occurrences across 18 files) and the only practical approach since GMS does not declare specific exception types. Note: `CancellationException` is explicitly re-thrown before the generic catch to preserve structured concurrency.
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.location
+package com.fenix.mobilemcp.services.location
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -182,7 +182,7 @@ import android.location.Location
 import android.os.Looper
 import android.util.Log
 import androidx.core.content.ContextCompat
-import com.danielealbano.androidremotecontrolmcp.data.model.LocationData
+import com.fenix.mobilemcp.data.model.LocationData
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -394,7 +394,7 @@ Add corresponding imports for `LocationProvider` and `LocationProviderImpl`.
 Add import:
 
 ```kotlin
-import com.danielealbano.androidremotecontrolmcp.services.location.LocationProvider
+import com.fenix.mobilemcp.services.location.LocationProvider
 ```
 
 Add an `@Inject lateinit var locationProvider: LocationProvider` field alongside the other injected dependencies.
@@ -435,12 +435,12 @@ Note: The `registerLocationTools()` call in `registerAllTools()` is added in Tas
 **Action 1** — Create `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/mcp/tools/LocationTools.kt`
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.mcp.tools
+package com.fenix.mobilemcp.mcp.tools
 
 import android.util.Log
-import com.danielealbano.androidremotecontrolmcp.data.model.ToolPermissionsConfig
-import com.danielealbano.androidremotecontrolmcp.mcp.McpToolException
-import com.danielealbano.androidremotecontrolmcp.services.location.LocationProvider
+import com.fenix.mobilemcp.data.model.ToolPermissionsConfig
+import com.fenix.mobilemcp.mcp.McpToolException
+import com.fenix.mobilemcp.services.location.LocationProvider
 import io.modelcontextprotocol.kotlin.sdk.server.Server
 import io.modelcontextprotocol.kotlin.sdk.types.CallToolResult
 import io.modelcontextprotocol.kotlin.sdk.types.ToolSchema
@@ -566,7 +566,7 @@ fun registerLocationTools(
 Add import:
 
 ```kotlin
-import com.danielealbano.androidremotecontrolmcp.mcp.tools.registerLocationTools
+import com.fenix.mobilemcp.mcp.tools.registerLocationTools
 ```
 
 In `registerAllTools()` method, add after the `registerNotificationTools(...)` call:

@@ -115,7 +115,7 @@ All decisions agreed upon during discussion:
 - **Description**: Data class representing a storage location (SAF document root).
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.data.model
+package com.fenix.mobilemcp.data.model
 
 /**
  * Represents a storage location discovered via the Storage Access Framework.
@@ -155,7 +155,7 @@ data class StorageLocation(
 - **Description**: Data class for file/directory listing entries.
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.data.model
+package com.fenix.mobilemcp.data.model
 
 /**
  * Represents a file or directory entry returned by file listing operations.
@@ -184,7 +184,7 @@ data class FileInfo(
 - **Description**: Data class for installed application entries.
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.data.model
+package com.fenix.mobilemcp.data.model
 
 /**
  * Represents an installed application on the device.
@@ -211,7 +211,7 @@ data class AppInfo(
 - **Description**: Enum for app listing filter options.
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.data.model
+package com.fenix.mobilemcp.data.model
 
 /**
  * Filter options for listing installed applications.
@@ -241,10 +241,10 @@ enum class AppFilter {
 - **Description**: Interface for storage location discovery and authorization management.
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.storage
+package com.fenix.mobilemcp.services.storage
 
 import android.net.Uri
-import com.danielealbano.androidremotecontrolmcp.data.model.StorageLocation
+import com.fenix.mobilemcp.data.model.StorageLocation
 
 /**
  * Provides discovery and authorization management for storage locations.
@@ -342,9 +342,9 @@ Key implementation details:
 - **Description**: Interface for file operations via SAF.
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.storage
+package com.fenix.mobilemcp.services.storage
 
-import com.danielealbano.androidremotecontrolmcp.data.model.FileInfo
+import com.fenix.mobilemcp.data.model.FileInfo
 
 /**
  * Result from a file listing operation.
@@ -596,10 +596,10 @@ Key implementation details:
 - **Description**: Interface for application management operations.
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.apps
+package com.fenix.mobilemcp.services.apps
 
-import com.danielealbano.androidremotecontrolmcp.data.model.AppFilter
-import com.danielealbano.androidremotecontrolmcp.data.model.AppInfo
+import com.fenix.mobilemcp.data.model.AppFilter
+import com.fenix.mobilemcp.data.model.AppInfo
 
 /**
  * Manages application lifecycle operations: listing, launching, and closing apps.
@@ -942,12 +942,12 @@ Add import for `kotlinx.coroutines.flow.Flow` if not already present (it is).
 - **Changes**: Add new imports and bindings to `ServiceModule`:
 
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.services.storage.StorageLocationProvider
-+import com.danielealbano.androidremotecontrolmcp.services.storage.StorageLocationProviderImpl
-+import com.danielealbano.androidremotecontrolmcp.services.storage.FileOperationProvider
-+import com.danielealbano.androidremotecontrolmcp.services.storage.FileOperationProviderImpl
-+import com.danielealbano.androidremotecontrolmcp.services.apps.AppManager
-+import com.danielealbano.androidremotecontrolmcp.services.apps.AppManagerImpl
++import com.fenix.mobilemcp.services.storage.StorageLocationProvider
++import com.fenix.mobilemcp.services.storage.StorageLocationProviderImpl
++import com.fenix.mobilemcp.services.storage.FileOperationProvider
++import com.fenix.mobilemcp.services.storage.FileOperationProviderImpl
++import com.fenix.mobilemcp.services.apps.AppManager
++import com.fenix.mobilemcp.services.apps.AppManagerImpl
 ```
 
 ```diff
@@ -1170,7 +1170,7 @@ Mock `Context`, `ContentResolver`, `StorageLocationProvider`, `SettingsRepositor
 
 Mock `Context`, `PackageManager`, `ActivityManager` via MockK.
 
-**Run targeted tests**: `./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.services.storage.*" --tests "com.danielealbano.androidremotecontrolmcp.services.apps.*"`
+**Run targeted tests**: `./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.services.storage.*" --tests "com.fenix.mobilemcp.services.apps.*"`
 
 ---
 
@@ -1238,8 +1238,8 @@ Mock `Context`, `PackageManager`, `ActivityManager` via MockK.
 ```diff
 +import android.net.Uri
 +import android.provider.DocumentsContract
-+import com.danielealbano.androidremotecontrolmcp.data.model.StorageLocation
-+import com.danielealbano.androidremotecontrolmcp.services.storage.StorageLocationProvider
++import com.fenix.mobilemcp.data.model.StorageLocation
++import com.fenix.mobilemcp.services.storage.StorageLocationProvider
 ```
 
 2. Add `StorageLocationProvider` to constructor:
@@ -1481,7 +1481,7 @@ Key composable structure:
 +import android.net.Uri
 +import androidx.activity.compose.rememberLauncherForActivityResult
 +import androidx.activity.result.contract.ActivityResultContracts
-+import com.danielealbano.androidremotecontrolmcp.ui.components.StorageLocationsSection
++import com.fenix.mobilemcp.ui.components.StorageLocationsSection
 ```
 
 2. Add state collectors (after existing collectors):
@@ -1563,7 +1563,7 @@ Key composable structure:
 
 Mock `SettingsRepository`, `TunnelManager`, `StorageLocationProvider`.
 
-**Run targeted tests**: `./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.ui.viewmodels.MainViewModelTest"`
+**Run targeted tests**: `./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.ui.viewmodels.MainViewModelTest"`
 
 ---
 
@@ -1715,9 +1715,9 @@ fun registerFileTools(
 
 1. Add imports:
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.mcp.tools.registerFileTools
-+import com.danielealbano.androidremotecontrolmcp.services.storage.StorageLocationProvider
-+import com.danielealbano.androidremotecontrolmcp.services.storage.FileOperationProvider
++import com.fenix.mobilemcp.mcp.tools.registerFileTools
++import com.fenix.mobilemcp.services.storage.StorageLocationProvider
++import com.fenix.mobilemcp.services.storage.FileOperationProvider
 ```
 
 2. Add injected dependencies:
@@ -1752,11 +1752,11 @@ fun registerFileTools(
 
 1. Add imports:
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.mcp.tools.registerFileTools
-+import com.danielealbano.androidremotecontrolmcp.mcp.tools.registerAppManagementTools
-+import com.danielealbano.androidremotecontrolmcp.services.storage.StorageLocationProvider
-+import com.danielealbano.androidremotecontrolmcp.services.storage.FileOperationProvider
-+import com.danielealbano.androidremotecontrolmcp.services.apps.AppManager
++import com.fenix.mobilemcp.mcp.tools.registerFileTools
++import com.fenix.mobilemcp.mcp.tools.registerAppManagementTools
++import com.fenix.mobilemcp.services.storage.StorageLocationProvider
++import com.fenix.mobilemcp.services.storage.FileOperationProvider
++import com.fenix.mobilemcp.services.apps.AppManager
 ```
 
 2. Update `createMockDependencies()`:
@@ -1841,7 +1841,7 @@ For each test:
 2. Call tool via `client.callTool(name = "tool_name", arguments = mapOf(...))`
 3. Assert result content (TextContent text) and `isError` flag
 
-**Run targeted tests**: `./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.integration.FileToolsIntegrationTest"`
+**Run targeted tests**: `./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.integration.FileToolsIntegrationTest"`
 
 ---
 
@@ -1936,8 +1936,8 @@ fun registerAppManagementTools(
 
 1. Add imports:
 ```diff
-+import com.danielealbano.androidremotecontrolmcp.mcp.tools.registerAppManagementTools
-+import com.danielealbano.androidremotecontrolmcp.services.apps.AppManager
++import com.fenix.mobilemcp.mcp.tools.registerAppManagementTools
++import com.fenix.mobilemcp.services.apps.AppManager
 ```
 
 2. Add injected dependency:
@@ -1984,7 +1984,7 @@ For each test:
 2. Call tool via `client.callTool(name = "tool_name", arguments = mapOf(...))`
 3. Assert result content and `isError` flag
 
-**Run targeted tests**: `./gradlew :app:testDebugUnitTest --tests "com.danielealbano.androidremotecontrolmcp.integration.AppManagementToolsIntegrationTest"`
+**Run targeted tests**: `./gradlew :app:testDebugUnitTest --tests "com.fenix.mobilemcp.integration.AppManagementToolsIntegrationTest"`
 
 ---
 

@@ -1354,9 +1354,9 @@ class EventChannelService : Service() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     companion object {
-        const val ACTION_START = "com.danielealbano.androidremotecontrolmcp.channel.START"
-        const val ACTION_STOP = "com.danielealbano.androidremotecontrolmcp.channel.STOP"
-        const val ACTION_GEOFENCE_EVENT = "com.danielealbano.androidremotecontrolmcp.channel.GEOFENCE_EVENT"
+        const val ACTION_START = "com.fenix.mobilemcp.channel.START"
+        const val ACTION_STOP = "com.fenix.mobilemcp.channel.STOP"
+        const val ACTION_GEOFENCE_EVENT = "com.fenix.mobilemcp.channel.GEOFENCE_EVENT"
         const val EXTRA_GEOFENCE_ZONE_ID = "geofence_zone_id"
         const val EXTRA_GEOFENCE_TRANSITION = "geofence_transition"
 

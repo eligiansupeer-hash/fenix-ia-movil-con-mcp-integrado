@@ -147,7 +147,7 @@ Replace the entire asset extraction logic with a simple lookup in `context.appli
 Replace the **entire file contents** with:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.tunnel
+package com.fenix.mobilemcp.services.tunnel
 
 import android.content.Context
 import android.util.Log
@@ -257,7 +257,7 @@ The entire test class must be rewritten because the implementation fundamentally
 Replace the **entire file contents** with:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.tunnel
+package com.fenix.mobilemcp.services.tunnel
 
 import android.content.Context
 import android.content.pm.ApplicationInfo

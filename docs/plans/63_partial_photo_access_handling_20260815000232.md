@@ -58,7 +58,7 @@ Verification: manifest content has no automated-test infrastructure in this repo
 **Action 1.2.2** — Create `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/data/model/BuiltinAccessLevel.kt`:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.data.model
+package com.fenix.mobilemcp.data.model
 
 /**
  * Read-access level of a built-in MediaStore location, exposed as `access_level`
@@ -120,7 +120,7 @@ Why: the provider computes the access level for the `StorageLocation` model, alo
 
 **Action 2.1.1** — Modify `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/storage/StorageLocationProviderImpl.kt`:
 
-1. Add `import com.danielealbano.androidremotecontrolmcp.data.model.BuiltinAccessLevel`.
+1. Add `import com.fenix.mobilemcp.data.model.BuiltinAccessLevel`.
 2. In `buildBuiltinLocations()`, add `accessLevel = computeAccessLevel(entry),` to the `StorageLocation(...)` construction.
 3. Replace `buildBuiltinDisplayName` and add the two new helpers:
 
@@ -274,7 +274,7 @@ Why: under partial access the current button reads "Grant access to all files" a
 
 **Action 4.2.1** — Modify `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/ui/screens/settings/StorageSettingsScreen.kt`:
 
-1. Add imports: `androidx.annotation.StringRes`, `com.danielealbano.androidremotecontrolmcp.data.model.BuiltinAccessLevel`.
+1. Add imports: `androidx.annotation.StringRes`, `com.fenix.mobilemcp.data.model.BuiltinAccessLevel`.
 2. Add file-level (top-level `internal`) pure helpers so the button behavior is unit-testable without Compose test infrastructure:
 
 ```kotlin

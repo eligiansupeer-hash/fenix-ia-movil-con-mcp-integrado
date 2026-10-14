@@ -175,7 +175,7 @@ The AccessibilityService sets `FLAG_INPUT_METHOD_EDITOR` and overrides `onCreate
 
 ```diff
  defaultConfig {
-     applicationId = "com.danielealbano.androidremotecontrolmcp"
+     applicationId = "com.fenix.mobilemcp"
 -    minSdk = 26
 +    minSdk = 33
      targetSdk = 34
@@ -517,7 +517,7 @@ Note: `McpServerService` injection and `McpIntegrationTestHelper` updates are de
      android:canTakeScreenshot="true"
      android:description="@string/accessibility_service_description"
      android:notificationTimeout="100"
-     android:settingsActivity="com.danielealbano.androidremotecontrolmcp.ui.MainActivity" />
+     android:settingsActivity="com.fenix.mobilemcp.ui.MainActivity" />
 ```
 
 ---
@@ -586,7 +586,7 @@ In `onDestroy()`, add `inputMethodInstance = null`.
 **What changes**: Create new file with the interface:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.accessibility
+package com.fenix.mobilemcp.services.accessibility
 
 import android.view.KeyEvent
 import android.view.inputmethod.SurroundingText
@@ -698,7 +698,7 @@ interface TypeInputController {
 **What changes**: Create new file with the implementation:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.accessibility
+package com.fenix.mobilemcp.services.accessibility
 
 import android.view.KeyEvent
 import android.view.inputmethod.SurroundingText
@@ -937,7 +937,7 @@ Note: The existing `@file:Suppress("TooManyFunctions")` annotation at the top of
 **New imports to add** (in addition to existing imports in the file):
 ```kotlin
 import android.view.KeyEvent
-import com.danielealbano.androidremotecontrolmcp.services.accessibility.TypeInputController
+import com.fenix.mobilemcp.services.accessibility.TypeInputController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock

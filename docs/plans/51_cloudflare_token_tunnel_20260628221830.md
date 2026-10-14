@@ -45,7 +45,7 @@ Adds a second Cloudflare tunnel mode ("With Token") alongside the existing quick
 
 - [x] **Action 1.1.1** — create `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/data/model/CloudflareTunnelMode.kt`:
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.data.model
+package com.fenix.mobilemcp.data.model
 
 /** Cloudflare tunnel operating mode. */
 enum class CloudflareTunnelMode {

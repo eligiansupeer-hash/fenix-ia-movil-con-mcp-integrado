@@ -52,7 +52,7 @@ Provide a single-slot, thread-safe, timestamp-keyed cache holding the most recen
 **Action 1.1.1** — Create `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/accessibility/ScreenStateSnapshotCache.kt` (create)
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.accessibility
+package com.fenix.mobilemcp.services.accessibility
 
 /**
  * Immutable snapshot of a captured screen state, retained for cursor-based pagination of
@@ -97,7 +97,7 @@ interface ScreenStateSnapshotCache {
 **Action 1.2.1** — Create `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/accessibility/ScreenStateSnapshotCacheImpl.kt` (create)
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.accessibility
+package com.fenix.mobilemcp.services.accessibility
 
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -353,7 +353,7 @@ Add page-aware formatting that reuses the existing per-window TSV and hierarchy 
         private val screenStateSnapshotCache: ScreenStateSnapshotCache,
 ```
 
-Add imports `com.danielealbano.androidremotecontrolmcp.services.accessibility.ScreenStateSnapshotCache`, `com.danielealbano.androidremotecontrolmcp.services.accessibility.ScreenStateSnapshot`, `com.danielealbano.androidremotecontrolmcp.services.accessibility.MultiWindowResult`, `com.danielealbano.androidremotecontrolmcp.services.accessibility.ScreenInfo`, `kotlinx.serialization.json.JsonElement`, `kotlinx.serialization.json.JsonNull`, `kotlinx.serialization.json.JsonPrimitive`, and `kotlinx.serialization.json.contentOrNull`.
+Add imports `com.fenix.mobilemcp.services.accessibility.ScreenStateSnapshotCache`, `com.fenix.mobilemcp.services.accessibility.ScreenStateSnapshot`, `com.fenix.mobilemcp.services.accessibility.MultiWindowResult`, `com.fenix.mobilemcp.services.accessibility.ScreenInfo`, `kotlinx.serialization.json.JsonElement`, `kotlinx.serialization.json.JsonNull`, `kotlinx.serialization.json.JsonPrimitive`, and `kotlinx.serialization.json.contentOrNull`.
 
 > Note: adding this 8th constructor argument breaks compilation of the dependent call sites. Two distinct kinds exist and BOTH must be updated to supply a real `ScreenStateSnapshotCacheImpl()`:
 > - `ScreenIntrospectionToolsTest.kt` — a direct `GetScreenStateHandler(...)` constructor call (~lines 148–156), updated by Action 4.3.
@@ -589,7 +589,7 @@ Cover the cache, the paginated formatter (boundaries, ancestor-closure hierarchy
 **Action 4.2.1** — Create `app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/services/accessibility/PaginationTestTrees.kt` (create). This is SHARED test infrastructure reused by Tasks 4.3 and 4.4 (defined here, before its first use); provided in full per the testing rule.
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.accessibility
+package com.fenix.mobilemcp.services.accessibility
 
 /**
  * Shared test infrastructure for get_screen_state pagination tests (Plan 47). Reused by
@@ -703,7 +703,7 @@ object PaginationTestTrees {
 - Add a `screenStateSnapshotCache: ScreenStateSnapshotCache` field to the `MockDependencies` data class.
 - In `createMockDependencies()` construct it as a real `ScreenStateSnapshotCacheImpl()`.
 - Pass `deps.screenStateSnapshotCache` into the `registerScreenIntrospectionTools(...)` call (after `deps.nodeCache`).
-- Add imports for `com.danielealbano.androidremotecontrolmcp.services.accessibility.ScreenStateSnapshotCache` and `...ScreenStateSnapshotCacheImpl`.
+- Add imports for `com.fenix.mobilemcp.services.accessibility.ScreenStateSnapshotCache` and `...ScreenStateSnapshotCacheImpl`.
 
 **File**: `app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/integration/ScreenIntrospectionIntegrationTest.kt` (modify)
 

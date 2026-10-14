@@ -213,7 +213,7 @@ Definition of Done:
 
 ### Task 2.2 — `MediaStoreFileOperationsImpl`: multi-collection queries and MIME routing
 
-- [x] **Action 2.2.1** — Modify `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/storage/MediaStoreFileOperationsImpl.kt`, constructor: add `private val permissionChecker: PermissionChecker` parameter (Hilt constructor injection; binding already exists in `AppModule`). Keep `storageLocationProvider` (still used for `isWriteAllowed`/`isDeleteAllowed`). Add `import com.danielealbano.androidremotecontrolmcp.data.model.MediaCollection` to the file's imports.
+- [x] **Action 2.2.1** — Modify `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/storage/MediaStoreFileOperationsImpl.kt`, constructor: add `private val permissionChecker: PermissionChecker` parameter (Hilt constructor injection; binding already exists in `AppModule`). Keep `storageLocationProvider` (still used for `isWriteAllowed`/`isDeleteAllowed`). Add `import com.fenix.mobilemcp.data.model.MediaCollection` to the file's imports.
 
 - [x] **Action 2.2.2** — Add per-collection helpers:
 
@@ -444,7 +444,7 @@ Acceptance criteria:
 
 **File**: `app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/services/storage/MediaStoreFileOperationsTest.kt`
 
-**Setup**: add `@MockK PermissionChecker` (default `hasPermission(any()) returns false`) and pass to constructor; add `import com.danielealbano.androidremotecontrolmcp.data.model.MediaCollection`; remove `isAllFilesMode` stubs. Replace `every { BuiltinStorageLocation.DOWNLOADS.collectionUri } returns fakeCollectionUri` with stubbing `collections`; add a helper building real `MediaCollection` instances around fake URIs:
+**Setup**: add `@MockK PermissionChecker` (default `hasPermission(any()) returns false`) and pass to constructor; add `import com.fenix.mobilemcp.data.model.MediaCollection`; remove `isAllFilesMode` stubs. Replace `every { BuiltinStorageLocation.DOWNLOADS.collectionUri } returns fakeCollectionUri` with stubbing `collections`; add a helper building real `MediaCollection` instances around fake URIs:
 
 ```kotlin
 private fun testCollection(

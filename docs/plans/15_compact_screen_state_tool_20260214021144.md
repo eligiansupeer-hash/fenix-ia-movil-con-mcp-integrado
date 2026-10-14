@@ -71,7 +71,7 @@ Additionally, add a new `get_element_details` helper tool that returns full (unt
 **What to implement**:
 
 ```kotlin
-package com.danielealbano.androidremotecontrolmcp.services.accessibility
+package com.fenix.mobilemcp.services.accessibility
 
 import javax.inject.Inject
 
@@ -372,7 +372,7 @@ fun registerScreenIntrospectionTools(
 **File**: `app/src/main/kotlin/com/danielealbano/androidremotecontrolmcp/services/mcp/McpServerService.kt`
 
 **Changes**:
-1. Add import: `import com.danielealbano.androidremotecontrolmcp.services.accessibility.CompactTreeFormatter`
+1. Add import: `import com.fenix.mobilemcp.services.accessibility.CompactTreeFormatter`
 2. Add `@Inject lateinit var compactTreeFormatter: CompactTreeFormatter` field (after the existing `@Inject` fields, around line 82).
 3. Update the `registerScreenIntrospectionTools` call in `registerAllTools()` (line 233) to pass the new parameter:
    ```kotlin
@@ -388,19 +388,19 @@ fun registerScreenIntrospectionTools(
 - `kotlinx.serialization.json.Json`
 - `kotlinx.serialization.json.int`
 - `kotlinx.serialization.json.putJsonArray`
-- `com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityNodeData`
-- `com.danielealbano.androidremotecontrolmcp.services.accessibility.ScreenInfo`
+- `com.fenix.mobilemcp.services.accessibility.AccessibilityNodeData`
+- `com.fenix.mobilemcp.services.accessibility.ScreenInfo`
 
 **Add new imports** (for new handler):
-- `com.danielealbano.androidremotecontrolmcp.services.accessibility.CompactTreeFormatter`
+- `com.fenix.mobilemcp.services.accessibility.CompactTreeFormatter`
 - `android.util.Log`
 - `kotlinx.serialization.json.booleanOrNull`
 
 **Keep existing imports** (used by new handler):
-- `com.danielealbano.androidremotecontrolmcp.mcp.McpToolException`
-- `com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityServiceProvider`
-- `com.danielealbano.androidremotecontrolmcp.services.accessibility.AccessibilityTreeParser`
-- `com.danielealbano.androidremotecontrolmcp.services.screencapture.ScreenCaptureProvider`
+- `com.fenix.mobilemcp.mcp.McpToolException`
+- `com.fenix.mobilemcp.services.accessibility.AccessibilityServiceProvider`
+- `com.fenix.mobilemcp.services.accessibility.AccessibilityTreeParser`
+- `com.fenix.mobilemcp.services.screencapture.ScreenCaptureProvider`
 - `io.modelcontextprotocol.kotlin.sdk.server.Server`
 - `io.modelcontextprotocol.kotlin.sdk.types.CallToolResult`
 - `io.modelcontextprotocol.kotlin.sdk.types.ToolSchema`
@@ -688,7 +688,7 @@ fun registerUtilityTools(
 **File**: `app/src/test/kotlin/com/danielealbano/androidremotecontrolmcp/integration/McpIntegrationTestHelper.kt`
 
 **Changes**:
-1. Add import: `com.danielealbano.androidremotecontrolmcp.services.accessibility.CompactTreeFormatter`
+1. Add import: `com.fenix.mobilemcp.services.accessibility.CompactTreeFormatter`
 2. In `registerAllTools()` (line 64-70), update the `registerScreenIntrospectionTools` call to pass a real `CompactTreeFormatter()` instance:
    ```kotlin
    registerScreenIntrospectionTools(
