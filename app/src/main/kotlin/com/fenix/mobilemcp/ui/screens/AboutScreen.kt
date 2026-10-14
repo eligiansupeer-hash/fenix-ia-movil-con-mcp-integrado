@@ -54,9 +54,13 @@ import com.fenix.mobilemcp.R
 import com.fenix.mobilemcp.ui.viewmodels.UpdateCheckUiState
 import com.fenix.mobilemcp.ui.viewmodels.UpdateViewModel
 
-private const val GITHUB_URL = "https://github.com/danielealbano/android-remote-control-mcp"
-private const val LICENSE_URL = "https://github.com/danielealbano/android-remote-control-mcp/blob/main/LICENSE"
-private const val ISSUES_URL = "https://github.com/danielealbano/android-remote-control-mcp/issues"
+import com.fenix.mobilemcp.services.update.FenixReleaseInfo
+
+private val GITHUB_URL = "https://github.com/${FenixReleaseInfo.GITHUB_OWNER}/${FenixReleaseInfo.GITHUB_REPO}"
+private val LICENSE_URL = "$GITHUB_URL/blob/main/LICENSE.md"
+private val ISSUES_URL = "$GITHUB_URL/issues"
+// Crédito al autor upstream (base MIT): se conserva.
+private const val UPSTREAM_URL = "https://github.com/danielealbano/android-remote-control-mcp"
 private const val LINKEDIN_URL = "https://linkedin.com/in/danielesalvatorealbano"
 private const val X_URL = "https://x.com/daniele_dll"
 private const val DBIP_URL = "https://db-ip.com"

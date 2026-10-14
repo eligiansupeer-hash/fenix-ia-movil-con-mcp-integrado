@@ -92,10 +92,11 @@ class GithubReleaseCheckerImpl
 
         companion object {
             private const val TAG = "MCP:UpdateChecker"
-            private const val LATEST_RELEASE_URL =
-                "https://api.github.com/repos/danielealbano/android-remote-control-mcp/releases/latest"
+        @Suppress("MayBeConst")
+            private val LATEST_RELEASE_URL =
+                "https://api.github.com/repos/${FenixReleaseInfo.GITHUB_OWNER}/${FenixReleaseInfo.GITHUB_REPO}/releases/latest"
             private const val GITHUB_ACCEPT = "application/vnd.github+json"
-            private const val USER_AGENT = "android-remote-control-mcp"
+            private const val USER_AGENT = "fenix-mobile-mcp"
             private const val REQUEST_TIMEOUT_MS = 15_000L
             private const val CONNECT_TIMEOUT_MS = 10_000L
             private val json = Json { ignoreUnknownKeys = true }
