@@ -21,6 +21,10 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    override fun attachBaseContext(newBase: android.content.Context) {
+        super.attachBaseContext(com.fenix.mobilemcp.utils.LocaleHelper.wrap(newBase))
+    }
+
     private val viewModel: MainViewModel by viewModels()
     private lateinit var notificationPermissionLauncher: ActivityResultLauncher<String>
     private lateinit var cameraPermissionLauncher: ActivityResultLauncher<String>

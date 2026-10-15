@@ -20,6 +20,7 @@
     <string name="tab_about">About</string>
 
     <!-- Settings Sub-pages -->
+    <string name="settings_language_label">Language</string>
     <string name="settings_general_title">General</string>
     <string name="settings_general_subtitle">Port, address, device, auto-start</string>
     <string name="settings_access_title">Access</string>
@@ -39,8 +40,9 @@
     <string name="settings_storage_subtitle">Storage locations, file limits</string>
 
     <!-- About Screen -->
-    <string name="about_author_section">Author</string>
-    <string name="about_author_name">Daniele Salvatore Albano</string>
+    <string name="about_author_section">Autor</string>
+    <string name="about_author_name">Proyecto Fénix — Fénix Mobile MCP</string>
+    <string name="about_upstream_credit">Basada en android-remote-control-mcp (MIT): %1$s</string>
     <string name="about_author_email">d.albano@gmail.com</string>
     <string name="about_author_linkedin">linkedin.com/in/danielesalvatorealbano</string>
     <string name="about_author_x">x.com/daniele_dll</string>

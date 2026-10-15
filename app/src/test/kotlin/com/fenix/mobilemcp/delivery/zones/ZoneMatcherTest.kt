@@ -1,8 +1,8 @@
 package com.fenix.mobilemcp.delivery.zones
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 
 /** Tests F1.1 del matcher de zonas (keyword + intersección, sin coords). */
 class ZoneMatcherTest {

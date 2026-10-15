@@ -61,8 +61,6 @@ private val LICENSE_URL = "$GITHUB_URL/blob/main/LICENSE.md"
 private val ISSUES_URL = "$GITHUB_URL/issues"
 // Crédito al autor upstream (base MIT): se conserva.
 private const val UPSTREAM_URL = "https://github.com/danielealbano/android-remote-control-mcp"
-private const val LINKEDIN_URL = "https://linkedin.com/in/danielesalvatorealbano"
-private const val X_URL = "https://x.com/daniele_dll"
 private const val DBIP_URL = "https://db-ip.com"
 private const val PRIVACY_MODEL_URL =
     "https://huggingface.co/ai4privacy/llama-ai4privacy-multilingual-categorical-anonymiser-openpii"
@@ -138,7 +136,7 @@ fun AboutScreen(
             HorizontalDivider()
             Spacer(Modifier.height(16.dp))
 
-            // Author section
+            // Proyecto Fénix (autor) + crédito upstream MIT
             Text(
                 text = stringResource(R.string.about_author_section),
                 style = MaterialTheme.typography.titleMedium,
@@ -152,38 +150,23 @@ fun AboutScreen(
             Spacer(Modifier.height(4.dp))
 
             Text(
-                text = stringResource(R.string.about_author_email),
+                text = GITHUB_URL,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary,
                 modifier =
                     Modifier.clickable {
-                        val intent =
-                            Intent(Intent.ACTION_SENDTO).apply {
-                                data = Uri.parse("mailto:d.albano@gmail.com")
-                            }
-                        context.startActivity(intent)
+                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_URL)))
                     },
             )
             Spacer(Modifier.height(4.dp))
 
             Text(
-                text = stringResource(R.string.about_author_linkedin),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary,
+                text = stringResource(R.string.about_upstream_credit, UPSTREAM_URL),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier =
                     Modifier.clickable {
-                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(LINKEDIN_URL)))
-                    },
-            )
-            Spacer(Modifier.height(4.dp))
-
-            Text(
-                text = stringResource(R.string.about_author_x),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary,
-                modifier =
-                    Modifier.clickable {
-                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(X_URL)))
+                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(UPSTREAM_URL)))
                     },
             )
 
