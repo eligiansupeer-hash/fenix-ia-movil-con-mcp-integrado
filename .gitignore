@@ -85,3 +85,13 @@ app/replay_*.log
 .dbip-cache/
 
 privacy-benchmark/.cache/
+
+# Fénix: auth propio y secretos de nodo — JAMÁS al repo (ver checklist sanitización)
+auth.json
+tokens.db*
+*.p12
+*.pfx
+fenix-secrets/
+*-local.json
+**/G77-REF*
+**/14C-REF*
