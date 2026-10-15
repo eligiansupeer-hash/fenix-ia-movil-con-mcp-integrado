@@ -5,9 +5,11 @@ import android.content.Context
 import android.content.Intent
 import android.speech.tts.TextToSpeech
 import android.util.Log
+import com.fenix.mobilemcp.delivery.mirror.MirrorAuth
 import com.fenix.mobilemcp.delivery.zones.ZoneEntry
 import com.fenix.mobilemcp.delivery.zones.ZoneHit
 import com.fenix.mobilemcp.delivery.zones.ZoneMatcher
+import io.ktor.client.request.header
 import com.fenix.mobilemcp.services.accessibility.McpAccessibilityService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,6 +29,7 @@ class DeliveryMonitor
         private val context: Context,
         private val zoneMatcher: ZoneMatcher,
         private val zoneIndex: List<com.fenix.mobilemcp.delivery.zones.ZoneEntry>,
+        private val mirrorSecret: String = MirrorAuth.DEFAULT_SECRET,
     ) {
 
     private val TAG = "Fenix:DeliveryMonitor"
@@ -138,7 +141,9 @@ class DeliveryMonitor
                         connectTimeoutMillis = 500
                     }
                 }
-                val response = client.get<String>(url).get()
+                val response = client.get<String>(url) {
+                    header(MirrorAuth.HEADER, mirrorSecret)
+                }.get()
                 Log.d("Fenix:DeliveryMirror", "Espejo B enviado: $response")
             } catch (e: Exception) {
                 Log.w("Fenix:DeliveryMirror", "No se pudo enviar espejo a nodo B", e)

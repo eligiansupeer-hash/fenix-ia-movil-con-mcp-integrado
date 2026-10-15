@@ -1,87 +1,50 @@
 package com.fenix.mobilemcp.delivery.scheduler
 
-import android.content.Context
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.fenix.mobilemcp.memory.FenixMemoryDb
+import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
-import java.lang.reflect.Type
-import java.time.LocalDate
-import java.time.temporal.ChronoUnit
 
 /**
- * Persistencia local de métricas del TurnScheduler (14 días).
- * Guarda en SharedPreferences con Gson (ligero, sin Room para mantenerlo simple).
+ * F2.2 (rev auditoría): métricas en FenixMemoryDb/kv con TTL 14 días
+ * (NO SharedPreferences). Clave por intento; expira_en purga solo.
  */
 @Singleton
 class TurnMetricsStore @Inject constructor(
-    private val context: Context,
+    private val db: FenixMemoryDb,
 ) {
-
-    private val PREFS_NAME = "turn_metrics"
-    private val KEY_ATTEMPTS = "attempts"
-    private val gson = Gson()
-    private val typeToken = object : TypeToken<List<Attempt>>() {}.type
-
     data class Attempt(
         val timestamp: Long,
         val success: Boolean,
         val latencyMs: Long,
-        val mode: String, // "RADAR" o "AUTO"
-        val zoneId: String? = null,
     )
 
-    /** Guarda un intento de toma de turno. */
-    suspend fun recordAttempt(success: Boolean, latencyMs: Long, mode: String, zoneId: String? = null) {
-        kotlinx.coroutines.withContext(Dispatchers.IO) {
-            val prefs = context.getSharedPreferences("turn_metrics", Context.MODE_PRIVATE)
-            val current = getAttemptsInternal(prefs)
-            val attempt = Attempt(
-                timestamp = System.currentTimeMillis(),
-                success = success,
-                latencyMs = latencyMs,
-                mode = mode,
-                zoneId = zoneId,
-            )
-            val updated = (current + Attempt(timestamp = System.currentTimeMillis(), success, latencyMs, mode, zoneId))
-            // Mantener solo últimos 14 días
-            val cutoff = System.currentTimeMillis() - 14L * 24 * 60 * 60 * 1000
-            val filtered = updated.filter { it.timestamp > cutoff }
-            saveAttempts(prefs, filtered)
+    fun recordAttempt(success: Boolean, latencyMs: Long) {
+        val now = Instant.now()
+        val exp = now.plusSeconds(14L * 24 * 60 * 60).toString()
+        db.kvGuardar(
+            clave = "turn_attempt_${now.toEpochMilli()}",
+            ambito = "turn_metrics",
+            valor = "${if (success) 1 else 0}|$latencyMs",
+            categoria = "turnos",
+            expiraEn = exp,
+        )
+    }
+
+    /** >95% éxito y p95 <2s sobre intentos RADAR no expirados (mínimo 20). */
+    fun canPromoteToAuto(): Boolean {
+        val rows = db.kvBuscar("turn_attempt_", 500)
+        val mine = rows.filter { it.second == "turn_metrics" }
+        if (mine.size < 20) return false
+        val parsed = mine.mapNotNull { (_, _, v) ->
+            val p = v.split("|")
+            if (p.size != 2) null else Attempt(0L, p[0] == "1", p[1].toLongOrNull() ?: return@mapNotNull null)
         }
-    }
-
-    private suspend fun getAttemptsInternal(prefs: android.content.SharedPreferences): List<Attempt> {
-        val json = prefs.getString(KEY_ATTEMPTS, "[]") ?: "[]"
-        return try {
-            gson.fromJson(json, type)
-        } catch (e: Exception) {
-            emptyList()
-        }
-    }
-
-    private suspend fun saveAttempts(prefs: android.content.SharedPreferences, attempts: List<Attempt>) {
-        val json = gson.toJson(attempts)
-        prefs.edit().putString(KEY_ATTEMPTS, json).apply()
-    }
-
-    /** Evalúa si se puede promocionar a AUTO (14 días, >95% éxito, latencia p95 < 2s). */
-    suspend fun canPromoteToAuto(): Boolean {
-        val attempts = getAllAttempts().filter { it.mode == "RADAR" }
-        if (attempts.size < 20) return false // mínimo de muestras
-        val successes = attempts.count { it.success }
-        val rate = successes.toDouble() / attempts.size
+        if (parsed.isEmpty()) return false
+        val rate = parsed.count { it.success }.toDouble() / parsed.size
         if (rate < 0.95) return false
-        val latencies = attempts.filter { it.success }.map { it.latencyMs }.sorted()
-        val p95 = latencies[((latencies.size * 0.95).toInt().coerceAtMost(latencies.size - 1))]
-        return p95 < 2000 // 2 segundos p95
-    }
-
-    private suspend fun getAllAttempts(): List<Attempt> {
-        val prefs = context.getSharedPreferences("turn_metrics", Context.MODE_PRIVATE)
-        return getAttemptsInternal(prefs)
+        val lat = parsed.filter { it.success }.map { it.latencyMs }.sorted()
+        if (lat.isEmpty()) return false
+        return lat[((lat.size * 0.95).toInt().coerceAtMost(lat.size - 1))] < 2000
     }
 }

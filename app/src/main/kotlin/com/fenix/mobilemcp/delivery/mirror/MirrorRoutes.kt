@@ -14,8 +14,15 @@ import kotlinx.serialization.Serializable
  * Uso: GET /mirror?zone=RAW-01&dept=Rawson&name=Valle%20Grande
  * Respuesta: JSON con status + deep-link de Maps para abrir en la app.
  */
-fun Route.mirrorRoutes() {
+fun Route.mirrorRoutes(expectedSecret: String = MirrorAuth.DEFAULT_SECRET) {
     get("/mirror") {
+        // Auditoría F9: el espejo vive en LAN/hotspot visible → secreto compartido
+        // por header (configurado al emparejar nodos), nunca en URL ni logs.
+        val secret = call.request.headers["X-Fenix-Mirror"]
+        if (secret != expectedSecret) {
+            call.respondText("forbidden", status = io.ktor.http.HttpStatusCode.Forbidden)
+            return@get
+        }
         val zoneId = call.request.queryParameters["zone"] ?: return@get call.respondText("Missing zone", status = 400)
         val dept = call.request.queryParameters["dept"] ?: ""
         val name = call.request.queryParameters["name"] ?: ""
