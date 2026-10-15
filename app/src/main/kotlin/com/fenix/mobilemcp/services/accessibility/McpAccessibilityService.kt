@@ -17,10 +17,12 @@ import android.view.Display
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
+import android.view.KeyEvent
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityWindowInfo
 import android.widget.TextView
+import com.fenix.mobilemcp.voice.FenixVoiceActivationManager
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -46,6 +48,12 @@ class McpAccessibilityService : AccessibilityService() {
         fun nodeCache(): AccessibilityNodeCache
     }
 
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface VoiceManagerEntryPoint {
+        fun voiceManager(): FenixVoiceActivationManager
+    }
+
     private var serviceScope: CoroutineScope? = null
 
     private var nodeCache: AccessibilityNodeCache? = null
@@ -61,6 +69,7 @@ class McpAccessibilityService : AccessibilityService() {
     private var currentActivityName: String? = null
 
     private var deliveryMonitor: com.fenix.mobilemcp.delivery.monitor.DeliveryMonitor? = null
+    private var volumeHoldTriggered = false
 
     override fun onServiceConnected() {
         super.onServiceConnected()
@@ -330,13 +339,46 @@ class McpAccessibilityService : AccessibilityService() {
                 feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC
                 flags = AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS or
                     AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS or
-                    AccessibilityServiceInfo.FLAG_INPUT_METHOD_EDITOR
+                    AccessibilityServiceInfo.FLAG_INPUT_METHOD_EDITOR or
+                    AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS
                 notificationTimeout = NOTIFICATION_TIMEOUT_MS
             }
         if (serviceInfo == null) {
             Log.w(TAG, "serviceInfo is null, cannot configure accessibility service settings")
         }
     }
+
+    override fun onKeyEvent(event: KeyEvent): Boolean {
+        val keyCode = event.keyCode
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            val action = event.action
+            val eventTime = event.eventTime
+            val downTime = event.downTime
+            if (action == KeyEvent.ACTION_DOWN) {
+                if (eventTime - downTime >= 550L && !volumeHoldTriggered) {
+                    volumeHoldTriggered = true
+                    resolveVoiceManager()?.onVolumeButtonHoldTriggered()
+                    return true
+                }
+            } else if (action == KeyEvent.ACTION_UP) {
+                if (volumeHoldTriggered) {
+                    volumeHoldTriggered = false
+                    return true
+                }
+            }
+        }
+        return super.onKeyEvent(event)
+    }
+
+    private fun resolveVoiceManager(): FenixVoiceActivationManager? =
+        try {
+            EntryPointAccessors
+                .fromApplication(applicationContext, VoiceManagerEntryPoint::class.java)
+                .voiceManager()
+        } catch (e: Exception) {
+            Log.w(TAG, "Could not resolve voice manager", e)
+            null
+        }
 
     /**
      * Resolves the singleton [AccessibilityNodeCache] via Hilt's application entry point.

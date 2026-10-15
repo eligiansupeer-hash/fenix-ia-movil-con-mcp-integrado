@@ -195,9 +195,14 @@ class DynamicModelDiscovery @Inject constructor(
                 if (id.contains("whisper") || id.contains("embed") || id.contains("moderation")) {
                     null
                 } else {
+                    val displayName = if (id.contains("/")) {
+                        id.substringAfterLast("/").removeSuffix(".gguf")
+                    } else {
+                        id
+                    }
                     DiscoveredModel(
                         id = id,
-                        name = id,
+                        name = displayName,
                         providerId = provider.id,
                         providerName = provider.displayName,
                         isLocal = provider.isLocal,

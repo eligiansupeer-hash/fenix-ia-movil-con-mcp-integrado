@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Warning
@@ -83,6 +84,7 @@ fun ChatScreen(
     val isGenerating by viewModel.isGenerating.collectAsStateWithLifecycle()
     val streetImmunity by viewModel.streetImmunity.collectAsStateWithLifecycle()
     val configuredProviders by viewModel.configuredProviders.collectAsStateWithLifecycle()
+    val voiceState by viewModel.voiceState.collectAsStateWithLifecycle()
 
     var inputText by remember { mutableStateOf("") }
     var showModelDropdown by remember { mutableStateOf(false) }
@@ -287,6 +289,32 @@ fun ChatScreen(
                 shape = RoundedCornerShape(24.dp),
                 maxLines = 4,
             )
+
+            Spacer(Modifier.width(8.dp))
+
+            // Botón de activación F-Voz (Micrófono)
+            IconButton(
+                onClick = { viewModel.toggleVoiceListening() },
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(
+                        if (voiceState == com.fenix.mobilemcp.voice.VoiceState.LISTENING) {
+                            MaterialTheme.colorScheme.errorContainer
+                        } else {
+                            MaterialTheme.colorScheme.surfaceVariant
+                        },
+                    ),
+            ) {
+                Icon(
+                    Icons.Default.Mic,
+                    contentDescription = "F-Voz",
+                    tint = if (voiceState == com.fenix.mobilemcp.voice.VoiceState.LISTENING) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                )
+            }
 
             Spacer(Modifier.width(8.dp))
 

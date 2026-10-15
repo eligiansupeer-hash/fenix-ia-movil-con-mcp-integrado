@@ -22,6 +22,8 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
+import com.fenix.mobilemcp.voice.FenixVoiceActivationManager
+import com.fenix.mobilemcp.voice.VoiceState
 import java.util.UUID
 import javax.inject.Inject
 
@@ -39,6 +41,7 @@ class ChatViewModel @Inject constructor(
     private val llmClient: FenixLlmClient,
     private val secureKeyStore: SecureKeyStore,
     private val streetImmunityChecker: StreetImmunityChecker,
+    private val voiceActivationManager: FenixVoiceActivationManager,
 ) : ViewModel() {
 
     private val jsonParser = Json { ignoreUnknownKeys = true }
@@ -61,10 +64,28 @@ class ChatViewModel @Inject constructor(
     private val _configuredProviders = MutableStateFlow<Set<String>>(emptySet())
     val configuredProviders: StateFlow<Set<String>> = _configuredProviders.asStateFlow()
 
+    val voiceState: StateFlow<VoiceState> = voiceActivationManager.voiceState
+
     init {
         checkStreetImmunity()
         refreshConfiguredProviders()
         refreshModels()
+
+        viewModelScope.launch {
+            voiceActivationManager.transcribedText.collect { recognizedText ->
+                if (recognizedText.isNotBlank()) {
+                    sendMessage(recognizedText)
+                }
+            }
+        }
+    }
+
+    fun toggleVoiceListening() {
+        if (voiceActivationManager.voiceState.value == VoiceState.LISTENING) {
+            voiceActivationManager.stopListening()
+        } else {
+            voiceActivationManager.startListening(source = "UI_MIC")
+        }
     }
 
     fun checkStreetImmunity() {
