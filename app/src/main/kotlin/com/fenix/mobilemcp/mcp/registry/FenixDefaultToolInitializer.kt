@@ -38,6 +38,9 @@ object FenixDefaultToolInitializer {
             toolNamePrefix = "",
             perms = com.fenix.mobilemcp.data.model.ToolPermissionsConfig(),
         )
+
+        val skillEngine = com.fenix.mobilemcp.mcp.skills.QuickJsSkillEngine(context, memDb)
+        skillEngine.initialize()
     }
 }
 

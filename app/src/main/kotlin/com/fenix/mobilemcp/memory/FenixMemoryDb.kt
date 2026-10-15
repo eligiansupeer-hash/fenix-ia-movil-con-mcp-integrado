@@ -18,7 +18,19 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 class FenixMemoryDb @Inject constructor(@ApplicationContext context: Context) :
     SQLiteOpenHelper(context, DB_NAME, null, DB_VERSION) {
 
+    override fun onConfigure(db: SQLiteDatabase) {
+        super.onConfigure(db)
+        db.enableWriteAheadLogging()
+        db.execSQL("PRAGMA synchronous = NORMAL")
+    }
+
     override fun onCreate(db: SQLiteDatabase) {
+        db.execSQL(
+            """CREATE TABLE IF NOT EXISTS conectores_dinamicos(
+            nombre TEXT PRIMARY KEY, descripcion TEXT NOT NULL,
+            schema_json TEXT NOT NULL, codigo_js TEXT NOT NULL,
+            creado TEXT, activo INTEGER DEFAULT 1)""",
+        )
         db.execSQL(
             """CREATE TABLE IF NOT EXISTS sesiones(
             id TEXT PRIMARY KEY, agente TEXT, titulo TEXT, tarea TEXT DEFAULT '',
@@ -255,8 +267,62 @@ class FenixMemoryDb @Inject constructor(@ApplicationContext context: Context) :
         }
     }
 
+    data class DynamicConnectorRecord(
+        val nombre: String,
+        val descripcion: String,
+        val schemaJson: String,
+        val codigoJs: String,
+        val creado: String,
+        val activo: Boolean,
+    )
+
+    fun guardarConector(nombre: String, descripcion: String, schemaJson: String, codigoJs: String) {
+        val db = writableDatabase
+        val now = Instant.now().toString()
+        val cv = ContentValues().apply {
+            put("nombre", nombre)
+            put("descripcion", descripcion)
+            put("schema_json", schemaJson)
+            put("codigo_js", codigoJs)
+            put("creado", now)
+            put("activo", 1)
+        }
+        val rows = db.update("conectores_dinamicos", cv, "nombre=?", arrayOf(nombre))
+        if (rows == 0) {
+            db.insert("conectores_dinamicos", null, cv)
+        }
+    }
+
+    fun listarConectores(): List<DynamicConnectorRecord> {
+        val out = mutableListOf<DynamicConnectorRecord>()
+        readableDatabase.rawQuery(
+            "SELECT nombre, descripcion, schema_json, codigo_js, creado, activo FROM conectores_dinamicos WHERE activo=1",
+            null,
+        ).use { c ->
+            while (c.moveToNext()) {
+                out.add(
+                    DynamicConnectorRecord(
+                        nombre = c.getString(0),
+                        descripcion = c.getString(1),
+                        schemaJson = c.getString(2),
+                        codigoJs = c.getString(3),
+                        creado = c.getString(4),
+                        activo = c.getInt(5) == 1,
+                    ),
+                )
+            }
+        }
+        return out
+    }
+
+    fun eliminarConector(nombre: String): Boolean {
+        val db = writableDatabase
+        val rows = db.delete("conectores_dinamicos", "nombre=?", arrayOf(nombre))
+        return rows > 0
+    }
+
     companion object {
         const val DB_NAME = "fenix_memory.db"
-        const val DB_VERSION = 1
+        const val DB_VERSION = 2
     }
 }
