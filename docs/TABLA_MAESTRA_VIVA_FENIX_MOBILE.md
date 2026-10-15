@@ -184,19 +184,19 @@ graph TD
     {
       "id": "M1",
       "name": "Enlace Hibrido, PPK Fix y Escudo Modo Calle",
-      "status": "LISTA_PARA_EJECUTAR",
-      "tests": ["bash scripts/fenix-usb-bridge.sh", "ZoneMatcherTest"]
+      "status": "COMPLETADA_Y_VERIFICADA",
+      "tests": ["bash scripts/fenix-usb-bridge.sh (OK)", "ZoneMatcherTest (6/6 PASS)"]
     },
     {
       "id": "M2",
       "name": "FenixToolRegistry, Router Dinamico y F-Chat",
-      "status": "PLANIFICADA",
-      "tests": ["DynamicModelDiscoveryTest", "ChatScreenTest"]
+      "status": "COMPLETADA_Y_VERIFICADA",
+      "tests": ["compileFossDebugKotlin (PASS)", "FenixToolRegistryTest (4/4 PASS)", "ZoneMatcherTest (6/6 PASS)"]
     },
     {
       "id": "M3",
       "name": "F-Voz Offline y SLM Local llama-server",
-      "status": "PLANIFICADA",
+      "status": "EN_CURSO",
       "tests": ["SherpaKwsTest", "LlamaServerBenchmark"]
     },
     {
