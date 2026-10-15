@@ -209,6 +209,10 @@ private fun serverStatusToColor(
         }
     }
 
+/**
+ * Texto de estado del canal de eventos. El caso Error muestra el mensaje del runtime tal cual
+ * (excepción técnica, no se traduce).
+ */
 @Composable
 private fun channelStatusToText(
     status: ChannelConnectionStatus,
@@ -220,7 +224,6 @@ private fun channelStatusToText(
         when (status) {
             is ChannelConnectionStatus.Idle -> stringResource(R.string.channel_status_idle)
             is ChannelConnectionStatus.Active -> stringResource(R.string.channel_status_active)
-            // Excepción técnica: el mensaje viene del error del runtime (no se traduce).
             is ChannelConnectionStatus.Error -> status.message
         }
     }

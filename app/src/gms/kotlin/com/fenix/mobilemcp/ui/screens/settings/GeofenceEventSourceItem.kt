@@ -15,10 +15,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.fenix.mobilemcp.R
 import com.fenix.mobilemcp.ui.navigation.GeofenceRoutes
 import com.fenix.mobilemcp.ui.viewmodels.GeofenceSettingsViewModel
 
@@ -28,7 +30,7 @@ fun LazyListScope.geofenceEventSourceItem(navController: NavHostController) {
         val viewModel: GeofenceSettingsViewModel = hiltViewModel()
         val config by viewModel.geofenceConfig.collectAsStateWithLifecycle()
         ListItem(
-            headlineContent = { Text("Geofence Events") },
+            headlineContent = { Text(stringResource(R.string.geofence_events_title)) },
             leadingContent = { Icon(Icons.Default.LocationOn, contentDescription = null) },
             trailingContent = {
                 Row(verticalAlignment = Alignment.CenterVertically) {

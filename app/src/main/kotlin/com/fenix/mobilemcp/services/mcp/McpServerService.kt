@@ -3,6 +3,7 @@ package com.fenix.mobilemcp.services.mcp
 import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
@@ -342,7 +343,8 @@ class McpServerService : Service() {
             // first data-returning tool call. Off the request path; the result updates the manager status.
             if (config.privacyModeConfig.enabled) {
                 coroutineScope.launch {
-                    val message = privacyStatusLogMessage(privacyModeManager.selfCheck())
+                    val message =
+                        privacyStatusLogMessage(privacyModeManager.selfCheck(), applicationContext)
                     serverLogRepository.log(ServerLogEntry.Type.PRIVACY, message)
                 }
             }
@@ -651,7 +653,7 @@ class McpServerService : Service() {
 
     private fun updateStatus(status: ServerStatus) {
         _serverStatus.value = status
-        serverLogRepository.log(ServerLogEntry.Type.SERVER, serverStatusLogMessage(status))
+        serverLogRepository.log(ServerLogEntry.Type.SERVER, serverStatusLogMessage(status, applicationContext))
     }
 
     private fun createNotification(): Notification {
@@ -706,35 +708,43 @@ private fun buildHttpsMaterial(
         null
     }
 
-/** Human-readable server-log message for a [ServerStatus] transition. */
-internal fun serverStatusLogMessage(status: ServerStatus): String =
+/**
+ * Recurso de log (y argumentos) para una transición de [ServerStatus]. El texto se resuelve al
+ * momento de escribir el registro, con el idioma vigente de la app (ES/EN).
+ * Excepción técnica: en Error, `status.message` viaja como argumento sin traducir.
+ */
+internal fun serverStatusLogMessageRes(status: ServerStatus): Pair<Int, Array<Any>> =
     when (status) {
-        ServerStatus.Starting -> "Server starting"
-        is ServerStatus.Running -> "Server started on ${status.bindingAddress}:${status.port}"
-        ServerStatus.Stopping -> "Server stopping"
-        ServerStatus.Stopped -> "Server stopped"
-        is ServerStatus.Error -> "Server error: ${status.message}"
+        ServerStatus.Starting -> R.string.log_server_starting to emptyArray<Any>()
+        is ServerStatus.Running -> R.string.log_server_started to arrayOf(status.bindingAddress, status.port)
+        ServerStatus.Stopping -> R.string.log_server_stopping to emptyArray<Any>()
+        ServerStatus.Stopped -> R.string.log_server_stopped to emptyArray<Any>()
+        is ServerStatus.Error -> R.string.log_server_error to arrayOf(status.message)
     }
 
-/** Server-log message for a Privacy Mode self-check result at server start. */
-internal fun privacyStatusLogMessage(status: PrivacyModeStatus): String =
+/** Human-readable server-log message for a [ServerStatus] transition, en el idioma vigente. */
+internal fun serverStatusLogMessage(
+    status: ServerStatus,
+    context: Context,
+): String = serverStatusLogMessageRes(status).let { (resId, args) -> context.getString(resId, *args) }
+
+/**
+ * Recurso de log (y argumentos) para el autochequeo de Modo Privacidad al iniciar el servidor.
+ * Excepción técnica: en Unavailable, `status.reason` (motivo del fallo del modelo) viaja sin traducir.
+ */
+internal fun privacyStatusLogMessageRes(status: PrivacyModeStatus): Pair<Int, Array<Any>> =
     when (status) {
-        is PrivacyModeStatus.Ready -> {
-            "Privacy mode ready (model)"
-        }
-
-        is PrivacyModeStatus.ReadyDeterministicOnly -> {
-            "Privacy mode ready (deterministic only)"
-        }
-
-        is PrivacyModeStatus.Unavailable -> {
-            "Privacy mode UNAVAILABLE: ${status.reason} — data-returning tools are blocked"
-        }
-
-        is PrivacyModeStatus.Disabled -> {
-            "Privacy mode disabled"
-        }
+        is PrivacyModeStatus.Ready -> R.string.log_privacy_ready_model to emptyArray<Any>()
+        is PrivacyModeStatus.ReadyDeterministicOnly -> R.string.log_privacy_ready_deterministic to emptyArray<Any>()
+        is PrivacyModeStatus.Unavailable -> R.string.log_privacy_unavailable to arrayOf(status.reason)
+        is PrivacyModeStatus.Disabled -> R.string.log_privacy_disabled to emptyArray<Any>()
     }
+
+/** Server-log message for a Privacy Mode self-check result at server start, en el idioma vigente. */
+internal fun privacyStatusLogMessage(
+    status: PrivacyModeStatus,
+    context: Context,
+): String = privacyStatusLogMessageRes(status).let { (resId, args) -> context.getString(resId, *args) }
 
 /** Server-log message for a tunnel status transition; null when not logged by the observer. */
 internal fun tunnelStatusLogMessage(status: TunnelStatus): String? =

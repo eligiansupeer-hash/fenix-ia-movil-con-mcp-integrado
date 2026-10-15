@@ -75,6 +75,18 @@
     <string name="channel_status_idle">Idle</string>
     <string name="channel_status_active">Active</string>
 
+    <!-- Registros del servidor (mensajes runtime; se escriben al pasar al idioma vigente) -->
+    <string name="log_server_starting">Server starting</string>
+    <string name="log_server_started">Server started on %1$s:%2$s</string>
+    <string name="log_server_stopping">Server stopping</string>
+    <string name="log_server_stopped">Server stopped</string>
+    <string name="log_server_error">Server error: %1$s</string>
+    <string name="log_privacy_ready_model">Privacy mode ready (model)</string>
+    <string name="log_privacy_ready_deterministic">Privacy mode ready (deterministic only)</string>
+    <string name="log_privacy_unavailable">Privacy mode UNAVAILABLE: %1$s — data-returning tools are blocked</string>
+    <string name="log_privacy_disabled">Privacy mode disabled</string>
+    <string name="geofence_events_title">Geofence Events</string>
+
     <!-- Configuration -->
     <string name="configuration_title">Configuration</string>
     <string name="config_binding_address_label">Binding Address</string>

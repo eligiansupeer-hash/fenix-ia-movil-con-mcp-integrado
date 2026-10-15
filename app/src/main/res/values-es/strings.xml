@@ -73,6 +73,18 @@
     <string name="channel_status_idle">En espera</string>
     <string name="channel_status_active">Activo</string>
 
+    <!-- Registros del servidor (mensajes runtime; se escriben al pasar al idioma vigente) -->
+    <string name="log_server_starting">Servidor iniciando</string>
+    <string name="log_server_started">Servidor iniciado en %1$s:%2$s</string>
+    <string name="log_server_stopping">Servidor deteniéndose</string>
+    <string name="log_server_stopped">Servidor detenido</string>
+    <string name="log_server_error">Error del servidor: %1$s</string>
+    <string name="log_privacy_ready_model">Modo Privacidad listo (modelo)</string>
+    <string name="log_privacy_ready_deterministic">Modo Privacidad listo (solo determinista)</string>
+    <string name="log_privacy_unavailable">Modo Privacidad NO DISPONIBLE: %1$s — las herramientas que devuelven datos quedan bloqueadas</string>
+    <string name="log_privacy_disabled">Modo Privacidad desactivado</string>
+    <string name="geofence_events_title">Eventos de geocerca</string>
+
     <!-- Configuración -->
     <string name="configuration_title">Configuración</string>
     <string name="config_binding_address_label">Dirección de escucha</string>
