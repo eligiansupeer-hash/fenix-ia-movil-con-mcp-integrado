@@ -23,6 +23,9 @@
 
     <!-- Settings Sub-pages -->
     <string name="settings_language_label">Language</string>
+    <string name="language_option_system">System</string>
+    <string name="language_option_spanish">Español</string>
+    <string name="language_option_english">English</string>
     <string name="settings_general_title">General</string>
     <string name="settings_general_subtitle">Port, address, device, auto-start</string>
     <string name="settings_access_title">Access</string>

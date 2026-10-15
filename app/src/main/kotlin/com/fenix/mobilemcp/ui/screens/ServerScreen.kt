@@ -50,6 +50,7 @@ import com.fenix.mobilemcp.ui.ApprovalActivity
 import com.fenix.mobilemcp.ui.components.BatteryOptimizationCard
 import com.fenix.mobilemcp.ui.components.CalloutCard
 import com.fenix.mobilemcp.ui.components.ConnectionInfoCard
+import com.fenix.mobilemcp.ui.components.LanguageSelector
 import com.fenix.mobilemcp.ui.components.PrivacyModeCard
 import com.fenix.mobilemcp.ui.components.ServerLogsSection
 import com.fenix.mobilemcp.ui.components.ServerStatusCard
@@ -201,6 +202,10 @@ fun ServerScreen(
                 logs = recentServerLogs,
                 onShowMore = onShowAllLogs,
             )
+
+            // Idioma también en Inicio (Sistema / Español / English)
+            Spacer(Modifier.height(24.dp))
+            LanguageSelector()
         }
     }
 

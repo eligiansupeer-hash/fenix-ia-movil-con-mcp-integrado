@@ -43,6 +43,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fenix.mobilemcp.R
 import com.fenix.mobilemcp.data.model.BindingAddress
 import com.fenix.mobilemcp.data.model.ServerStatus
+import com.fenix.mobilemcp.ui.components.LanguageSelector
 import com.fenix.mobilemcp.ui.viewmodels.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -103,36 +104,8 @@ fun GeneralSettingsScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp),
         ) {
-            // Idioma (M3-S2: toggle ES/EN, default sistema)
-            Text(
-                text = stringResource(R.string.settings_language_label),
-                style = MaterialTheme.typography.labelLarge,
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            val ctx = androidx.compose.ui.platform.LocalContext.current
-            var lang by remember { mutableStateOf(com.fenix.mobilemcp.utils.LocaleHelper.current(ctx)) }
-            val langOptions = listOf("" to "Sistema", "es" to "Español", "en" to "English")
-            SingleChoiceSegmentedButtonRow(
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                langOptions.forEachIndexed { index, (code, label) ->
-                    SegmentedButton(
-                        selected = code == lang,
-                        onClick = {
-                            lang = code
-                            com.fenix.mobilemcp.utils.LocaleHelper.set(ctx, code)
-                            (ctx as? android.app.Activity)?.recreate()
-                        },
-                        shape =
-                            SegmentedButtonDefaults.itemShape(
-                                index = index,
-                                count = langOptions.size,
-                            ),
-                    ) {
-                        Text(label)
-                    }
-                }
-            }
+            // Idioma (M3-S2: Sistema/ES/EN, rótulos vía resources)
+            LanguageSelector()
             Spacer(modifier = Modifier.height(16.dp))
             // Binding Address Selector
             Text(

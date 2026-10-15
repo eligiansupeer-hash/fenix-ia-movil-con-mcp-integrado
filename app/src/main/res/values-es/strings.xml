@@ -21,6 +21,9 @@
 
     <!-- Subpáginas de ajustes -->
     <string name="settings_language_label">Idioma</string>
+    <string name="language_option_system">Sistema</string>
+    <string name="language_option_spanish">Español</string>
+    <string name="language_option_english">English</string>
     <string name="settings_general_title">General</string>
     <string name="settings_general_subtitle">Puerto, dirección, dispositivo, inicio automático</string>
     <string name="settings_access_title">Acceso</string>
