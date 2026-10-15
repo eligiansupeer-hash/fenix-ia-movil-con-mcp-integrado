@@ -9,7 +9,7 @@ import com.fenix.mobilemcp.mcp.oauth.OAuthAccessValidator
 import com.fenix.mobilemcp.mcp.oauth.OAuthRouteDeps
 import com.fenix.mobilemcp.mcp.oauth.OAuthServerDeps
 import com.fenix.mobilemcp.mcp.oauth.installOAuthRoutes
-import com.fenix.mobilemcp.delivery.mirror.MirrorRoutes
+import com.fenix.mobilemcp.delivery.mirror.mirrorRoutes
 import com.fenix.mobilemcp.services.sharing.EphemeralFileLinkService
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
