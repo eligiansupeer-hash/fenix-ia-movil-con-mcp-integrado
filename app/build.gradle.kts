@@ -22,7 +22,7 @@ plugins {
  * - "v1.2.3"              → exact tag    → "1.2.3"
  * - "v1.2.3-7-gabc1234"   → after tag    → "1.2.3-dev.7+abc1234"
  * - "v1.2.3-beta-7-g..."  → pre-release  → "1.2.3-beta-dev.7+abc1234"
- * - "abc1234"              → no tags      → "0.0.0-dev+abc1234"
+ * - "abc1234"             → no tags      → "0.1.0-fenix+abc1234" (base Fénix)
  *
  * Returns null when git is unavailable or the command fails.
  */
@@ -62,7 +62,9 @@ fun getGitDescribeVersion(): String? {
             }
 
             else -> {
-                "0.0.0-dev+$output"
+                // Sin tags "v*": Fénix lleva su propia línea base, 0.1.0-fenix. El hash
+                // viaja como build metadata (SemVer "+…") para poder rastrear el commit.
+                "0.1.0-fenix+$output"
             }
         }
     } catch (_: Exception) {
