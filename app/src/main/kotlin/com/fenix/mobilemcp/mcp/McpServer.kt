@@ -167,7 +167,7 @@ class McpServer(
             oauthEnabled = config.oauthEnabled
             baseUrlOf = { effectiveBaseUrl(it, config.publicUrlOverride) }
             validateOAuthToken = { token, resource -> accessValidator.validate(token, resource) }
-            excludedPaths = setOf("/health", "/register", "/token", "/authorize", "/authorize/status")
+            excludedPaths = setOf("/health", "/register", "/token", "/authorize", "/authorize/status", "/openapi.json")
             excludedPathPrefixes = setOf(EphemeralFileLinkService.PATH_PREFIX, "/.well-known/")
             onAuthFailure = { serverLog.log(ServerLogEntry.Type.AUTH, "Authentication failed from $it") }
         }
@@ -181,14 +181,24 @@ class McpServer(
                     ContentType.Application.Json,
                     HttpStatusCode.OK,
                 )
-}
+            }
 
-        // Mirror endpoint para nodo B (deep-link Maps con zonas peligrosas) — sin auth
-        routing {
+            get("/openapi.json") {
+                val openApiJson = com.fenix.mobilemcp.mcp.openapi.FenixOpenApiGenerator.generate(
+                    version = BuildConfig.VERSION_NAME,
+                    tools = com.fenix.mobilemcp.mcp.registry.FenixToolRegistry.getAll(),
+                )
+                call.respondText(
+                    openApiJson,
+                    ContentType.Application.Json,
+                    HttpStatusCode.OK,
+                )
+            }
+
+            // Mirror endpoint para nodo B (deep-link Maps con zonas peligrosas) — sin auth
             mirrorRoutes()
-        }
 
-        // Capability-link download route — unauthenticated; the token is the credential.
+            // Capability-link download route — unauthenticated; the token is the credential.
             // Serves the registered blob bytes with its content-type; 404 for unknown/expired tokens.
             // Never log the token or URL.
             get("${EphemeralFileLinkService.PATH_PREFIX}{token}") {
