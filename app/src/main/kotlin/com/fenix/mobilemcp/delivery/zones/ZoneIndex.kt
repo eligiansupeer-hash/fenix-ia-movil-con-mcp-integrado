@@ -45,5 +45,5 @@ object ZoneIndex {
         ZoneEntry("RIV-03", "Rivadavia", listOf("Barrio Nuevo Cuyo"), listOf("nuevo cuyo"), listOf()),
         ZoneEntry("RIV-04", "Rivadavia", listOf("Barrio Penitentes"), listOf("penitentes"), listOf()),
         ZoneEntry("RIV-05", "Rivadavia", listOf("Barrio Lagunas"), listOf("lagunas"), listOf()),
-    ]
+    )
 }

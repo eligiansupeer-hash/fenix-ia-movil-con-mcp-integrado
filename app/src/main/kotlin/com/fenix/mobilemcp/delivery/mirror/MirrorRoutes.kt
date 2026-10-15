@@ -1,50 +1,40 @@
 package com.fenix.mobilemcp.delivery.mirror
 
-import io.ktor.server.application.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import io.ktor.server.application.call.*
-import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.call
+import io.ktor.server.response.respond
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
 import kotlinx.serialization.Serializable
+import java.net.URLEncoder
 
 /**
- * Endpoint /mirror para recibir alertas de zonas del nodo A (hotspot)
- * y abrir Google Maps con la capa de zonas peligrosas.
- * 
- * Uso: GET /mirror?zone=RAW-01&dept=Rawson&name=Valle%20Grande
- * Respuesta: JSON con status + deep-link de Maps para abrir en la app.
+ * Endpoint /mirror para alertas del nodo A. Protegido por secreto compartido
+ * (header X-Fenix-Mirror) porque vive en LAN/hotspot visible. Sin auth global.
  */
 fun Route.mirrorRoutes(expectedSecret: String = MirrorAuth.DEFAULT_SECRET) {
     get("/mirror") {
-        // Auditoría F9: el espejo vive en LAN/hotspot visible → secreto compartido
-        // por header (configurado al emparejar nodos), nunca en URL ni logs.
-        val secret = call.request.headers["X-Fenix-Mirror"]
+        val secret = call.request.headers[MirrorAuth.HEADER]
         if (secret != expectedSecret) {
-            call.respondText("forbidden", status = io.ktor.http.HttpStatusCode.Forbidden)
+            call.respondText("forbidden", status = HttpStatusCode.Forbidden)
             return@get
         }
-        val zoneId = call.request.queryParameters["zone"] ?: return@get call.respondText("Missing zone", status = 400)
+        val zoneId = call.request.queryParameters["zone"]
+            ?: return@get call.respondText("Missing zone", status = HttpStatusCode.BadRequest)
         val dept = call.request.queryParameters["dept"] ?: ""
         val name = call.request.queryParameters["name"] ?: ""
-        
-        val mapsUrl = "https://www.google.com/maps/search/?api=1&query=${kotlin.net.urlencode(dept + " " + name + " San Juan Argentina")}&layers=traffic"
-        
-        val response = MirrorResponse(
-            status = "ok",
-            zoneId = zoneId,
-            department = dept,
-            name = name,
-            mapsUrl = mapsUrl,
-            timestamp = System.currentTimeMillis()
-        )
-        
-        call.respond(mapOf(
-            "status" to "ok",
-            "zoneId" to zoneId,
-            "department" to dept,
-            "name" to name,
-            "mapsUrl" to mapsUrl,
-            "timestamp" to System.currentTimeMillis()
+        val query = URLEncoder.encode("$dept $name San Juan Argentina", "UTF-8")
+        val mapsUrl = "https://www.google.com/maps/search/?api=1&query=$query"
+        call.respond(
+            MirrorResponse(
+                status = "ok",
+                zoneId = zoneId,
+                department = dept,
+                name = name,
+                mapsUrl = mapsUrl,
+                timestamp = System.currentTimeMillis(),
+            ),
         )
     }
 }
@@ -56,5 +46,5 @@ data class MirrorResponse(
     val department: String,
     val name: String,
     val mapsUrl: String,
-    val timestamp: Long
+    val timestamp: Long,
 )

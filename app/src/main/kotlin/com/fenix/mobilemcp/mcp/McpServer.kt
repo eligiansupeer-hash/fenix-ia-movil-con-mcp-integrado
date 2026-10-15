@@ -10,6 +10,7 @@ import com.fenix.mobilemcp.mcp.oauth.OAuthRouteDeps
 import com.fenix.mobilemcp.mcp.oauth.OAuthServerDeps
 import com.fenix.mobilemcp.mcp.oauth.installOAuthRoutes
 import com.fenix.mobilemcp.delivery.mirror.MirrorRoutes
+import com.fenix.mobilemcp.services.sharing.EphemeralFileLinkService
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.engine.EmbeddedServer
@@ -184,7 +185,7 @@ class McpServer(
 
         // Mirror endpoint para nodo B (deep-link Maps con zonas peligrosas) — sin auth
         routing {
-            MirrorRoutes().mirrorRoutes()
+            mirrorRoutes()
         }
 
         // Capability-link download route — unauthenticated; the token is the credential.
