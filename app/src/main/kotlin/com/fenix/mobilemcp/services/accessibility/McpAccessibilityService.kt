@@ -33,6 +33,9 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
 import java.util.concurrent.Executor
 import kotlin.coroutines.resume
+import com.fenix.mobilemcp.delivery.monitor.DeliveryMonitor
+import com.fenix.mobilemcp.delivery.zones.ZoneEntry
+import com.fenix.mobilemcp.delivery.zones.ZoneIndexProvider
 
 @Suppress("TooManyFunctions")
 class McpAccessibilityService : AccessibilityService() {
@@ -57,6 +60,8 @@ class McpAccessibilityService : AccessibilityService() {
     @Volatile
     private var currentActivityName: String? = null
 
+    private var deliveryMonitor: com.fenix.mobilemcp.delivery.monitor.DeliveryMonitor? = null
+
     override fun onServiceConnected() {
         super.onServiceConnected()
 
@@ -71,9 +76,19 @@ class McpAccessibilityService : AccessibilityService() {
                 onSettled = { invalidateCache(nodeCache) },
             )
 
+        // Inicializa monitor de delivery pasivo
+        val zoneMatcher = com.fenix.mobilemcp.delivery.zones.ZoneMatcher()
+        val zoneIndex = com.fenix.mobilemcp.delivery.zones.ZoneIndexProvider.provideIndex()
+        deliveryMonitor = com.fenix.mobilemcp.delivery.monitor.DeliveryMonitor(
+            context = this,
+            zoneMatcher = zoneMatcher,
+            zoneIndex = zoneIndex
+        )
+        deliveryMonitor?.start()
+
         configureServiceInfo()
 
-        Log.i(TAG, "Accessibility service connected")
+        Log.i(TAG, "Accessibility service connected (delivery monitor ACTIVO)")
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
@@ -101,6 +116,10 @@ class McpAccessibilityService : AccessibilityService() {
 
             AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED -> {
                 Log.d(TAG, "Window content changed: package=${event.packageName}")
+                // Monitoreo pasivo de delivery (solo lectura, sin inyección)
+                event.packageName?.let { pkg ->
+                    deliveryMonitor?.onContentChanged(pkg, rootInActiveWindow)
+                }
             }
 
             else -> {
@@ -126,6 +145,10 @@ class McpAccessibilityService : AccessibilityService() {
         // Stop any pending debounced invalidation before tearing down the scope it runs on.
         cacheInvalidationDebouncer?.cancel()
         cacheInvalidationDebouncer = null
+
+        // Stop delivery monitor
+        deliveryMonitor?.stop()
+        deliveryMonitor = null
 
         // Flush the node cache — all AccessibilityNodeInfo references become invalid.
         nodeCache?.clear()
