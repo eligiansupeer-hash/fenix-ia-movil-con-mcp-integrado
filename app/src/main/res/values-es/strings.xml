@@ -68,6 +68,10 @@
     <string name="server_status_error">Error: %1$s</string>
     <string name="server_action_start">Iniciar</string>
     <string name="server_action_stop">Detener</string>
+    <string name="services_status_title">Servicios</string>
+    <string name="service_mcp_server">Servidor MCP</string>
+    <string name="channel_status_idle">En espera</string>
+    <string name="channel_status_active">Activo</string>
 
     <!-- Configuración -->
     <string name="configuration_title">Configuración</string>
