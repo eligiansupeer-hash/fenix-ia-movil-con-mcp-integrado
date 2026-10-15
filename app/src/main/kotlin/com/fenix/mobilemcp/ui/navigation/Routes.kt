@@ -3,6 +3,8 @@ package com.fenix.mobilemcp.ui.navigation
 sealed class TopLevelRoute(
     val route: String,
 ) {
+    data object Chat : TopLevelRoute("chat")
+
     data object Server : TopLevelRoute("server")
 
     data object Settings : TopLevelRoute("settings")

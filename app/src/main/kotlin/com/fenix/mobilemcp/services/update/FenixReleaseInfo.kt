@@ -6,6 +6,6 @@ package com.fenix.mobilemcp.services.update
  */
 object FenixReleaseInfo {
     const val GITHUB_OWNER = "eligiansupeer-hash"
-    const val GITHUB_REPO = "fenix-mobile-mcp"
-    const val APP_NAME = "Fenix MCP Android"
+    const val GITHUB_REPO = "fenix-ia-movil-con-mcp-integrado"
+    const val APP_NAME = "Fénix IA Móvil con MCP Integrado"
 }

@@ -6,6 +6,8 @@ import io.modelcontextprotocol.kotlin.sdk.server.Server
 import io.modelcontextprotocol.kotlin.sdk.types.CallToolRequest
 import io.modelcontextprotocol.kotlin.sdk.types.CallToolResult
 import io.modelcontextprotocol.kotlin.sdk.types.ToolSchema
+import com.fenix.mobilemcp.mcp.registry.FenixTool
+import com.fenix.mobilemcp.mcp.registry.FenixToolRegistry
 import kotlinx.coroutines.isActive
 import kotlin.coroutines.coroutineContext
 
@@ -68,7 +70,7 @@ internal fun loggedToolHandler(
  * at its current parameter count.
  */
 class LoggedToolRegistrar(
-    private val server: Server,
+    private val server: Server?,
     private val serverLog: ServerLogRepository,
     private val toolCallIndicator: ToolCallIndicator = ToolCallIndicator.NONE,
 ) {
@@ -81,7 +83,16 @@ class LoggedToolRegistrar(
         handler: suspend (CallToolRequest) -> CallToolResult,
     ) {
         val wrapped = loggedToolHandler(serverLog, toolName, toolCallIndicator, handler)
-        server.addTool(name = name, description = description, inputSchema = inputSchema) { request ->
+        FenixToolRegistry.register(
+            FenixTool(
+                toolName = toolName,
+                name = name,
+                description = description,
+                inputSchema = inputSchema,
+                handler = wrapped,
+            ),
+        )
+        server?.addTool(name = name, description = description, inputSchema = inputSchema) { request ->
             wrapped(request)
         }
     }

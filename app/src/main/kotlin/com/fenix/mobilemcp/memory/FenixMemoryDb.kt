@@ -174,6 +174,87 @@ class FenixMemoryDb @Inject constructor(@ApplicationContext context: Context) :
         db.insert("tareas_pasos", null, cv)
     }
 
+    /** Registra enfriamiento (cooldown) por error 429/rate-limit. */
+    fun setProviderCooldown(nombre: String, cooldownSeconds: Long, lastError: String = "") {
+        val db = writableDatabase
+        val now = Instant.now()
+        val cooldownHasta = now.plusSeconds(cooldownSeconds).toString()
+        val cv = ContentValues().apply {
+            put("nombre", nombre)
+            put("cooldown_hasta", cooldownHasta)
+            put("last_error", lastError)
+            put("actualizado", now.toString())
+        }
+        val rows = db.update("provider_health", cv, "nombre=?", arrayOf(nombre))
+        if (rows == 0) {
+            cv.put("total_fallos", 1)
+            cv.put("total_calls", 1)
+            db.insert("provider_health", null, cv)
+        } else {
+            db.execSQL(
+                "UPDATE provider_health SET total_fallos = total_fallos + 1, total_calls = total_calls + 1 WHERE nombre=?",
+                arrayOf(nombre),
+            )
+        }
+    }
+
+    /** Verifica si un proveedor está actualmente en periodo de enfriamiento (cooldown). */
+    fun isProviderInCooldown(nombre: String): Boolean {
+        val db = readableDatabase
+        val now = Instant.now().toString()
+        db.rawQuery(
+            "SELECT cooldown_hasta FROM provider_health WHERE nombre=? AND cooldown_hasta > ?",
+            arrayOf(nombre, now),
+        ).use { c ->
+            return c.moveToFirst()
+        }
+    }
+
+    /** Registra éxito de llamada a proveedor. */
+    fun reportProviderSuccess(nombre: String) {
+        val db = writableDatabase
+        val now = Instant.now().toString()
+        val cv = ContentValues().apply {
+            put("nombre", nombre)
+            put("cooldown_hasta", null as String?)
+            put("last_error", "")
+            put("actualizado", now)
+        }
+        val rows = db.update("provider_health", cv, "nombre=?", arrayOf(nombre))
+        if (rows == 0) {
+            cv.put("total_calls", 1)
+            cv.put("total_fallos", 0)
+            db.insert("provider_health", null, cv)
+        } else {
+            db.execSQL(
+                "UPDATE provider_health SET total_calls = total_calls + 1 WHERE nombre=?",
+                arrayOf(nombre),
+            )
+        }
+    }
+
+    /** Registra fallo general de proveedor. */
+    fun reportProviderFailure(nombre: String, error: String) {
+        val db = writableDatabase
+        val now = Instant.now().toString()
+        val cv = ContentValues().apply {
+            put("nombre", nombre)
+            put("last_error", error)
+            put("actualizado", now)
+        }
+        val rows = db.update("provider_health", cv, "nombre=?", arrayOf(nombre))
+        if (rows == 0) {
+            cv.put("total_calls", 1)
+            cv.put("total_fallos", 1)
+            db.insert("provider_health", null, cv)
+        } else {
+            db.execSQL(
+                "UPDATE provider_health SET total_fallos = total_fallos + 1, total_calls = total_calls + 1 WHERE nombre=?",
+                arrayOf(nombre),
+            )
+        }
+    }
+
     companion object {
         const val DB_NAME = "fenix_memory.db"
         const val DB_VERSION = 1

@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">Fenix MCP Android</string>
-    <string name="share_target_label">Fenix MCP Android</string>
+    <string name="app_name">Fénix IA Móvil con MCP Integrado</string>
+    <string name="share_target_label">Fénix IA Móvil con MCP Integrado</string>
 
     <!-- Servicio de accesibilidad -->
     <string name="accessibility_service_description">Control remoto del teléfono vía protocolo MCP. Permite leer la pantalla y hacer acciones en el dispositivo.</string>
@@ -12,9 +12,10 @@
     <string name="notification_mcp_server_title">Servidor MCP en marcha</string>
 
     <!-- Barra superior -->
-    <string name="app_bar_title">Fenix MCP Android</string>
+    <string name="app_bar_title">Fénix IA Móvil con MCP Integrado</string>
 
     <!-- Pestañas -->
+    <string name="tab_chat">F-Chat</string>
     <string name="tab_server">Servidor</string>
     <string name="tab_settings">Ajustes</string>
     <string name="tab_about">Acerca de</string>
@@ -43,10 +44,10 @@
     <string name="settings_storage_subtitle">Ubicaciones, límites de archivos</string>
 
     <!-- Pantalla Acerca de -->
-    <string name="about_title">Fenix MCP Android</string>
+    <string name="about_title">Fénix IA Móvil con MCP Integrado</string>
     <string name="about_author_section">Autora</string>
     <string name="about_author_name">Eli Gian</string>
-    <string name="about_upstream_credit_min">Basado en android-remote-control-mcp (MIT)</string>
+    <string name="about_upstream_credit_min">Basado en la arquitectura abierta MCP (Licencia MIT)</string>
     <string name="about_links_section">Enlaces</string>
     <string name="about_link_github">Repositorio GitHub</string>
     <string name="about_link_license">Licencia MIT</string>

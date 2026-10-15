@@ -4,6 +4,7 @@ import android.content.Context
 import android.provider.Settings
 import java.net.InetSocketAddress
 import java.net.Socket
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -27,7 +28,7 @@ data class StreetImmunityReport(
  */
 @Singleton
 class StreetImmunityChecker @Inject constructor(
-    private val context: Context
+    @ApplicationContext private val context: Context
 ) {
     companion object {
         val WORKSHOP_PORTS = listOf(8022, 8080, 8081, 9222)

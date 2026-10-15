@@ -8,6 +8,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dns
+import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -41,16 +42,14 @@ fun MainScreen(
     viewModel: MainViewModel = hiltViewModel(),
     updateViewModel: UpdateViewModel = hiltViewModel(),
 ) {
-    var selectedTabRoute by rememberSaveable { mutableStateOf(TopLevelRoute.Server.route) }
+    var selectedTabRoute by rememberSaveable { mutableStateOf(TopLevelRoute.Chat.route) }
     var pendingSettingsRoute by rememberSaveable { mutableStateOf<String?>(null) }
     val availableUpdate by updateViewModel.availableUpdate.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    // Back on the Settings/About tab returns to the Server tab instead of leaving the app. The
-    // settings NavHost registers its own back callback AFTER this one, so it wins while its back
-    // stack is non-empty: back inside a settings sub-screen still pops to the settings index first.
-    BackHandler(enabled = selectedTabRoute != TopLevelRoute.Server.route) {
-        selectedTabRoute = TopLevelRoute.Server.route
+    // Back on the other tabs returns to the Chat tab instead of leaving the app.
+    BackHandler(enabled = selectedTabRoute != TopLevelRoute.Chat.route) {
+        selectedTabRoute = TopLevelRoute.Chat.route
     }
 
     Scaffold(
@@ -68,6 +67,7 @@ fun MainScreen(
         bottomBar = {
             NavigationBar {
                 listOf(
+                    Triple(TopLevelRoute.Chat, Icons.Default.Forum, stringResource(R.string.tab_chat)),
                     Triple(TopLevelRoute.Server, Icons.Default.Dns, stringResource(R.string.tab_server)),
                     Triple(TopLevelRoute.Settings, Icons.Default.Settings, stringResource(R.string.tab_settings)),
                     Triple(TopLevelRoute.About, Icons.Default.Info, stringResource(R.string.tab_about)),
@@ -83,6 +83,10 @@ fun MainScreen(
         },
     ) { paddingValues ->
         when (selectedTabRoute) {
+            TopLevelRoute.Chat.route -> {
+                ChatScreen(modifier = Modifier.padding(paddingValues))
+            }
+
             TopLevelRoute.Server.route -> {
                 ServerTabScreen(
                     onNavigateToPermissions = {
@@ -124,26 +128,7 @@ fun MainScreen(
             }
 
             else -> {
-                ServerTabScreen(
-                    onNavigateToPermissions = {
-                        pendingSettingsRoute = SettingsRoute.Permissions.route
-                        selectedTabRoute = TopLevelRoute.Settings.route
-                    },
-                    onNavigateToNetworkSettings = {
-                        pendingSettingsRoute = SettingsRoute.General.route
-                        selectedTabRoute = TopLevelRoute.Settings.route
-                    },
-                    onNavigateToTunnelSettings = {
-                        pendingSettingsRoute = SettingsRoute.Tunnel.route
-                        selectedTabRoute = TopLevelRoute.Settings.route
-                    },
-                    onOpenPrivacySettings = {
-                        pendingSettingsRoute = SettingsRoute.Privacy.route
-                        selectedTabRoute = TopLevelRoute.Settings.route
-                    },
-                    modifier = Modifier.padding(paddingValues),
-                    viewModel = viewModel,
-                )
+                ChatScreen(modifier = Modifier.padding(paddingValues))
             }
         }
     }

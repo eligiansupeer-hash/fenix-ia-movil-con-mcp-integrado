@@ -30,6 +30,9 @@ class McpApplication :
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
 
+    @Inject
+    lateinit var serverLogRepository: com.fenix.mobilemcp.data.repository.ServerLogRepository
+
     // On-demand WorkManager initialization (the default initializer is removed in the manifest) so the
     // Hilt-provided worker factory is used for @HiltWorker construction. Built once (lazy): workerFactory
     // is injected in super.onCreate(), before schedulePeriodic() first touches WorkManager.
@@ -48,6 +51,7 @@ class McpApplication :
         createNotificationChannels()
         configureOsmdroid()
         appIconCache.preload()
+        com.fenix.mobilemcp.mcp.registry.FenixDefaultToolInitializer.initialize(this, serverLogRepository)
         // Apply the one-time auth-model migration eagerly so the UI Flow reflects the migrated model
         // promptly at startup (idempotent; the server start path also guarantees it via getServerConfig()).
         CoroutineScope(Dispatchers.IO).launch { settingsRepository.ensureAuthModelMigrated() }
