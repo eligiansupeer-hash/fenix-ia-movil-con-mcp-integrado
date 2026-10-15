@@ -87,7 +87,7 @@ class UpdateCheckCoordinator
         private suspend fun proceed(manual: Boolean): UpdateCheckOutcome {
             val currentRaw = versionProvider.versionName
             val current = SemanticVersion.parse(currentRaw)
-            if (current == null || currentRaw.contains(DEV_MARKER)) {
+            if (current == null || DEV_MARKERS.any { currentRaw.contains(it) }) {
                 return UpdateCheckOutcome.DevBuild
             }
             // Record the attempt time for BOTH automatic triggers so the on-open throttle also counts the
@@ -136,7 +136,9 @@ class UpdateCheckCoordinator
         companion object {
             // git-describe stamps builds after a tag with a `-dev.<n>` pre-release segment; those are
             // ahead of the tagged release and must never be prompted to "update" to that same tag.
-            private const val DEV_MARKER = "-dev"
+            // `-fenix` marca la línea de desarrollo del fork: hasta F9 no hay release publicado en
+            // EliGian/fenix-mobile-mcp, así que el chequeo se salta y no se llama a api.github.com.
+            private val DEV_MARKERS = listOf("-dev", "-fenix")
 
             // Minimum spacing between on-open checks. Keeps rapid foreground transitions from exhausting
             // GitHub's 60/hour anonymous quota; below the periodic interval so periodic runs are unaffected.

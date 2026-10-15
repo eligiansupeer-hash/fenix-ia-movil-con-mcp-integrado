@@ -74,6 +74,17 @@ class UpdateCheckCoordinatorTest {
         }
 
     @Test
+    fun `fenix fork build is skipped without a network call`() =
+        runTest {
+            every { versionProvider.versionName } returns "0.1.0-fenix+d0354af"
+
+            val outcome = coordinator.check(UpdateCheckTrigger.PERIODIC)
+
+            assertEquals(UpdateCheckOutcome.DevBuild, outcome)
+            coVerify(exactly = 0) { checker.fetchLatestRelease() }
+        }
+
+    @Test
     fun `an unparseable installed version is skipped without a network call`() =
         runTest {
             every { versionProvider.versionName } returns "unknown"
