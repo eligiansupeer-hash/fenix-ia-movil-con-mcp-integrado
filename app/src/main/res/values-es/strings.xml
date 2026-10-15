@@ -251,6 +251,39 @@
     <string name="channel_not_configured_dialog_body">Configurá la URL en Ajustes → Canal de eventos antes de iniciar. El token es opcional.</string>
     <string name="channel_not_configured_dialog_ok">OK</string>
 
+    <!-- Canal de eventos: pantalla de ajustes -->
+    <string name="channel_title">Canal de eventos</string>
+    <string name="channel_endpoint_url_label">URL del endpoint</string>
+    <string name="channel_auth_token_label">Token de autenticación</string>
+    <string name="channel_auto_start_desc">Inicia el canal de eventos al arrancar el dispositivo</string>
+    <string name="channel_event_sources">Fuentes de eventos</string>
+    <string name="channel_notification_events">Eventos de notificaciones</string>
+    <string name="channel_wifi_events">Eventos de WiFi</string>
+
+    <!-- Monitor de WiFi -->
+    <string name="wifi_monitor_title">Monitor de WiFi</string>
+    <string name="wifi_ssid_label">SSID</string>
+    <string name="wifi_notify_discovered">Avisar al detectar</string>
+    <string name="wifi_notify_lost">Avisar al perder</string>
+    <string name="wifi_notify_connected">Avisar al conectarse</string>
+    <string name="wifi_notify_disconnected">Avisar al desconectarse</string>
+    <string name="wifi_scan_delayed_hint">Basado en escaneos; puede demorar</string>
+    <string name="wifi_realtime_hint">En tiempo real</string>
+    <string name="wifi_scan_throttle_note">Los eventos de escaneo de WiFi (detectado/perdido) pueden demorar hasta 30 minutos en segundo plano por el límite de escaneos de Android. Los eventos de conexión son en tiempo real.</string>
+
+    <!-- Filtro de notificaciones -->
+    <string name="notif_filter_title">Filtro de notificaciones</string>
+    <string name="notif_search_apps">Buscar apps</string>
+    <string name="notif_apps_selected">Apps seleccionadas: %1$d</string>
+    <string name="notif_filter_mode_all">Todas</string>
+    <string name="notif_filter_mode_whitelist">Solo la lista</string>
+    <string name="notif_filter_mode_blacklist">Excepto la lista</string>
+
+    <!-- Descripciones para lectores de pantalla -->
+    <string name="cd_back">Atrás</string>
+    <string name="cd_add">Agregar</string>
+    <string name="cd_remove">Quitar</string>
+
     <!-- Acceso (OAuth + bearer) -->
     <string name="access_title">Acceso</string>
     <string name="access_oauth_label">OAuth</string>

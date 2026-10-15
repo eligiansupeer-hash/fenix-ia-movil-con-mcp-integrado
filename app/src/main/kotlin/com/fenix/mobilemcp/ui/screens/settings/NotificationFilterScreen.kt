@@ -33,8 +33,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.fenix.mobilemcp.R
 import com.fenix.mobilemcp.data.model.NotificationFilterMode
 import com.fenix.mobilemcp.ui.viewmodels.ChannelViewModel
 
@@ -53,10 +55,13 @@ fun NotificationFilterScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Notification Filter") },
+                title = { Text(stringResource(R.string.notif_filter_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_back),
+                        )
                     }
                 },
             )
@@ -73,7 +78,22 @@ fun NotificationFilterScreen(
                         onClick = { viewModel.updateNotificationFilterMode(mode) },
                         shape = SegmentedButtonDefaults.itemShape(index = index, count = modes.size),
                     ) {
-                        Text(mode.name)
+                        Text(
+                            text =
+                                when (mode) {
+                                    NotificationFilterMode.ALL -> {
+                                        stringResource(R.string.notif_filter_mode_all)
+                                    }
+
+                                    NotificationFilterMode.WHITELIST -> {
+                                        stringResource(R.string.notif_filter_mode_whitelist)
+                                    }
+
+                                    NotificationFilterMode.BLACKLIST -> {
+                                        stringResource(R.string.notif_filter_mode_blacklist)
+                                    }
+                                },
+                        )
                     }
                 }
             }
@@ -82,13 +102,13 @@ fun NotificationFilterScreen(
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    label = { Text("Search apps") },
+                    label = { Text(stringResource(R.string.notif_search_apps)) },
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     singleLine = true,
                 )
 
                 Text(
-                    "${config.notifications.filterApps.size} apps selected",
+                    stringResource(R.string.notif_apps_selected, config.notifications.filterApps.size),
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                 )

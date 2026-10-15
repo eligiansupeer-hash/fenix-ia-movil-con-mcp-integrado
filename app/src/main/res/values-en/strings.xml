@@ -253,6 +253,39 @@
     <string name="channel_not_configured_dialog_body">Configure the event channel endpoint URL in Settings → Event Channel before starting the service. The auth token is optional and can be left empty if your endpoint does not require it.</string>
     <string name="channel_not_configured_dialog_ok">OK</string>
 
+    <!-- Event Channel settings screen -->
+    <string name="channel_title">Event Channel</string>
+    <string name="channel_endpoint_url_label">Endpoint URL</string>
+    <string name="channel_auth_token_label">Auth Token</string>
+    <string name="channel_auto_start_desc">Start event channel when device boots</string>
+    <string name="channel_event_sources">Event Sources</string>
+    <string name="channel_notification_events">Notification Events</string>
+    <string name="channel_wifi_events">WiFi Events</string>
+
+    <!-- WiFi monitor -->
+    <string name="wifi_monitor_title">WiFi Monitor</string>
+    <string name="wifi_ssid_label">SSID</string>
+    <string name="wifi_notify_discovered">Notify on discovered</string>
+    <string name="wifi_notify_lost">Notify on lost</string>
+    <string name="wifi_notify_connected">Notify on connected</string>
+    <string name="wifi_notify_disconnected">Notify on disconnected</string>
+    <string name="wifi_scan_delayed_hint">Scan-based, may be delayed</string>
+    <string name="wifi_realtime_hint">Real-time</string>
+    <string name="wifi_scan_throttle_note">WiFi scan events (discovered/lost) may be delayed up to 30 minutes in the background due to Android scan throttling. Connection events are real-time.</string>
+
+    <!-- Notification filter -->
+    <string name="notif_filter_title">Notification Filter</string>
+    <string name="notif_search_apps">Search apps</string>
+    <string name="notif_apps_selected">Apps selected: %1$d</string>
+    <string name="notif_filter_mode_all">All</string>
+    <string name="notif_filter_mode_whitelist">Allowlist</string>
+    <string name="notif_filter_mode_blacklist">Blocklist</string>
+
+    <!-- Accessibility content descriptions -->
+    <string name="cd_back">Back</string>
+    <string name="cd_add">Add</string>
+    <string name="cd_remove">Remove</string>
+
     <!-- Access settings (OAuth + bearer) -->
     <string name="access_title">Access</string>
     <string name="access_oauth_label">OAuth</string>

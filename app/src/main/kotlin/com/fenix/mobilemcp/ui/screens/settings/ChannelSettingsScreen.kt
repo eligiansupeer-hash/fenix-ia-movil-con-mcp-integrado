@@ -37,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -44,6 +45,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.fenix.mobilemcp.R
 import com.fenix.mobilemcp.ui.viewmodels.ChannelViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,10 +67,13 @@ fun ChannelSettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Event Channel") },
+                title = { Text(stringResource(R.string.channel_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_back),
+                        )
                     }
                 },
             )
@@ -81,7 +86,7 @@ fun ChannelSettingsScreen(
                 OutlinedTextField(
                     value = endpointUrlInput,
                     onValueChange = { viewModel.updateEndpointUrl(it) },
-                    label = { Text("Endpoint URL") },
+                    label = { Text(stringResource(R.string.channel_endpoint_url_label)) },
                     isError = endpointUrlError != null,
                     supportingText = endpointUrlError?.let { { Text(it) } },
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
@@ -92,7 +97,7 @@ fun ChannelSettingsScreen(
                 OutlinedTextField(
                     value = authTokenInput,
                     onValueChange = { viewModel.updateAuthToken(it) },
-                    label = { Text("Auth Token") },
+                    label = { Text(stringResource(R.string.channel_auth_token_label)) },
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                     singleLine = true,
                     keyboardOptions =
@@ -109,20 +114,28 @@ fun ChannelSettingsScreen(
                     trailingIcon = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             IconButton(onClick = { tokenVisible = !tokenVisible }) {
+                                val hideCd = stringResource(R.string.config_token_hide)
+                                val showCd = stringResource(R.string.config_token_show)
                                 Icon(
                                     if (tokenVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                    contentDescription = if (tokenVisible) "Hide" else "Show",
+                                    contentDescription = if (tokenVisible) hideCd else showCd,
                                 )
                             }
                             IconButton(
                                 onClick = { clipboardManager.setText(AnnotatedString(authTokenInput)) },
                             ) {
-                                Icon(Icons.Default.ContentCopy, contentDescription = "Copy")
+                                Icon(
+                                    Icons.Default.ContentCopy,
+                                    contentDescription = stringResource(R.string.config_token_copy),
+                                )
                             }
                             IconButton(
                                 onClick = { viewModel.generateNewAuthToken() },
                             ) {
-                                Icon(Icons.Default.Refresh, contentDescription = "Generate new")
+                                Icon(
+                                    Icons.Default.Refresh,
+                                    contentDescription = stringResource(R.string.config_token_regenerate),
+                                )
                             }
                         }
                     },
@@ -130,8 +143,8 @@ fun ChannelSettingsScreen(
             }
             item {
                 ListItem(
-                    headlineContent = { Text("Auto-start at boot") },
-                    supportingContent = { Text("Start event channel when device boots") },
+                    headlineContent = { Text(stringResource(R.string.config_auto_start_label)) },
+                    supportingContent = { Text(stringResource(R.string.channel_auto_start_desc)) },
                     trailingContent = {
                         Switch(
                             checked = config.enabled,
@@ -142,13 +155,13 @@ fun ChannelSettingsScreen(
             }
             item {
                 Text(
-                    "Event Sources",
+                    stringResource(R.string.channel_event_sources),
                     modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
                 )
             }
             item {
                 ListItem(
-                    headlineContent = { Text("Notification Events") },
+                    headlineContent = { Text(stringResource(R.string.channel_notification_events)) },
                     leadingContent = { Icon(Icons.Default.Notifications, contentDescription = null) },
                     trailingContent = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -165,7 +178,7 @@ fun ChannelSettingsScreen(
             }
             item {
                 ListItem(
-                    headlineContent = { Text("WiFi Events") },
+                    headlineContent = { Text(stringResource(R.string.channel_wifi_events)) },
                     leadingContent = { Icon(Icons.Default.Wifi, contentDescription = null) },
                     trailingContent = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
