@@ -40,9 +40,10 @@
     <string name="settings_storage_subtitle">Storage locations, file limits</string>
 
     <!-- About Screen -->
-    <string name="about_author_section">Autor</string>
-    <string name="about_author_name">Proyecto Fénix — Fénix Mobile MCP</string>
-    <string name="about_upstream_credit">Basada en android-remote-control-mcp (MIT): %1$s</string>
+    <string name="about_title">Fénix Mobile MCP by Eli Gian</string>
+    <string name="about_author_section">Author</string>
+    <string name="about_author_name">Eli Gian</string>
+    <string name="about_upstream_credit">Based on control-mobile-mcp (MIT): %1$s</string>
     <string name="about_author_email">d.albano@gmail.com</string>
     <string name="about_author_linkedin">linkedin.com/in/danielesalvatorealbano</string>
     <string name="about_author_x">x.com/daniele_dll</string>

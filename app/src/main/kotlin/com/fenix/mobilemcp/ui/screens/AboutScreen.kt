@@ -107,7 +107,7 @@ fun AboutScreen(
                 }
                 Spacer(Modifier.height(12.dp))
                 Text(
-                    text = stringResource(R.string.app_name),
+                    text = stringResource(R.string.about_title),
                     style = MaterialTheme.typography.headlineSmall,
                     textAlign = TextAlign.Center,
                 )
