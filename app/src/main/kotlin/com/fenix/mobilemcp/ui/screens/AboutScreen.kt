@@ -51,14 +51,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fenix.mobilemcp.BuildConfig
 import com.fenix.mobilemcp.R
+import com.fenix.mobilemcp.services.update.FenixReleaseInfo
 import com.fenix.mobilemcp.ui.viewmodels.UpdateCheckUiState
 import com.fenix.mobilemcp.ui.viewmodels.UpdateViewModel
-
-import com.fenix.mobilemcp.services.update.FenixReleaseInfo
 
 private val GITHUB_URL = "https://github.com/${FenixReleaseInfo.GITHUB_OWNER}/${FenixReleaseInfo.GITHUB_REPO}"
 private val LICENSE_URL = "$GITHUB_URL/blob/main/LICENSE.md"
 private val ISSUES_URL = "$GITHUB_URL/issues"
+
 // Crédito al autor upstream (base MIT): se conserva.
 private const val UPSTREAM_URL = "https://github.com/danielealbano/android-remote-control-mcp"
 private const val DBIP_URL = "https://db-ip.com"
