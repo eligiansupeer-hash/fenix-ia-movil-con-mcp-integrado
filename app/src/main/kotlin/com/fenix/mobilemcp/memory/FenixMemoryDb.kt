@@ -5,13 +5,18 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import java.time.Instant
+import javax.inject.Inject
+import javax.inject.Singleton
+import dagger.hilt.android.qualifiers.ApplicationContext
 
 /**
  * F3: réplica fiel del esquema Fénix PC (server.py) en SQLite nativo Android.
  * Tablas: sesiones, entradas, kv (+extendidos), kv_historial, temps,
  * tareas_pasos, provider_health, misiones. Sin dependencias nuevas.
  */
-class FenixMemoryDb(context: Context) : SQLiteOpenHelper(context, DB_NAME, null, DB_VERSION) {
+@Singleton
+class FenixMemoryDb @Inject constructor(@ApplicationContext context: Context) :
+    SQLiteOpenHelper(context, DB_NAME, null, DB_VERSION) {
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(
