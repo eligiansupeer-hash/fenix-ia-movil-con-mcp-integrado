@@ -24,6 +24,7 @@ import javax.inject.Singleton
 class TurnScheduler @Inject constructor(
     private val context: Context,
     private val deliveryMonitor: DeliveryMonitor,
+    private val metricsStore: TurnMetricsStore,
 ) {
 
     private val TAG = "Fenix:TurnScheduler"
@@ -47,7 +48,7 @@ class TurnScheduler @Inject constructor(
     fun getMode(): Mode = mode
 
     /** Cambia modo (solo a AUTO si ya hay métrica de éxito > 95% en 2 semanas). */
-    fun setMode(newMode: Mode) {
+    suspend fun setMode(newMode: Mode) {
         if (newMode == Mode.AUTO && !canAuto()) {
             Log.w("Fenix:TurnScheduler", "Auto denegado: no hay métrica válida 2 semanas")
             return
@@ -75,12 +76,8 @@ class TurnScheduler @Inject constructor(
         Log.d("Fenix:TurnScheduler", "Attempt: success=$success, latency=${latencyMs}ms")
     }
 
-    /** Verifica si puede pasar a AUTO (métrica 2 sem > 95% éxito, latencia < 2s). */
-    private fun canAuto(): Boolean {
-        // TODO: leer de bitácora 14 días, calcular tasa éxito y latencia p95
-        // Por ahora false hasta tener datos
-        return false
-    }
+    /** Verifica si puede pasar a AUTO (métrica 2 sem > 95% éxito, latencia p95 < 2s). */
+    private suspend fun canAuto(): Boolean = metricsStore.canPromoteToAuto()
 
     /** Programa próxima comprobación (45-120s gaussiano). */
     private fun scheduleNextCheck() {
@@ -115,7 +112,7 @@ class TurnScheduler @Inject constructor(
     }
 
     /** Cambia a modo AUTO solo si métrica válida (llamado desde auditoría/bitácora). */
-    fun promoteToAutoIfReady() {
+    suspend fun promoteToAutoIfReady() {
         if (canAuto() && mode == Mode.RADAR) {
             setMode(Mode.AUTO)
         }
