@@ -12,7 +12,9 @@ import androidx.compose.ui.platform.LocalContext
 @Composable
 fun AndroidRemoteControlMcpTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    // Por defecto manda la paleta Fénix: con minSdk 33 el color dinámico del wallpaper
+    // taparía siempre los colores de marca. Se puede reactivar con dynamicColor = true.
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val colorScheme =

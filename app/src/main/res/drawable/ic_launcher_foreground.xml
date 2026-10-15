@@ -3,13 +3,9 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <group
-        android:scaleX="0.4"
-        android:scaleY="0.4"
-        android:translateX="32.4"
-        android:translateY="32.4">
-        <path
-            android:fillColor="#FFFFFF"
-            android:pathData="M17,1.01L7,1c-1.1,0 -2,0.9 -2,2v18c0,1.1 0.9,2 2,2h10c1.1,0 2,-0.9 2,-2V3c0,-1.1 -0.9,-1.99 -2,-1.99zM17,19H7V5h10v14z" />
-    </group>
+    <!-- F de Fénix: asta + brazo superior + brazo medio, trazado propio (sin arte de terceros).
+         Dibujado dentro de la zona segura de 72dp del ícono adaptativo. -->
+    <path
+        android:fillColor="@color/fenix_gold"
+        android:pathData="M36,29h35v12h-35zM36,41h12v38h-12zM36,48h29v12h-29z" />
 </vector>

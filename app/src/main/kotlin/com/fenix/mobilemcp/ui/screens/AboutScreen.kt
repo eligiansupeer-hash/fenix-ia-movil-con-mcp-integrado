@@ -109,6 +109,7 @@ fun AboutScreen(
                 Text(
                     text = stringResource(R.string.about_title),
                     style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.primary,
                     textAlign = TextAlign.Center,
                 )
                 Spacer(Modifier.height(4.dp))

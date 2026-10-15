@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Paleta Fénix: identidad visual propia del fork. Nada heredado de otro autor. -->
+    <color name="fenix_night">#141B2E</color>
+    <color name="fenix_flame">#FF6A1F</color>
+    <color name="fenix_gold">#FFC53D</color>
+
+    <!-- Fondo del ícono adaptativo (noche Fénix); también lo usa la pantalla Acerca de. -->
+    <color name="ic_launcher_background">@color/fenix_night</color>
+</resources>
