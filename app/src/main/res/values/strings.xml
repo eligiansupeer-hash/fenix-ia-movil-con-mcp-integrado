@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">Fénix Mobile MCP</string>
-    <string name="share_target_label">Fénix Mobile MCP</string>
+    <string name="app_name">Fenix MCP Android</string>
+    <string name="share_target_label">Fenix MCP Android</string>
 
     <!-- Accessibility Service -->
     <string name="accessibility_service_description">Provides remote control capabilities via MCP protocol. Allows introspecting UI elements and performing actions on the device.</string>
@@ -12,7 +12,7 @@
     <string name="notification_mcp_server_title">MCP Server Running</string>
 
     <!-- App Bar -->
-    <string name="app_bar_title">MCP Remote Control</string>
+    <string name="app_bar_title">Fenix MCP Android</string>
 
     <!-- Tabs -->
     <string name="tab_server">Server</string>
@@ -43,10 +43,10 @@
     <string name="settings_storage_subtitle">Storage locations, file limits</string>
 
     <!-- About Screen -->
-    <string name="about_title">Fénix Mobile MCP by Eli Gian</string>
+    <string name="about_title">Fenix MCP Android</string>
     <string name="about_author_section">Author</string>
     <string name="about_author_name">Eli Gian</string>
-    <string name="about_upstream_credit">Based on control-mobile-mcp (MIT): %1$s</string>
+    <string name="about_upstream_credit_min">Based on android-remote-control-mcp (MIT)</string>
     <string name="about_links_section">Links</string>
     <string name="about_link_github">GitHub Repository</string>
     <string name="about_link_license">MIT License</string>
@@ -293,7 +293,7 @@
     <string name="access_no_auth_warning_title">Server has NO authentication</string>
     <string name="access_no_auth_warning_body">Anyone who can reach the server has full control of this device.</string>
     <string name="access_internet_exposure_warning_title">Reachable over the internet</string>
-    <string name="access_internet_exposure_warning_body">A tunnel is active and authentication is off, so Android Remote Control can be accessed over the internet without any checks — anyone with the URL has full control of this device. Enable OAuth or the bearer token.</string>
+    <string name="access_internet_exposure_warning_body">A tunnel is active and authentication is off, so Fenix MCP Android can be accessed over the internet without any checks — anyone with the URL has full control of this device. Enable OAuth or the bearer token.</string>
     <string name="access_disable_auth_dialog_title">Disable all authentication?</string>
     <string name="access_disable_auth_dialog_body">This leaves the server with NO authentication. Anyone who can reach it has full control. Continue?</string>
     <string name="access_disable_auth_confirm">Disable anyway</string>

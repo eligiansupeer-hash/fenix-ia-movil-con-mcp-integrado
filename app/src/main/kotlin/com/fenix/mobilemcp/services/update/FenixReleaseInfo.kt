@@ -5,7 +5,7 @@ package com.fenix.mobilemcp.services.update
  * y jamás contiene datos sensibles de dispositivos (ver checklist sanitización).
  */
 object FenixReleaseInfo {
-    const val GITHUB_OWNER = "EliGian"
+    const val GITHUB_OWNER = "eligiansupeer-hash"
     const val GITHUB_REPO = "fenix-mobile-mcp"
-    const val APP_NAME = "Fénix Mobile MCP"
+    const val APP_NAME = "Fenix MCP Android"
 }

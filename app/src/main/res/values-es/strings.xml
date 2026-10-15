@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">Fénix Mobile MCP</string>
-    <string name="share_target_label">Fénix Mobile MCP</string>
+    <string name="app_name">Fenix MCP Android</string>
+    <string name="share_target_label">Fenix MCP Android</string>
 
     <!-- Servicio de accesibilidad -->
     <string name="accessibility_service_description">Control remoto del teléfono vía protocolo MCP. Permite leer la pantalla y hacer acciones en el dispositivo.</string>
@@ -12,7 +12,7 @@
     <string name="notification_mcp_server_title">Servidor MCP en marcha</string>
 
     <!-- Barra superior -->
-    <string name="app_bar_title">Fénix Mobile MCP</string>
+    <string name="app_bar_title">Fenix MCP Android</string>
 
     <!-- Pestañas -->
     <string name="tab_server">Servidor</string>
@@ -43,10 +43,10 @@
     <string name="settings_storage_subtitle">Ubicaciones, límites de archivos</string>
 
     <!-- Pantalla Acerca de -->
-    <string name="about_title">Fénix Mobile MCP por Eli Gian</string>
-    <string name="about_author_section">Autor</string>
+    <string name="about_title">Fenix MCP Android</string>
+    <string name="about_author_section">Autora</string>
     <string name="about_author_name">Eli Gian</string>
-    <string name="about_upstream_credit">Basado en control-mobile-mcp (MIT): %1$s</string>
+    <string name="about_upstream_credit_min">Basado en android-remote-control-mcp (MIT)</string>
     <string name="about_links_section">Enlaces</string>
     <string name="about_link_github">Repositorio GitHub</string>
     <string name="about_link_license">Licencia MIT</string>
@@ -293,7 +293,7 @@
     <string name="access_no_auth_warning_title">Servidor SIN autenticación</string>
     <string name="access_no_auth_warning_body">Quien lo alcance controla todo el equipo.</string>
     <string name="access_internet_exposure_warning_title">Visible en internet</string>
-    <string name="access_internet_exposure_warning_body">Hay túnel activo y sin autenticación: Fénix Mobile MCP queda abierto en internet sin control. Activá OAuth o el token.</string>
+    <string name="access_internet_exposure_warning_body">Hay túnel activo y sin autenticación: Fenix MCP Android queda abierto en internet sin control. Activá OAuth o el token.</string>
     <string name="access_disable_auth_dialog_title">¿Sacar toda autenticación?</string>
     <string name="access_disable_auth_dialog_body">Queda SIN autenticación: quien lo alcance controla todo. ¿Seguir?</string>
     <string name="access_disable_auth_confirm">Sacar igual</string>

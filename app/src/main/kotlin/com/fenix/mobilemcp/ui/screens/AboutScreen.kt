@@ -137,7 +137,7 @@ fun AboutScreen(
             HorizontalDivider()
             Spacer(Modifier.height(16.dp))
 
-            // Proyecto Fénix (autor) + crédito upstream MIT
+            // Proyecto Fénix: autora + repo propio
             Text(
                 text = stringResource(R.string.about_author_section),
                 style = MaterialTheme.typography.titleMedium,
@@ -157,17 +157,6 @@ fun AboutScreen(
                 modifier =
                     Modifier.clickable {
                         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_URL)))
-                    },
-            )
-            Spacer(Modifier.height(4.dp))
-
-            Text(
-                text = stringResource(R.string.about_upstream_credit, UPSTREAM_URL),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier =
-                    Modifier.clickable {
-                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(UPSTREAM_URL)))
                     },
             )
 
@@ -261,6 +250,21 @@ fun AboutScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(),
+            )
+
+            // Crédito upstream mínimo (MIT): al final, en letra chica y con link.
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = stringResource(R.string.about_upstream_credit_min),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(UPSTREAM_URL)))
+                        },
             )
         }
     }
