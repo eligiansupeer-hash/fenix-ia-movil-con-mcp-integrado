@@ -89,8 +89,10 @@ object OAuthPolicy {
             parsed != null &&
                 parsed.scheme == "https" &&
                 host in GOOGLE_REDIRECT_HOSTS &&
-                (parsed.path?.startsWith(GOOGLE_REDIRECT_PATH_PREFIX_R) == true ||
-                    parsed.path?.startsWith(GOOGLE_REDIRECT_PATH_PREFIX_A) == true)
+                (
+                    parsed.path?.startsWith(GOOGLE_REDIRECT_PATH_PREFIX_R) == true ||
+                        parsed.path?.startsWith(GOOGLE_REDIRECT_PATH_PREFIX_A) == true
+                )
         val isLoopback = parsed != null && parsed.scheme == "http" && host in LOOPBACK_HOSTS
 
         return isChatGptConnectorCallback || isGoogleConnectorCallback || isLoopback
