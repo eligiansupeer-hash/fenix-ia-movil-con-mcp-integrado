@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.CellTower
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Shield
@@ -111,6 +112,12 @@ private fun SettingsEntriesColumn(
             title = stringResource(R.string.channel_title),
             subtitle = stringResource(R.string.event_channel_subtitle),
             onClick = { onNavigate(SettingsRoute.ChannelSettings.route) },
+        )
+        SettingsEntry(
+            icon = Icons.Default.Help,
+            title = stringResource(R.string.settings_help_title),
+            subtitle = stringResource(R.string.settings_help_subtitle),
+            onClick = { onNavigate(SettingsRoute.Help.route) },
         )
     }
 }
