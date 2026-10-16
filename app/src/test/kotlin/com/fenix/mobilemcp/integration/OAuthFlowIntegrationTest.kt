@@ -205,6 +205,25 @@ class OAuthFlowIntegrationTest {
         }
 
     @Test
+    @DisplayName("register accepts Gemini Web connector redirect_uri")
+    fun registerAcceptsGoogleRedirect() =
+        runTest {
+            McpIntegrationTestHelper.withOAuthTestApplication { _ ->
+                val googleRedirect = "$GOOGLE_REDIRECT_BASE/r/user_bound_x"
+                val resp =
+                    client.post("/register") {
+                        contentType(ContentType.Application.Json)
+                        setBody(
+                            """{"redirect_uris":["$googleRedirect"],""" +
+                                """"token_endpoint_auth_method":"none"}""",
+                        )
+                    }
+                assertEquals(HttpStatusCode.Created, resp.status)
+                assertTrue(resp.bodyAsText().contains(googleRedirect))
+            }
+        }
+
+    @Test
     @DisplayName("authorize rejects non-S256 challenge method")
     fun authorizeRejectsNonS256() =
         runTest {
@@ -647,6 +666,7 @@ class OAuthFlowIntegrationTest {
 
     private companion object {
         const val REDIRECT = "https://claude.ai/api/mcp/auth_callback"
+        const val GOOGLE_REDIRECT_BASE = "https://oauth-redirect-sandbox.googleusercontent.com"
         const val OVERRIDE = "https://test.host"
         const val CANONICAL = "https://test.host/mcp"
 

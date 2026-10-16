@@ -14,6 +14,21 @@ class OAuthPolicyTest {
         assertTrue(OAuthPolicy.isAllowedRedirectUri(OAuthPolicy.CHATGPT_REDIRECT_URI))
         OAuthPolicy.ALLOWED_REDIRECT_URIS.forEach { assertTrue(OAuthPolicy.isAllowedRedirectUri(it)) }
         assertTrue(OAuthPolicy.isAllowedRedirectUri("https://chatgpt.com/connector/oauth/abc123"))
+        assertTrue(
+            OAuthPolicy.isAllowedRedirectUri(
+                "https://oauth-redirect-sandbox.googleusercontent.com/r/user_bound_custom-mcp-1-a_b_c",
+            ),
+        )
+        assertTrue(
+            OAuthPolicy.isAllowedRedirectUri(
+                "https://oauth-redirect-sandbox.googleusercontent.com/a/user_bound_custom-mcp-1-a_b_c",
+            ),
+        )
+        assertTrue(
+            OAuthPolicy.isAllowedRedirectUri(
+                "https://oauth-redirect-test.googleusercontent.com/r/user_bound_custom-mcp-1-a_b_c",
+            ),
+        )
         assertTrue(OAuthPolicy.isAllowedRedirectUri("http://localhost/callback"))
         assertTrue(OAuthPolicy.isAllowedRedirectUri("http://localhost:8080/cb"))
         assertTrue(OAuthPolicy.isAllowedRedirectUri("http://127.0.0.1:1234/cb"))
@@ -35,6 +50,26 @@ class OAuthPolicyTest {
         assertFalse(OAuthPolicy.isAllowedRedirectUri("https://chatgpt.com@evil.com/connector/oauth/abc"))
         assertFalse(OAuthPolicy.isAllowedRedirectUri("https://chatgpt.com/evil/oauth/abc"))
         assertFalse(OAuthPolicy.isAllowedRedirectUri("http://chatgpt.com/connector/oauth/abc"))
+        assertFalse(
+            OAuthPolicy.isAllowedRedirectUri(
+                "https://oauth-redirect-sandbox.googleusercontent.com.evil.example/r/user_bound_x",
+            ),
+        )
+        assertFalse(
+            OAuthPolicy.isAllowedRedirectUri(
+                "https://oauth-redirect-sandbox.googleusercontent.com@evil.com/r/user_bound_x",
+            ),
+        )
+        assertFalse(
+            OAuthPolicy.isAllowedRedirectUri(
+                "https://oauth-redirect-sandbox.googleusercontent.com/evil/user_bound_x",
+            ),
+        )
+        assertFalse(
+            OAuthPolicy.isAllowedRedirectUri(
+                "http://oauth-redirect-sandbox.googleusercontent.com/r/user_bound_x",
+            ),
+        )
     }
 
     @Test

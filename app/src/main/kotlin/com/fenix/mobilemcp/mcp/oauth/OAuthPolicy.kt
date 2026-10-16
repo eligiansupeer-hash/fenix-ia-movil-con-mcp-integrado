@@ -21,6 +21,20 @@ object OAuthPolicy {
     private const val CHATGPT_REDIRECT_HOST = "chatgpt.com"
     private const val CHATGPT_REDIRECT_PATH_PREFIX = "/connector/oauth/"
 
+    /**
+     * Google (Gemini Web custom MCP connectors) uses per-connector OAuth callback URLs under these
+     * exact hosts. Observed live 2026-10-16 from a real Gemini connector attempt:
+     * `https://oauth-redirect-sandbox.googleusercontent.com/r/user_bound_custom-mcp-<user>-<mcp-host>`
+     * (plus an `/a/` variant and the `oauth-redirect-test` host). The tail embeds the connector slug
+     * (Google user id + MCP host with `.` replaced by `_`), so only the host + path namespace can be
+     * matched — same treatment as the ChatGPT `/connector/oauth/` namespace.
+     */
+    private const val GOOGLE_REDIRECT_HOST_SANDBOX = "oauth-redirect-sandbox.googleusercontent.com"
+    private const val GOOGLE_REDIRECT_HOST_TEST = "oauth-redirect-test.googleusercontent.com"
+    private val GOOGLE_REDIRECT_HOSTS = setOf(GOOGLE_REDIRECT_HOST_SANDBOX, GOOGLE_REDIRECT_HOST_TEST)
+    private const val GOOGLE_REDIRECT_PATH_PREFIX_R = "/r/"
+    private const val GOOGLE_REDIRECT_PATH_PREFIX_A = "/a/"
+
     /** Exact non-loopback redirect URIs accepted by the allowlist (add other hosted connectors here). */
     val ALLOWED_REDIRECT_URIS = setOf(CLAUDE_REDIRECT_URI, CHATGPT_REDIRECT_URI)
 
@@ -53,11 +67,13 @@ object OAuthPolicy {
 
     /**
      * CLOSED redirect policy (the security boundary). Returns true ONLY for a URI in [ALLOWED_REDIRECT_URIS],
-     * ChatGPT's HTTPS callback namespace on the EXACT `chatgpt.com` host (path under `/connector/oauth/`), or
-     * `http://` loopback (`localhost` / `127.0.0.1` / `[::1]`, any/no port) for local test clients
-     * (MCP Inspector / mcp-remote / Claude Code). The host is compared via [URI.host] for EXACT equality —
-     * deceptive hosts (`localhost.evil.com`, `chatgpt.com.evil.example`, `localhost@evil.com`), other loopback
-     * IPs, `0.0.0.0`, non-`https` ChatGPT callbacks, and any other https host are rejected.
+     * ChatGPT's HTTPS callback namespace on the EXACT `chatgpt.com` host (path under `/connector/oauth/`),
+     * Google's HTTPS callback namespace on the EXACT `oauth-redirect-{sandbox,test}.googleusercontent.com`
+     * hosts (path under `/r/` or `/a/`), or `http://` loopback (`localhost` / `127.0.0.1` / `[::1]`, any/no
+     * port) for local test clients (MCP Inspector / mcp-remote / Claude Code). The host is compared via
+     * [URI.host] for EXACT equality — deceptive hosts (`localhost.evil.com`, `chatgpt.com.evil.example`,
+     * `localhost@evil.com`), other loopback IPs, `0.0.0.0`, non-`https` ChatGPT/Google callbacks, and any
+     * other https host are rejected.
      */
     fun isAllowedRedirectUri(uri: String): Boolean {
         if (uri in ALLOWED_REDIRECT_URIS) return true
@@ -69,9 +85,17 @@ object OAuthPolicy {
                 parsed.scheme == "https" &&
                 host == CHATGPT_REDIRECT_HOST &&
                 parsed.path?.startsWith(CHATGPT_REDIRECT_PATH_PREFIX) == true
+        val isGoogleConnectorCallback =
+            parsed != null &&
+                parsed.scheme == "https" &&
+                host in GOOGLE_REDIRECT_HOSTS &&
+                (
+                    parsed.path?.startsWith(GOOGLE_REDIRECT_PATH_PREFIX_R) == true ||
+                        parsed.path?.startsWith(GOOGLE_REDIRECT_PATH_PREFIX_A) == true
+                )
         val isLoopback = parsed != null && parsed.scheme == "http" && host in LOOPBACK_HOSTS
 
-        return isChatGptConnectorCallback || isLoopback
+        return isChatGptConnectorCallback || isGoogleConnectorCallback || isLoopback
     }
 
     /**
