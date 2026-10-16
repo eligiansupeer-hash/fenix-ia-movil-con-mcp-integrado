@@ -209,16 +209,17 @@ class OAuthFlowIntegrationTest {
     fun registerAcceptsGoogleRedirect() =
         runTest {
             McpIntegrationTestHelper.withOAuthTestApplication { _ ->
+                val googleRedirect = "$GOOGLE_REDIRECT_BASE/r/user_bound_x"
                 val resp =
                     client.post("/register") {
                         contentType(ContentType.Application.Json)
                         setBody(
-                            """{"redirect_uris":["https://oauth-redirect-sandbox.googleusercontent.com/r/user_bound_custom-mcp-abc123"],""" +
+                            """{"redirect_uris":["$googleRedirect"],""" +
                                 """"token_endpoint_auth_method":"none"}""",
                         )
                     }
                 assertEquals(HttpStatusCode.Created, resp.status)
-                assertTrue(resp.bodyAsText().contains("https://oauth-redirect-sandbox.googleusercontent.com/r/user_bound_custom-mcp-abc123"))
+                assertTrue(resp.bodyAsText().contains(googleRedirect))
             }
         }
 
@@ -665,6 +666,7 @@ class OAuthFlowIntegrationTest {
 
     private companion object {
         const val REDIRECT = "https://claude.ai/api/mcp/auth_callback"
+        const val GOOGLE_REDIRECT_BASE = "https://oauth-redirect-sandbox.googleusercontent.com"
         const val OVERRIDE = "https://test.host"
         const val CANONICAL = "https://test.host/mcp"
 
