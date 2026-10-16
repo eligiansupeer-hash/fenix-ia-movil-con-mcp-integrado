@@ -76,7 +76,7 @@ class OAuthPolicyTest {
     @DisplayName("rejects deceptive localhost-like hosts")
     fun rejectsDeceptiveHosts() {
         assertFalse(OAuthPolicy.isAllowedRedirectUri("http://localhost.evil.com/cb"))
-        assertFalse(OAuthPolicy.isAllowedRedirectUri("http://127.0.0.2/cb".let { "http://127.0.0.1.evil.com/cb" }))
+        assertFalse(OAuthPolicy.isAllowedRedirectUri("http://127.0.0.1.evil.com/cb"))
         assertFalse(OAuthPolicy.isAllowedRedirectUri("http://localhost@evil.com/cb"))
     }
 
