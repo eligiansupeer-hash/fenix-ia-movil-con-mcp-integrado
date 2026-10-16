@@ -40,6 +40,8 @@ sealed class SettingsRoute(
     data object NotificationFilter : SettingsRoute("settings/channel/notification_filter")
 
     data object WifiMonitor : SettingsRoute("settings/channel/wifi_monitor")
+
+    data object Help : SettingsRoute("settings/help")
 }
 
 sealed class ServerRoute(
