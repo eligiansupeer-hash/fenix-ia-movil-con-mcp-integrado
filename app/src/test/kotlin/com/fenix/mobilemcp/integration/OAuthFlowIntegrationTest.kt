@@ -205,6 +205,24 @@ class OAuthFlowIntegrationTest {
         }
 
     @Test
+    @DisplayName("register accepts Gemini Web connector redirect_uri")
+    fun registerAcceptsGoogleRedirect() =
+        runTest {
+            McpIntegrationTestHelper.withOAuthTestApplication { _ ->
+                val resp =
+                    client.post("/register") {
+                        contentType(ContentType.Application.Json)
+                        setBody(
+                            """{"redirect_uris":["https://oauth-redirect-sandbox.googleusercontent.com/r/user_bound_custom-mcp-abc123"],""" +
+                                """"token_endpoint_auth_method":"none"}""",
+                        )
+                    }
+                assertEquals(HttpStatusCode.Created, resp.status)
+                assertTrue(resp.bodyAsText().contains("https://oauth-redirect-sandbox.googleusercontent.com/r/user_bound_custom-mcp-abc123"))
+            }
+        }
+
+    @Test
     @DisplayName("authorize rejects non-S256 challenge method")
     fun authorizeRejectsNonS256() =
         runTest {
@@ -410,7 +428,7 @@ class OAuthFlowIntegrationTest {
                                     append("code", code)
                                     append("redirect_uri", REDIRECT)
                                     append("client_id", clientId)
-                                    append("code_verifier", VERIFIER)
+                                    append("code_verifier", verifier)
                                     append("resource", "https://wrong.host/mcp")
                                 },
                             ),
