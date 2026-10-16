@@ -14,11 +14,35 @@ class OAuthPolicyTest {
         assertTrue(OAuthPolicy.isAllowedRedirectUri(OAuthPolicy.CHATGPT_REDIRECT_URI))
         OAuthPolicy.ALLOWED_REDIRECT_URIS.forEach { assertTrue(OAuthPolicy.isAllowedRedirectUri(it)) }
         assertTrue(OAuthPolicy.isAllowedRedirectUri("https://chatgpt.com/connector/oauth/abc123"))
+        assertTrue(OAuthPolicy.isAllowedRedirectUri("https://oauth-redirect.googleusercontent.com/r/user_bound_custom-mcp-12345"))
+        assertTrue(OAuthPolicy.isAllowedRedirectUri("https://oauth-redirect-sandbox.googleusercontent.com/r/slug123"))
+        assertTrue(OAuthPolicy.isAllowedRedirectUri("https://oauth-redirect-test.googleusercontent.com/a/slug456"))
         assertTrue(OAuthPolicy.isAllowedRedirectUri("http://localhost/callback"))
         assertTrue(OAuthPolicy.isAllowedRedirectUri("http://localhost:8080/cb"))
         assertTrue(OAuthPolicy.isAllowedRedirectUri("http://127.0.0.1:1234/cb"))
         assertTrue(OAuthPolicy.isAllowedRedirectUri("http://[::1]/cb"))
         assertTrue(OAuthPolicy.isAllowedRedirectUri("http://[::1]:9000/cb"))
+    }
+
+    @Test
+    @DisplayName("allows dynamically registered hosts and uris")
+    fun allowsDynamicallyRegistered() {
+        val testHost = "chat.mistral.ai"
+        val testUri = "https://chat.mistral.ai/api/callback"
+
+        assertFalse(OAuthPolicy.isAllowedRedirectUri(testUri))
+        assertTrue(OAuthPolicy.registerAllowedHost(testHost))
+        assertTrue(OAuthPolicy.isAllowedRedirectUri(testUri))
+        assertTrue(OAuthPolicy.isAllowedRedirectUri("https://chat.mistral.ai/other/path"))
+        assertFalse(OAuthPolicy.isAllowedRedirectUri("http://chat.mistral.ai/api/callback"))
+
+        assertTrue(OAuthPolicy.removeAllowedHost(testHost))
+        assertFalse(OAuthPolicy.isAllowedRedirectUri(testUri))
+
+        val exactUri = "https://custom.ai.connector/callback/exact"
+        assertFalse(OAuthPolicy.isAllowedRedirectUri(exactUri))
+        assertTrue(OAuthPolicy.registerAllowedRedirectUri(exactUri))
+        assertTrue(OAuthPolicy.isAllowedRedirectUri(exactUri))
     }
 
     @Test

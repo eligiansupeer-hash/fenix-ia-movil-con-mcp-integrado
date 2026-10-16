@@ -21,8 +21,29 @@ object OAuthPolicy {
     private const val CHATGPT_REDIRECT_HOST = "chatgpt.com"
     private const val CHATGPT_REDIRECT_PATH_PREFIX = "/connector/oauth/"
 
+    /**
+     * Google (Gemini Web custom MCP connectors) uses per-connector OAuth callback URLs under these
+     * exact hosts. Observed live 2026-10-16 from a real Gemini connector attempt:
+     * `https://oauth-redirect-sandbox.googleusercontent.com/r/user_bound_custom-mcp-<user>-<mcp-host>`
+     * (plus `/a/` variant and `oauth-redirect-test`/prod hosts).
+     */
+    private const val GOOGLE_REDIRECT_HOST_SANDBOX = "oauth-redirect-sandbox.googleusercontent.com"
+    private const val GOOGLE_REDIRECT_HOST_TEST = "oauth-redirect-test.googleusercontent.com"
+    private const val GOOGLE_REDIRECT_HOST_PROD = "oauth-redirect.googleusercontent.com"
+    private val GOOGLE_REDIRECT_HOSTS = setOf(
+        GOOGLE_REDIRECT_HOST_SANDBOX,
+        GOOGLE_REDIRECT_HOST_TEST,
+        GOOGLE_REDIRECT_HOST_PROD,
+    )
+    private const val GOOGLE_REDIRECT_PATH_PREFIX_R = "/r/"
+    private const val GOOGLE_REDIRECT_PATH_PREFIX_A = "/a/"
+
     /** Exact non-loopback redirect URIs accepted by the allowlist (add other hosted connectors here). */
     val ALLOWED_REDIRECT_URIS = setOf(CLAUDE_REDIRECT_URI, CHATGPT_REDIRECT_URI)
+
+    /** Conjunto dinamico de hosts y URIs autorizados en tiempo de ejecucion (thread-safe). */
+    private val dynamicAllowedHosts = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+    private val dynamicAllowedUris = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
 
     /** Maximum persisted OAuth clients before eviction. */
     const val MAX_OAUTH_CLIENTS = 20
@@ -52,27 +73,75 @@ object OAuthPolicy {
     private val LOOPBACK_HOSTS = setOf("localhost", "127.0.0.1", "::1")
 
     /**
-     * CLOSED redirect policy (the security boundary). Returns true ONLY for a URI in [ALLOWED_REDIRECT_URIS],
-     * ChatGPT's HTTPS callback namespace on the EXACT `chatgpt.com` host (path under `/connector/oauth/`), or
-     * `http://` loopback (`localhost` / `127.0.0.1` / `[::1]`, any/no port) for local test clients
-     * (MCP Inspector / mcp-remote / Claude Code). The host is compared via [URI.host] for EXACT equality —
-     * deceptive hosts (`localhost.evil.com`, `chatgpt.com.evil.example`, `localhost@evil.com`), other loopback
-     * IPs, `0.0.0.0`, non-`https` ChatGPT callbacks, and any other https host are rejected.
+     * Valida si un URI de redireccion esta permitido. Admite:
+     * 1. URIs fijas en [ALLOWED_REDIRECT_URIS] o [dynamicAllowedUris].
+     * 2. Callbacks de ChatGPT (`chatgpt.com/connector/oauth/`).
+     * 3. Callbacks de Google Gemini (`oauth-redirect-{sandbox,test,prod}.googleusercontent.com` bajo `/r/` o `/a/`).
+     * 4. Hosts dinamicos registrados en tiempo de ejecucion en [dynamicAllowedHosts] con esquema https.
+     * 5. Loopback HTTP (`localhost` / `127.0.0.1` / `[::1]`) para clientes locales de desarrollo.
      */
     fun isAllowedRedirectUri(uri: String): Boolean {
-        if (uri in ALLOWED_REDIRECT_URIS) return true
+        if (uri in ALLOWED_REDIRECT_URIS || uri in dynamicAllowedUris) return true
 
-        val parsed = runCatching { URI(uri) }.getOrNull()
-        val host = parsed?.host?.removePrefix("[")?.removeSuffix("]")
+        val parsed = runCatching { URI(uri) }.getOrNull() ?: return false
+        val host = parsed.host?.removePrefix("[")?.removeSuffix("]")?.lowercase() ?: return false
+        val path = parsed.path ?: ""
+        val isHttps = parsed.scheme == "https"
+
+        if (isHttps && host in dynamicAllowedHosts) return true
+
         val isChatGptConnectorCallback =
-            parsed != null &&
-                parsed.scheme == "https" &&
-                host == CHATGPT_REDIRECT_HOST &&
-                parsed.path?.startsWith(CHATGPT_REDIRECT_PATH_PREFIX) == true
-        val isLoopback = parsed != null && parsed.scheme == "http" && host in LOOPBACK_HOSTS
+            isHttps && host == CHATGPT_REDIRECT_HOST && path.startsWith(CHATGPT_REDIRECT_PATH_PREFIX)
+        val isGoogleConnectorCallback =
+            isHttps &&
+                host in GOOGLE_REDIRECT_HOSTS &&
+                (path.startsWith(GOOGLE_REDIRECT_PATH_PREFIX_R) || path.startsWith(GOOGLE_REDIRECT_PATH_PREFIX_A))
+        val isLoopback = parsed.scheme == "http" && host in LOOPBACK_HOSTS
 
-        return isChatGptConnectorCallback || isLoopback
+        return isChatGptConnectorCallback || isGoogleConnectorCallback || isLoopback
     }
+
+    /**
+     * Registra dinamicamente un host HTTPS permitido para callbacks OAuth (ej. "chat.mistral.ai").
+     */
+    fun registerAllowedHost(rawHost: String): Boolean {
+        val cleanHost = rawHost.trim().lowercase().removePrefix("https://").substringBefore("/").substringBefore(":")
+        if (cleanHost.isNotEmpty() && !cleanHost.contains(" ") && !cleanHost.contains("@")) {
+            return dynamicAllowedHosts.add(cleanHost)
+        }
+        return false
+    }
+
+    /**
+     * Registra dinamicamente un URI de redireccion HTTPS exacto.
+     */
+    fun registerAllowedRedirectUri(rawUri: String): Boolean {
+        val cleanUri = rawUri.trim()
+        if (cleanUri.startsWith("https://") && !cleanUri.contains(" ")) {
+            return dynamicAllowedUris.add(cleanUri)
+        }
+        return false
+    }
+
+    /**
+     * Remueve un host registrado dinamicamente.
+     */
+    fun removeAllowedHost(rawHost: String): Boolean {
+        val cleanHost = rawHost.trim().lowercase().removePrefix("https://").substringBefore("/").substringBefore(":")
+        return dynamicAllowedHosts.remove(cleanHost)
+    }
+
+    /**
+     * Lista los hosts y URIs autorizados actualmente (fijos + dinamicos).
+     */
+    fun getEffectiveAllowedSummary(): Map<String, List<String>> =
+        mapOf(
+            "fixed_uris" to ALLOWED_REDIRECT_URIS.toList(),
+            "google_hosts" to GOOGLE_REDIRECT_HOSTS.toList(),
+            "chatgpt_hosts" to listOf(CHATGPT_REDIRECT_HOST),
+            "dynamic_hosts" to dynamicAllowedHosts.toList(),
+            "dynamic_uris" to dynamicAllowedUris.toList(),
+        )
 
     /**
      * RFC 8707 resource matching: case-insensitive on scheme+host, trailing-slash-insensitive, exact
