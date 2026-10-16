@@ -43,6 +43,20 @@
     <string name="settings_storage_title">Storage</string>
     <string name="settings_storage_subtitle">Storage locations, file limits</string>
 
+    <!-- Help -->
+    <string name="settings_help_title">Help</string>
+    <string name="settings_help_subtitle">Step-by-step guides</string>
+    <string name="help_connect_title">Connect an AI (web or desktop)</string>
+    <string name="help_connect_body">1. Settings → Tunnel: enable Remote Access (Cloudflare needs no account) and copy the public URL from Server.\n2. Append /mcp: https://…/mcp.\n3. If the tunnel is external, paste the host in Access → Public URL.\n4. In your AI (Gemini, ChatGPT or Claude web): add a custom MCP connector with that URL (blank ID and secret).\n5. Approve on the phone after checking the 2-digit code.\n6. When done: revoke the client in Access → Connected clients.</string>
+    <string name="help_stable_url_title">Stable URL that never changes</string>
+    <string name="help_stable_url_body">The free Cloudflare URL changes every time (temporary). For a fixed one: get a tunnel token from your Cloudflare account, set it in Tunnel → With token mode, and always use that name. Without a fixed token, every reconnect uses a new URL.</string>
+    <string name="help_where_title">Where everything lives</string>
+    <string name="help_where_body">Server: status, URL, token and Logs (everything shows up there).\nAccess: OAuth, token, public URL and Connected clients.\nTunnel: expose the server to the internet (required for web AIs).\nPermissions: accessibility (required) and the rest.</string>
+    <string name="help_security_title">Safety</string>
+    <string name="help_security_body">Whoever reaches the server controls the phone: never expose it without OAuth or token. Approve only connections you started (matching code) and revoke clients you no longer use.</string>
+    <string name="help_trouble_title">If something fails</string>
+    <string name="help_trouble_body">\"Redirect URI rejected\": the app does not support that AI yet (report with a screenshot).\n\"Hostname does not resolve\": the tunnel died or the URL is old; make a new one.\n\"Accessibility not ready\": grant it in Settings → Permissions.</string>
+
     <!-- About Screen -->
     <string name="about_title">Fénix IA Móvil con MCP Integrado</string>
     <string name="about_author_section">Author</string>

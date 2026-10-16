@@ -43,6 +43,20 @@
     <string name="settings_storage_title">Almacenamiento</string>
     <string name="settings_storage_subtitle">Ubicaciones, límites de archivos</string>
 
+    <!-- Ayuda -->
+    <string name="settings_help_title">Ayuda</string>
+    <string name="settings_help_subtitle">Guías paso a paso</string>
+    <string name="help_connect_title">Conectar una IA (web o escritorio)</string>
+    <string name="help_connect_body">1. Ajustes → Túnel: activá Acceso remoto (Cloudflare no pide cuenta) y copiá la URL pública de Servidor.\n2. Sumale /mcp al final: https://…/mcp.\n3. Si el túnel es externo, pegá el host en Acceso → URL pública.\n4. En tu IA (Gemini, ChatGPT o Claude web): agregá un conector MCP personalizado con esa URL (ID y secreto vacíos).\n5. Aprobá en el teléfono verificando el código de 2 dígitos.\n6. Al terminar: revocá el cliente en Acceso → Clientes conectados.</string>
+    <string name="help_stable_url_title">URL estable: que no cambie</string>
+    <string name="help_stable_url_body">La URL gratis de Cloudflare cambia cada vez (es temporal). Para una fija: conseguí un token de túnel en tu cuenta Cloudflare, ponelo en Túnel → modo Con token, y usá siempre ese mismo nombre. Sin token fijo, cada reconexión usa una URL nueva.</string>
+    <string name="help_where_title">Dónde está cada cosa</string>
+    <string name="help_where_body">Servidor: estado, URL, token y Registros (ahí sale todo lo que pasa).\nAcceso: OAuth, token, URL pública y Clientes conectados.\nTúnel: exponer el servidor en internet (obligatorio para IAs web).\nPermisos: accesibilidad (obligatoria) y demás.</string>
+    <string name="help_security_title">Seguridad</string>
+    <string name="help_security_body">Quien alcance el servidor controla el equipo: no lo expongas sin OAuth ni token. Aprobá solo conexiones que vos iniciaste (código coincidente) y revocá clientes que no uses.</string>
+    <string name="help_trouble_title">Si algo falla</string>
+    <string name="help_trouble_body">«URL de redireccionamiento rechazada»: la app aún no admite esa IA (avisá con captura del error).\n«Hostname no resuelve»: el túnel se cayó o la URL es vieja; generá una nueva.\n«Accesibilidad no lista»: otorgá el permiso en Ajustes → Permisos.</string>
+
     <!-- Pantalla Acerca de -->
     <string name="about_title">Fénix IA Móvil con MCP Integrado</string>
     <string name="about_author_section">Autora</string>
