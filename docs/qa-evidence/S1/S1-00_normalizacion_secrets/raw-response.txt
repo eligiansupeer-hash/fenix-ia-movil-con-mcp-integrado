@@ -1,0 +1,5 @@
+SECRETS_NORMALIZATION=TRIM_LOWERCASE
+PROVIDERS_OPENAI_COMPAT=[groq, openrouter, gemini, sambanova, cerebras, mistral, cohere]
+INFRASTRUCTURE_SECRETS_EXCLUDED=[github_token, codex_proxy_pool, fenix_entregas, supabase, cloudflare, telegram]
+STATUS=SECRETS_MAPPING_VERIFIED
+

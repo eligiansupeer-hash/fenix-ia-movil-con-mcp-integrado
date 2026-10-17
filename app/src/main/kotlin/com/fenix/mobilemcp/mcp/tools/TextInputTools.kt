@@ -955,8 +955,17 @@ class TypeClearTextTool
                         )
                     }
 
-                    // Read field content after operation for verification
-                    readFieldContent(typeInputController)
+                    // Jetpack Compose OutlinedTextField fallback: if text still remains after selectAll+DEL,
+                    // delete surrounding text directly via InputConnection.
+                    var afterClear = readFieldContent(typeInputController)
+                    if (!afterClear.isNullOrEmpty()) {
+                        typeInputController.deleteSurroundingText(
+                            MAX_SURROUNDING_TEXT_LENGTH,
+                            MAX_SURROUNDING_TEXT_LENGTH,
+                        )
+                        afterClear = readFieldContent(typeInputController)
+                    }
+                    afterClear
                 }
 
             Log.d(TAG, "type_clear_text: cleared text on node '$nodeId'")

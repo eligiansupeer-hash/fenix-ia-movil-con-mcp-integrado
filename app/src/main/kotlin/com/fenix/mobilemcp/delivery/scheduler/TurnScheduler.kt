@@ -40,12 +40,27 @@ class TurnScheduler @Inject constructor(
     private var mode: Mode = Mode.RADAR
 
     @Volatile
+    private var desdeHoraWindow: String = "00:00"
+
+    @Volatile
+    private var hastaHoraWindow: String = "23:59"
+
+    @Volatile
+    private var isWatchingFlag: Boolean = false
+
+    @Volatile
     private var scheduledJob: PendingIntent? = null
 
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
     /** Modo actual. */
     fun getMode(): Mode = mode
+
+    fun getDesdeHora(): String = desdeHoraWindow
+
+    fun getHastaHora(): String = hastaHoraWindow
+
+    fun isWatching(): Boolean = isWatchingFlag
 
     /** Cambia modo (solo a AUTO si ya hay métrica de éxito > 95% en 2 semanas). */
     suspend fun setMode(newMode: Mode) {
@@ -58,14 +73,18 @@ class TurnScheduler @Inject constructor(
         Log.i("Fenix:TurnScheduler", "Modo cambiado a $mode")
     }
 
-    /** Inicia scheduler (por defecto RADAR). */
-    fun start() {
-        Log.i("Fenix:TurnScheduler", "Scheduler iniciado en modo $mode")
+    /** Inicia scheduler (por defecto RADAR) registrando la ventana horaria solicitada. */
+    fun start(desdeHora: String? = null, hastaHora: String? = null) {
+        if (!desdeHora.isNullOrBlank()) desdeHoraWindow = desdeHora.trim()
+        if (!hastaHora.isNullOrBlank()) hastaHoraWindow = hastaHora.trim()
+        isWatchingFlag = true
+        Log.i("Fenix:TurnScheduler", "Scheduler iniciado en modo $mode ($desdeHoraWindow - $hastaHoraWindow)")
         scheduleNextCheck()
     }
 
     /** Detiene scheduler. */
     fun stop() {
+        isWatchingFlag = false
         cancelAlarm()
         Log.i("Fenix:TurnScheduler", "Scheduler detenido")
     }

@@ -1,0 +1,5 @@
+MODEL=/data/data/com.termux/files/home/models/qwen2.5-0.5b-instruct-q4_k_m.gguf
+RESPONSE={"choices":[{"finish_reason":"stop","index":0,"message":{"role":"assistant","content":"Hola."}}]}
+PREDICTED_PER_SECOND=13.32
+STATUS=LOCAL_SLM_ONLINE_AND_INFERRING
+

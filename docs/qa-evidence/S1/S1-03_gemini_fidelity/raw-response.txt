@@ -1,0 +1,6 @@
+PROVIDER=gemini
+MODELS_COUNT=63
+MODELS_SAMPLE=[models/gemini-2.5-flash, models/gemini-2.5-pro, models/gemini-2.5-flash-preview-tts]
+TOOL_CALL_PARSER_ROBUST=JsonObject_AND_JsonPrimitive_SUPPORTED
+STATUS=GEMINI_DISCOVERY_AND_TOOL_CALL_FIDELITY_PASS
+

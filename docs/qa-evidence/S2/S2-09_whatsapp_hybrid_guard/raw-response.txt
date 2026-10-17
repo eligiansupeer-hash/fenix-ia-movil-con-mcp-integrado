@@ -1,0 +1,6 @@
+TOOL=android_whatsapp_hybrid_guard
+INTENT_URI=whatsapp://send?phone=5492645000000&text=Hola+Fenix
+INVALID_PHONE_TEST=invalid123abc -> BLOCKED (Telefono invalido para WhatsApp E.164)
+PROACTIVE_REMAINING=9
+STATUS=WHATSAPP_HYBRID_GUARD_VERIFIED
+

@@ -62,6 +62,17 @@ class DynamicModelDiscovery @Inject constructor(
         }
     }
 
+    private val localProbeClient by lazy {
+        HttpClient(OkHttp) {
+            engine {
+                config {
+                    connectTimeout(350, TimeUnit.MILLISECONDS)
+                    readTimeout(500, TimeUnit.MILLISECONDS)
+                }
+            }
+        }
+    }
+
     val standardProviders = listOf(
         AiProviderConfig(
             id = "groq",
@@ -72,6 +83,21 @@ class DynamicModelDiscovery @Inject constructor(
             id = "openrouter",
             displayName = "OpenRouter (Multi-model)",
             baseUrl = "https://openrouter.ai/api/v1",
+        ),
+        AiProviderConfig(
+            id = "cerebras",
+            displayName = "Cerebras Inference",
+            baseUrl = "https://api.cerebras.ai/v1",
+        ),
+        AiProviderConfig(
+            id = "mistral",
+            displayName = "Mistral AI (La Plateforme)",
+            baseUrl = "https://api.mistral.ai/v1",
+        ),
+        AiProviderConfig(
+            id = "cohere",
+            displayName = "Cohere (Compatibility API)",
+            baseUrl = "https://api.cohere.ai/compatibility/v1",
         ),
         AiProviderConfig(
             id = "sambanova",
@@ -89,26 +115,40 @@ class DynamicModelDiscovery @Inject constructor(
             baseUrl = "https://generativelanguage.googleapis.com/v1beta/openai",
         ),
         AiProviderConfig(
-            id = "local_termux",
-            displayName = "Termux Llama-Server (Moto G77)",
-            baseUrl = "http://127.0.0.1:8081/v1",
+            id = "pollinations_free",
+            displayName = "Fénix Cloud Free (Sin API Key • Costo $0)",
+            baseUrl = "https://text.pollinations.ai/openai",
+            requiresKey = false,
+            isLocal = false,
+        ),
+        AiProviderConfig(
+            id = "local_ollama",
+            displayName = "Motor Local (127.0.0.1:11434)",
+            baseUrl = "http://127.0.0.1:11434/v1",
             requiresKey = false,
             isLocal = true,
         ),
         AiProviderConfig(
-            id = "local_ollama",
-            displayName = "Ollama Local Bridge",
-            baseUrl = "http://127.0.0.1:11434/v1",
+            id = "local_termux",
+            displayName = "Puente Local (127.0.0.1:8081)",
+            baseUrl = "http://127.0.0.1:8081/v1",
             requiresKey = false,
             isLocal = true,
         ),
     )
 
     /**
-     * Comprueba si un proveedor está listo para ser usado (tiene clave o es local).
+     * Comprueba si un proveedor está listo para ser usado (tiene clave o es local/gratuito).
      */
     fun isProviderReady(provider: AiProviderConfig): Boolean {
         return !provider.requiresKey || keyStore.hasApiKey(provider.id)
+    }
+
+    /**
+     * Comprueba si un proveedor se encuentra actualmente en período de enfriamiento (cooldown).
+     */
+    fun isProviderInCooldown(providerId: String): Boolean {
+        return memoryDb.isProviderInCooldown(providerId)
     }
 
     /**
@@ -120,42 +160,67 @@ class DynamicModelDiscovery @Inject constructor(
                 return@withContext emptyList()
             }
 
-            // Si está en enfriamiento por 429, retornar la caché previa si existe
-            if (memoryDb.isProviderInCooldown(provider.id)) {
+            if (provider.id == "pollinations_free") {
+                return@withContext listOf(
+                    DiscoveredModel(
+                        id = "openai",
+                        name = "Fénix Free Cloud (GPT-4o-mini Bridge)",
+                        providerId = provider.id,
+                        providerName = provider.displayName,
+                        isLocal = false,
+                    ),
+                    DiscoveredModel(
+                        id = "mistral",
+                        name = "Fénix Free Cloud (Mistral Bridge)",
+                        providerId = provider.id,
+                        providerName = provider.displayName,
+                        isLocal = false,
+                    ),
+                )
+            }
+
+            // Si está en enfriamiento por 429 (solo para proveedores cloud), retornar la caché previa si existe
+            if (!provider.isLocal && memoryDb.isProviderInCooldown(provider.id)) {
                 val cached = getCachedModels(provider)
                 if (cached.isNotEmpty()) return@withContext cached
             }
 
             val apiKey = if (provider.requiresKey) keyStore.getApiKey(provider.id) else null
             val modelsUrl = "${provider.baseUrl.trimEnd('/')}/models"
+            val client = if (provider.isLocal) localProbeClient else httpClient
 
             try {
-                val response = httpClient.get(modelsUrl) {
+                val response = client.get(modelsUrl) {
                     header("Accept", "application/json")
                     if (!apiKey.isNullOrBlank()) {
                         header("Authorization", "Bearer $apiKey")
+                    }
+                    if (provider.id == "openrouter") {
+                        header("HTTP-Referer", "https://fenix.axiom.local")
+                        header("X-Title", "Fenix Mobile MCP")
                     }
                 }
 
                 if (response.status == HttpStatusCode.TooManyRequests) {
                     memoryDb.setProviderCooldown(provider.id, 60L, "HTTP 429 Rate Limit")
-                    return@withContext getCachedModels(provider)
+                    return@withContext if (provider.isLocal) emptyList() else getCachedModels(provider)
                 }
 
                 if (response.status == HttpStatusCode.OK) {
                     val responseBody = response.bodyAsText()
                     val models = parseModelsResponse(responseBody, provider)
                     if (models.isNotEmpty()) {
-                        // Guardar en caché con TTL de 24 horas
-                        val expireIso = java.time.Instant.now().plusSeconds(24 * 3600L).toString()
-                        memoryDb.kvGuardar(
-                            clave = "models_${provider.id}",
-                            ambito = "ai_models",
-                            valor = responseBody,
-                            categoria = "ai",
-                            expiraEn = expireIso,
-                            autor = "dynamic_discovery",
-                        )
+                        if (!provider.isLocal) {
+                            val expireIso = java.time.Instant.now().plusSeconds(24 * 3600L).toString()
+                            memoryDb.kvGuardar(
+                                clave = "models_${provider.id}",
+                                ambito = "ai_models",
+                                valor = responseBody,
+                                categoria = "ai",
+                                expiraEn = expireIso,
+                                autor = "dynamic_discovery",
+                            )
+                        }
                         memoryDb.reportProviderSuccess(provider.id)
                         return@withContext models
                     }
@@ -169,8 +234,13 @@ class DynamicModelDiscovery @Inject constructor(
                 memoryDb.reportProviderFailure(provider.id, e.message ?: "Conexión fallida")
             }
 
-            // Fallback: intentar recuperar caché si falló la red
-            getCachedModels(provider)
+            // CRÍTICO: Si un servidor local (127.0.0.1) no está encendido en este instante,
+            // JAMÁS devolver modelos cacheados viejos porque el puerto está cerrado.
+            if (provider.isLocal) {
+                emptyList()
+            } else {
+                getCachedModels(provider)
+            }
         }
 
     /**

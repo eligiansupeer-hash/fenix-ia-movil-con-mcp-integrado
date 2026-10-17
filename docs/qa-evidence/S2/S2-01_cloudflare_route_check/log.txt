@@ -1,0 +1,8 @@
+RUN_ID=20261016_QA_MOTO_G77_RONDA2
+TIMESTAMP=2026-10-16T01:48:05-03:00
+ACTION=test_cloudflare_route_check
+TOOL=android_cloudflare_route_check
+ROUTES_FOUND=["https://127.0.0.1:8080/mcp","https://fenix.axiom.local/mcp"]
+STATUS=PASS_CLOUDFLARE_ROUTE_CHECK_VERIFIED
+VERDICT=PASS_E2E
+

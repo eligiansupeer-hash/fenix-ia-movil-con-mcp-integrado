@@ -354,6 +354,20 @@ class McpAccessibilityService : AccessibilityService() {
             val action = event.action
             val eventTime = event.eventTime
             val downTime = event.downTime
+
+            // Prioridad 0: Interruptor Físico de Emergencia (Volumen Arriba + Abajo juntos, o 3 toques rápidos en Volumen Abajo)
+            val emergencyTriggered =
+                com.fenix.mobilemcp.security.EmergencyKillSwitchManager.onPhysicalVolumeKeyEvent(
+                    context = applicationContext,
+                    keyCode = keyCode,
+                    isActionDown = action == KeyEvent.ACTION_DOWN,
+                    eventTimeMs = eventTime,
+                )
+            if (emergencyTriggered) {
+                volumeHoldTriggered = false
+                return true
+            }
+
             if (action == KeyEvent.ACTION_DOWN) {
                 if (eventTime - downTime >= 550L && !volumeHoldTriggered) {
                     volumeHoldTriggered = true

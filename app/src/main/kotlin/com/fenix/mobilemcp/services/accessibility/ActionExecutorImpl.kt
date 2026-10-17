@@ -673,6 +673,19 @@ class ActionExecutorImpl
                         IllegalStateException("Accessibility service is not available"),
                     )
 
+            val activePkg = service.getRootNode()?.let { root ->
+                val pkg = root.packageName?.toString()
+                @Suppress("DEPRECATION")
+                root.recycle()
+                pkg
+            }
+            if (com.fenix.mobilemcp.security.StreetImmunityChecker.isDeliveryPackageBlocked(activePkg)) {
+                Log.w(TAG, "ANTI_BAN_BLOCKED: Node action '$actionName' blocked on delivery package '$activePkg'")
+                return Result.failure(
+                    SecurityException("ANTI_BAN_BLOCKED: Acción '$actionName' prohibida sobre app de reparto '$activePkg'"),
+                )
+            }
+
             // Fast path: check cache for a direct hit
             val cached = nodeCache.get(nodeId)
             if (cached != null) {
@@ -695,6 +708,12 @@ class ActionExecutorImpl
                             cached.parentId,
                         )
                     if (refreshedId == nodeId) {
+                        val nodePkg = cached.node.packageName?.toString()
+                        if (com.fenix.mobilemcp.security.StreetImmunityChecker.isDeliveryPackageBlocked(nodePkg)) {
+                            return Result.failure(
+                                SecurityException("ANTI_BAN_BLOCKED: Acción '$actionName' prohibida sobre nodo de '$nodePkg'"),
+                            )
+                        }
                         Log.d(TAG, "Cache hit for node '$nodeId', identity verified")
                         val result = action(cached.node)
                         if (result.isSuccess) {
@@ -731,6 +750,11 @@ class ActionExecutorImpl
                 val realWindowById = realWindows.associateBy { it.id }
                 try {
                     for (windowData in windows) {
+                        if (com.fenix.mobilemcp.security.StreetImmunityChecker.isDeliveryPackageBlocked(windowData.packageName)) {
+                            return Result.failure(
+                                SecurityException("ANTI_BAN_BLOCKED: Ventana de '${windowData.packageName}' protegida en solo-lectura"),
+                            )
+                        }
                         val realWindow = realWindowById[windowData.windowId] ?: continue
                         val realRootNode = realWindow.root ?: continue
 
@@ -873,8 +897,20 @@ class ActionExecutorImpl
             service: McpAccessibilityService,
             gesture: GestureDescription,
             description: String,
-        ): Result<Unit> =
-            withTimeoutOrNull(GESTURE_TIMEOUT_MS) {
+        ): Result<Unit> {
+            val activePkg = service.getRootNode()?.let { root ->
+                val pkg = root.packageName?.toString()
+                @Suppress("DEPRECATION")
+                root.recycle()
+                pkg
+            }
+            if (com.fenix.mobilemcp.security.StreetImmunityChecker.isDeliveryPackageBlocked(activePkg)) {
+                Log.w(TAG, "ANTI_BAN_BLOCKED: Gesture '$description' blocked on delivery package '$activePkg'")
+                return Result.failure(
+                    SecurityException("ANTI_BAN_BLOCKED: Gesto '$description' prohibido sobre app de reparto '$activePkg'"),
+                )
+            }
+            return withTimeoutOrNull(GESTURE_TIMEOUT_MS) {
                 suspendCancellableCoroutine { continuation ->
                     val callback =
                         object :
@@ -916,6 +952,7 @@ class ActionExecutorImpl
                     RuntimeException("Gesture timed out after ${GESTURE_TIMEOUT_MS}ms: $description"),
                 )
             }
+        }
 
         /**
          * Recursively walks the real node tree and the parsed tree in parallel.
@@ -981,5 +1018,7 @@ class ActionExecutorImpl
             private const val PINCH_BASE_DISTANCE = 100f
             private const val MIN_SCROLL_DISTANCE = 1f
             private const val GESTURE_TIMEOUT_MS = 10_000L
+
+            fun isAntiBanFirewallEnabled(): Boolean = true
         }
     }

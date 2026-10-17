@@ -1,0 +1,11 @@
+RUN_ID=1792118795628269035 (corrida S0T-03)
+### agy mcp list
+NAME            TYPE   STATUS   COMMAND/URL
+agent-device    stdio  enabled  /home/eli/fenix-mcp/launchers/lanzar_agent_device.sh mcp
+data-agent-kit  stdio  enabled  node /home/eli/.antigravity-ide/extensions/googlecloudtools.datacloud-1.1.0-universal/mcp_servers/cli/mcp_proxy_bundle.js dataAgentKit-antigravityide
+fenix           stdio  enabled  /home/eli/fenix-mcp/launchers/lanzar_antigravity.sh
+notebooks       stdio  enabled  node /home/eli/.antigravity-ide/extensions/googlecloudtools.datacloud-1.1.0-universal/mcp_servers/cli/mcp_proxy_bundle.js notebooks-antigravityide
+visualization   stdio  enabled  node /home/eli/.antigravity-ide/extensions/googlecloudtools.datacloud-1.1.0-universal/mcp_servers/cli/mcp_proxy_bundle.js visualization-antigravityide
+
+### shim con PATH pelado
+0.21.28

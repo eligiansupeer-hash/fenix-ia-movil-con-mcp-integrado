@@ -1,0 +1,33 @@
+RUN_ID=1792118793053107190 (corrida S0T-02)
+### agent-device doctor
+✓ agent-device: agent-device 0.21.28 using /home/eli/.agent-device
+- session: No active session named cwd:bde87b55c0a57ab1:default. Doctor will use device inventory only.
+✓ device: 2 local devices available; 2 booted (Android 1 available, 1 booted; Linux 1 available, 1 booted).
+! device-harmonyos: HarmonyOS device inventory could not be read: hdc not found in PATH
+  hint: Install HarmonyOS Command Line Tools, then add its sdk/default/openharmony/toolchains directory to PATH.
+! device-apple: Apple device inventory could not be read: Apple tools are only available on macOS
+  hint: This host runs Linux, so it cannot boot iOS Simulators or run macOS sessions. Drive Android here instead with the same command shape: agent-device devices --platform android to list targets, then agent-device open <app.apk> --platform android. To use an iOS Simulator from this machine, run agent-device on a macOS host and pass --daemon-base-url <that daemon URL>.
+! device-vega: Vega device inventory could not be read: Vega CLI not found in PATH
+  hint: Install Vega Developer Tools, source ~/vega/env, and retry devices.
+- web-agent-browser-processes: Managed web backend is not installed; no agent-device-owned browser processes counted.
+Doctor: warn
+No hard blockers found, but warnings need attention.
+
+### agent-device devices --platform android --json
+{
+  "success": true,
+  "data": {
+    "devices": [
+      {
+        "platform": "android",
+        "id": "ZY22MK7B2P",
+        "name": "moto g77",
+        "kind": "device",
+        "target": "mobile",
+        "model": "moto g77",
+        "osVersion": "16",
+        "booted": true
+      }
+    ]
+  }
+}

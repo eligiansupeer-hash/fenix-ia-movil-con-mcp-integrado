@@ -28,13 +28,14 @@ class DriveClient
     constructor() {
         private val json = Json { ignoreUnknownKeys = true }
 
-        private fun client(): HttpClient =
+        private val httpClient: HttpClient by lazy {
             HttpClient(OkHttp) {
                 install(HttpTimeout) {
                     requestTimeoutMillis = 20_000L
                     connectTimeoutMillis = 10_000L
                 }
             }
+        }
 
         @Serializable
         data class FileEntry(
@@ -59,25 +60,38 @@ class DriveClient
             pageToken: String? = null,
         ): List<FileEntry> =
             withContext(Dispatchers.IO) {
-                val body =
-                    client().get("https://www.googleapis.com/drive/v3/files") {
-                        header(HttpHeaders.Authorization, "Bearer $bearer")
+                require(bearer.isNotBlank()) { "Bearer token de Google Drive no puede estar vacío" }
+                val response =
+                    httpClient.get("https://www.googleapis.com/drive/v3/files") {
+                        header(HttpHeaders.Authorization, "Bearer ${bearer.trim()}")
                         parameter("pageSize", pageSize.coerceIn(1, 1000))
                         parameter("fields", "files(id,name,mimeType,modifiedTime,size),nextPageToken")
                         query?.let { parameter("q", it) }
                         pageToken?.let { parameter("pageToken", it) }
-                    }.bodyAsText()
+                    }
+                val body = response.bodyAsText()
+                if (!response.status.isSuccess()) {
+                    val quotaTag = if (isQuotaHit(response.status.value)) " [QUOTA_HIT]" else ""
+                    throw IllegalStateException("Drive HTTP ${response.status.value}$quotaTag: $body")
+                }
                 json.decodeFromString(ListDto.serializer(), body).files
             }
 
         /** Metadatos de un archivo (5 u.). */
         suspend fun get(bearer: String, fileId: String): FileEntry =
             withContext(Dispatchers.IO) {
-                val body =
-                    client().get("https://www.googleapis.com/drive/v3/files/$fileId") {
-                        header(HttpHeaders.Authorization, "Bearer $bearer")
+                require(bearer.isNotBlank()) { "Bearer token de Google Drive no puede estar vacío" }
+                require(fileId.isNotBlank()) { "fileId no puede estar vacío" }
+                val response =
+                    httpClient.get("https://www.googleapis.com/drive/v3/files/${fileId.trim()}") {
+                        header(HttpHeaders.Authorization, "Bearer ${bearer.trim()}")
                         parameter("fields", "id,name,mimeType,modifiedTime,size")
-                    }.bodyAsText()
+                    }
+                val body = response.bodyAsText()
+                if (!response.status.isSuccess()) {
+                    val quotaTag = if (isQuotaHit(response.status.value)) " [QUOTA_HIT]" else ""
+                    throw IllegalStateException("Drive HTTP ${response.status.value}$quotaTag: $body")
+                }
                 json.decodeFromString(FileEntry.serializer(), body)
             }
 

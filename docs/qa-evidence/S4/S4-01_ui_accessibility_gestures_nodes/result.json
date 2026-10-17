@@ -1,0 +1,9 @@
+{
+  "id": "S4-01",
+  "nombre": "UI Accessibility Gestures and Node Introspection",
+  "device": "ZY22MK7B2P",
+  "isError": false,
+  "run_id": "20261016_QA_MOTO_G77_RONDA2",
+  "log_must_contain": "STATUS=UI_GESTURES_AND_NODES_OK",
+  "screen_required": false
+}

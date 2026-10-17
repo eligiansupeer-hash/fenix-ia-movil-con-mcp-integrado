@@ -1,0 +1,5 @@
+TOOL=android_skill_catalog_inspect
+STATUS=200
+SKILLS=[{"name":"turno-radar","kind":"TEXT","executable":false},{"name":"zona-sj","kind":"TEXT","executable":false}]
+STATUS=TEXT_SKILLS_NON_EXECUTABLE_VERIFIED
+

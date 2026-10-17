@@ -1,0 +1,12 @@
+RUN_ID=20261016_QA_MOTO_G77_RONDA2
+DEVICE=ZY22MK7B2P
+TEST=S5-04
+LAUNCH_APP=com.google.android.calculator
+CLICK_7=node_8a24e577
+CLICK_MUL=node_bec0e3aa
+CLICK_6=node_623961e0
+CLICK_EQ=node_21dc724a
+FIND_RESULT=node_514adb88 text=42 id=com.google.android.calculator:id/result_final
+PRESS_HOME=Home button press executed successfully
+RELANCH_FENIX=com.fenix.mobilemcp.foss.debug
+STATUS=CALCULATOR_E2E_42_VERIFIED

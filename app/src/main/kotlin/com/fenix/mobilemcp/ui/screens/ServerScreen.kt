@@ -173,6 +173,10 @@ fun ServerScreen(
 
             Spacer(Modifier.height(16.dp))
 
+            val urlCopiedMessage = stringResource(R.string.connection_info_url_copied)
+            val tokenCopiedMessage = stringResource(R.string.connection_info_token_copied)
+            val jsonCopiedMessage = stringResource(R.string.connection_info_json_copied)
+
             ConnectionInfoCard(
                 bindingAddress = serverConfig.bindingAddress,
                 ipAddress = deviceIp,
@@ -182,6 +186,21 @@ fun ServerScreen(
                 tunnelEnabled = serverConfig.tunnelEnabled,
                 serverStatus = serverStatus,
                 tunnelStatus = tunnelStatus,
+                onCopyUrl = { url ->
+                    clipboardManager.setText(AnnotatedString(url))
+                    Toast.makeText(context, urlCopiedMessage, Toast.LENGTH_SHORT).show()
+                },
+                onCopyToken = { token ->
+                    clipboardManager.setText(AnnotatedString(token))
+                    Toast.makeText(context, tokenCopiedMessage, Toast.LENGTH_SHORT).show()
+                },
+                onCopyJson = { json ->
+                    clipboardManager.setText(AnnotatedString(json))
+                    Toast.makeText(context, jsonCopiedMessage, Toast.LENGTH_SHORT).show()
+                },
+                onEnableTunnel = {
+                    viewModel.updateTunnelEnabled(true)
+                },
                 onCopyAll = { text ->
                     clipboardManager.setText(AnnotatedString(text))
                     Toast.makeText(context, copiedToClipboardMessage, Toast.LENGTH_SHORT).show()

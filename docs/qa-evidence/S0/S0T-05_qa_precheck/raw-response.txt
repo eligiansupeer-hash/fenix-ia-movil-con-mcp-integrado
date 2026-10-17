@@ -1,0 +1,6 @@
+== QA PRECHECK ==
+✓ agent-device: agent-device 0.21.28 using /home/eli/.agent-device
+✓ device: 2 local devices available; 2 booted (Android 1 available, 1 booted; Linux 1 available, 1 booted).
+android moto g77: live session=default workspace=/home/eli/biblioteca-fenix-v3
+PRECHECK OK — suite puede ejecutarse
+

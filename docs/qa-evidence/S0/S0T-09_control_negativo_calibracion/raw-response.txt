@@ -1,0 +1,6 @@
+CALIBRATION_TEST:
+Input: docs/qa-evidence/S0/S0T-09_control_negativo_deliberado
+Result: {"verdict": "EVIDENCIA_FAIL", "ok": false, "faltantes": ["isError==true en result.json (REGLA 1: FAIL)", "screen.png"]}
+Exit code: 1 (EVIDENCIA_FAIL)
+Status: Calibración verificada exitosamente.
+

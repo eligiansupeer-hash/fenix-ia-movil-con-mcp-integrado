@@ -1,0 +1,3 @@
+EVIDENCIA_OK  docs/qa-evidence/S0/S0T-01_agent_device_version
+{"verdict": "EVIDENCIA_OK", "ok": true, "faltantes": [], "carpeta": "/home/eli/Documentos/fenix-mobile-mcp/docs/qa-evidence/S0/S0T-01_agent_device_version", "regla": "skills/fenix-qa-evidence.md REGLA 7"}
+

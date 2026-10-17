@@ -199,4 +199,97 @@ object PermissionUtils {
             }
         context.startActivity(intent)
     }
+
+    /**
+     * Checks whether the app has the WRITE_SECURE_SETTINGS permission.
+     */
+    fun hasWriteSecureSettings(context: Context): Boolean =
+        ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.WRITE_SECURE_SETTINGS,
+        ) == PackageManager.PERMISSION_GRANTED
+
+    /**
+     * Programmatically enables or disables a specific accessibility service.
+     * Requires WRITE_SECURE_SETTINGS permission (granted via ADB or system privileges).
+     *
+     * @return true if the setting was successfully updated, false otherwise.
+     */
+    fun setAccessibilityServiceEnabled(
+        context: Context,
+        serviceClass: Class<*>,
+        enabled: Boolean,
+    ): Boolean {
+        return try {
+            val cr = context.contentResolver
+            val targetComponent = "${context.packageName}/${serviceClass.name}"
+            val currentServices =
+                Settings.Secure.getString(
+                    cr,
+                    Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,
+                ) ?: ""
+            val servicesList = currentServices.split(':').filter { it.isNotBlank() }.toMutableSet()
+
+            if (enabled) {
+                servicesList.add(targetComponent)
+            } else {
+                servicesList.remove(targetComponent)
+            }
+
+            val newServices = servicesList.joinToString(":")
+            Settings.Secure.putString(cr, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, newServices)
+            Settings.Secure.putInt(cr, Settings.Secure.ACCESSIBILITY_ENABLED, if (servicesList.isNotEmpty()) 1 else 0)
+            true
+        } catch (_: SecurityException) {
+            false
+        }
+    }
+
+    /**
+     * Cycles the accessibility service off and on to rebind the framework connection.
+     */
+    fun restartAccessibilityService(
+        context: Context,
+        serviceClass: Class<*>,
+    ): Boolean {
+        val disabled = setAccessibilityServiceEnabled(context, serviceClass, false)
+        if (!disabled) return false
+        try {
+            Thread.sleep(250)
+        } catch (_: InterruptedException) {
+            // Ignored
+        }
+        return setAccessibilityServiceEnabled(context, serviceClass, true)
+    }
+
+    /**
+     * Checks whether the app has full file access (MANAGE_EXTERNAL_STORAGE).
+     */
+    fun hasAllFilesAccess(): Boolean {
+        return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            android.os.Environment.isExternalStorageManager()
+        } else {
+            true
+        }
+    }
+
+    /**
+     * Opens the system settings screen for All Files Access (MANAGE_EXTERNAL_STORAGE).
+     */
+    fun openAllFilesAccessSettings(context: Context) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            try {
+                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
+                    data = android.net.Uri.parse("package:${context.packageName}")
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(intent)
+            } catch (_: Exception) {
+                val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(intent)
+            }
+        }
+    }
 }

@@ -1,0 +1,4 @@
+TOOL=android_cloudflare_route_check
+STATUS=200
+RESPONSE={"online":true,"header_client_id":"CF-Access-Client-Id","header_client_secret":"CF-Access-Client-Secret","routes":["https://127.0.0.1:8080/mcp","https://fenix.axiom.local/mcp"]}
+

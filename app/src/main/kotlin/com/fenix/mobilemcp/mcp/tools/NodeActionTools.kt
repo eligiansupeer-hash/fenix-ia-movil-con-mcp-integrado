@@ -453,12 +453,8 @@ class ScrollToNodeTool
                         "Node '$nodeId' not found in any window tree",
                     )
 
-            // Find nearest scrollable ancestor within the same window tree
-            val scrollableAncestorId =
-                findScrollableAncestor(containingTree, nodeId)
-                    ?: throw McpToolException.ActionFailed(
-                        "No scrollable container found for node '$nodeId'",
-                    )
+            // Find nearest scrollable ancestor within the same window tree (optional if gesture fallback is used)
+            val scrollableAncestorId = findScrollableAncestor(containingTree, nodeId)
 
             // Determine initial scroll direction from the node's position relative to
             // the screen. Nodes above the viewport (bounds.bottom <= 0) need UP scrolling;
@@ -474,10 +470,27 @@ class ScrollToNodeTool
                 while (totalAttempts < MAX_SCROLL_ATTEMPTS) {
                     totalAttempts++
                     val scrollResult =
-                        actionExecutor.scrollNode(scrollableAncestorId, direction, result.windows)
+                        if (scrollableAncestorId != null) {
+                            val nodeScroll = actionExecutor.scrollNode(scrollableAncestorId, direction, result.windows)
+                            if (nodeScroll.isSuccess) {
+                                nodeScroll
+                            } else {
+                                actionExecutor.scroll(
+                                    direction,
+                                    com.fenix.mobilemcp.services.accessibility.ScrollAmount.MEDIUM,
+                                    0f,
+                                )
+                            }
+                        } else {
+                            actionExecutor.scroll(
+                                direction,
+                                com.fenix.mobilemcp.services.accessibility.ScrollAmount.MEDIUM,
+                                0f,
+                            )
+                        }
                     if (scrollResult.isFailure) {
                         throw McpToolException.ActionFailed(
-                            "Scroll failed on ancestor '$scrollableAncestorId': " +
+                            "Scroll failed for node '$nodeId': " +
                                 "${scrollResult.exceptionOrNull()?.message}",
                         )
                     }

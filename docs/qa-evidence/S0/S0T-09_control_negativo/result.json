@@ -1,0 +1,12 @@
+{
+  "id": "S0T-09",
+  "nombre": "Control negativo de calibracion (el validador DEBE fallar)",
+  "fecha": "2026-10-15",
+  "device": "ZY22MK7B2P",
+  "isError": false,
+  "log_must_contain": "### CN6 run_id declarado pero AUSENTE en log (esperado FAIL por desvinculacion)",
+  "screen_required": false,
+  "screen_required_reason": "chequeo de calibracion del verificador; sin accion de pantalla",
+  "veredicto_esperado": "6/6 EVIDENCIA_FAIL con exit=1 (CN5 y CN6 prueban el binding RUN_ID)",
+  "run_id": "1792118891904718458"
+}

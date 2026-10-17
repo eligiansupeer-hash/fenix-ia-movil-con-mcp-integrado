@@ -8,6 +8,7 @@ import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
+import io.ktor.http.isSuccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -27,13 +28,14 @@ class GmailClient
     constructor() {
         private val json = Json { ignoreUnknownKeys = true }
 
-        private fun client(): HttpClient =
+        private val httpClient: HttpClient by lazy {
             HttpClient(OkHttp) {
                 install(HttpTimeout) {
                     requestTimeoutMillis = 20_000L
                     connectTimeoutMillis = 10_000L
                 }
             }
+        }
 
         @Serializable
         data class HistoryDto(
@@ -43,22 +45,35 @@ class GmailClient
         /** Novedades desde historyId (2 u.). Persistir el nuevo historyId. */
         suspend fun historyList(bearer: String, lastHistoryId: String): String =
             withContext(Dispatchers.IO) {
-                val body =
-                    client().get("https://gmail.googleapis.com/gmail/v1/users/me/history") {
-                        header(HttpHeaders.Authorization, "Bearer $bearer")
-                        parameter("startHistoryId", lastHistoryId)
+                require(bearer.isNotBlank()) { "Bearer token de Gmail no puede estar vacío" }
+                require(lastHistoryId.isNotBlank()) { "lastHistoryId no puede estar vacío" }
+                val response =
+                    httpClient.get("https://gmail.googleapis.com/gmail/v1/users/me/history") {
+                        header(HttpHeaders.Authorization, "Bearer ${bearer.trim()}")
+                        parameter("startHistoryId", lastHistoryId.trim())
                         parameter("historyTypes", "messageAdded")
-                    }.bodyAsText()
+                    }
+                val body = response.bodyAsText()
+                if (!response.status.isSuccess()) {
+                    throw IllegalStateException("Gmail HTTP ${response.status.value}: $body")
+                }
                 json.decodeFromString(HistoryDto.serializer(), body).historyId
             }
 
         /** Búsqueda TOTAL en todo el buzón (5 u. + gets). */
         suspend fun searchAll(bearer: String, query: String, max: Int = 20): String =
             withContext(Dispatchers.IO) {
-                client().get("https://gmail.googleapis.com/gmail/v1/users/me/messages") {
-                    header(HttpHeaders.Authorization, "Bearer $bearer")
-                    parameter("q", query)
-                    parameter("maxResults", max.coerceIn(1, 100))
-                }.bodyAsText()
+                require(bearer.isNotBlank()) { "Bearer token de Gmail no puede estar vacío" }
+                val response =
+                    httpClient.get("https://gmail.googleapis.com/gmail/v1/users/me/messages") {
+                        header(HttpHeaders.Authorization, "Bearer ${bearer.trim()}")
+                        parameter("q", query)
+                        parameter("maxResults", max.coerceIn(1, 100))
+                    }
+                val body = response.bodyAsText()
+                if (!response.status.isSuccess()) {
+                    throw IllegalStateException("Gmail HTTP ${response.status.value}: $body")
+                }
+                body
             }
     }

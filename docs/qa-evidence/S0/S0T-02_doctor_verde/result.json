@@ -1,0 +1,11 @@
+{
+  "id": "S0T-02",
+  "nombre": "agent-device doctor verde",
+  "fecha": "2026-10-15",
+  "device": "ZY22MK7B2P",
+  "isError": false,
+  "log_must_contain": "ZY22MK7B2P",
+  "screen_required": false,
+  "screen_required_reason": "chequeo de tooling; la whitelist del dispositivo se demuestra en el log, no en pantalla",
+  "run_id": "1792118793053107190"
+}

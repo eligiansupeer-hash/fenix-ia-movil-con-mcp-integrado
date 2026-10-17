@@ -29,6 +29,11 @@ internal fun loggedToolHandler(
     handler: suspend (CallToolRequest) -> CallToolResult,
 ): suspend (CallToolRequest) -> CallToolResult =
     { request ->
+        if (com.fenix.mobilemcp.security.EmergencyKillSwitchManager.isCurrentlyBlocking()) {
+            throw kotlinx.coroutines.CancellationException("Ejecución bloqueada por Interruptor Físico de Emergencia")
+        }
+        val currentJob = coroutineContext[kotlinx.coroutines.Job]
+        val jobId = currentJob?.let { com.fenix.mobilemcp.security.EmergencyKillSwitchManager.registerActiveToolJob(it) }
         val startNs = System.nanoTime()
         var completed: CallToolResult? = null
         runCatching { toolCallIndicator.onToolCallStarted(toolName) }
@@ -37,16 +42,26 @@ internal fun loggedToolHandler(
             completed = result
             result
         } finally {
+            if (jobId != null) {
+                com.fenix.mobilemcp.security.EmergencyKillSwitchManager.unregisterActiveToolJob(jobId)
+            }
             runCatching { toolCallIndicator.onToolCallFinished(toolName) }
             val durationMs = (System.nanoTime() - startNs) / NANOS_PER_MILLI
             val result = completed
             when {
                 result != null -> {
+                    val isSuccess = result.isError != true
                     serverLog.log(
                         type = ServerLogEntry.Type.TOOL_CALL,
-                        message = if (result.isError == true) FAILED_MARKER else "",
+                        message = if (!isSuccess) FAILED_MARKER else "",
                         toolName = toolName,
                         durationMs = durationMs,
+                    )
+                    com.fenix.mobilemcp.telemetry.FenixBlackBoxRecorder.recordToolExecution(
+                        toolName = toolName,
+                        durationMs = durationMs,
+                        success = isSuccess,
+                        errorMessage = if (!isSuccess) "Tool returned isError=true" else null,
                     )
                 }
 
@@ -56,6 +71,12 @@ internal fun loggedToolHandler(
                         message = FAILED_MARKER,
                         toolName = toolName,
                         durationMs = durationMs,
+                    )
+                    com.fenix.mobilemcp.telemetry.FenixBlackBoxRecorder.recordToolExecution(
+                        toolName = toolName,
+                        durationMs = durationMs,
+                        success = false,
+                        errorMessage = "Tool execution threw unhandled exception",
                     )
                 }
             }

@@ -9,10 +9,15 @@ import com.fenix.mobilemcp.delivery.zones.ZoneEntry
 import com.fenix.mobilemcp.mcp.McpToolException
 import com.fenix.mobilemcp.mcp.oauth.OAuthPolicy
 import com.fenix.mobilemcp.memory.FenixMemoryDb
+import com.fenix.mobilemcp.services.accessibility.McpAccessibilityService
+import com.fenix.mobilemcp.services.storage.FenixFileManager
+import com.fenix.mobilemcp.telemetry.FenixBlackBoxRecorder
+import com.fenix.mobilemcp.utils.PermissionUtils
 import io.modelcontextprotocol.kotlin.sdk.types.CallToolResult
 import io.modelcontextprotocol.kotlin.sdk.types.ToolSchema
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.add
@@ -144,6 +149,241 @@ class FenixMemoryReadHandler
 
         companion object {
             const val TOOL_NAME = "memory_read"
+        }
+    }
+
+/**
+ * Busca datos en la memoria persistente Fénix mediante coincidencia por texto.
+ */
+class FenixMemorySearchHandler
+    @Inject
+    constructor(
+        private val db: FenixMemoryDb,
+    ) {
+        suspend fun execute(arguments: JsonObject?): CallToolResult =
+            try {
+                val query = McpToolUtils.requireString(arguments, "query")
+                val limit = McpToolUtils.optionalInt(arguments, "limit", 10)
+                val results = db.kvBuscar(query, limit)
+                val arr = buildJsonArray {
+                    results.forEach { (clave, ambito, valor) ->
+                        add(
+                            buildJsonObject {
+                                put("clave", clave)
+                                put("ambito", ambito)
+                                put("valor", valor)
+                            },
+                        )
+                    }
+                }
+                val out = buildJsonObject {
+                    put("status", "ok")
+                    put("query", query)
+                    put("total", results.size)
+                    put("resultados", arr)
+                }
+                McpToolUtils.untrustedTextResult(Json.encodeToString(out))
+            } catch (e: McpToolException) {
+                throw e
+            } catch (e: Exception) {
+                throw McpToolException.ActionFailed("Error al buscar en memoria: ${e.message}")
+            }
+
+        fun register(registrar: LoggedToolRegistrar, toolNamePrefix: String) {
+            registrar.addTool(
+                toolName = TOOL_NAME,
+                name = "$toolNamePrefix$TOOL_NAME",
+                description = "Busca información o recuerdos en la memoria persistente SQLite mediante palabras clave.",
+                inputSchema = ToolSchema(
+                    properties = buildJsonObject {
+                        put("query", buildJsonObject {
+                            put("type", "string")
+                            put("description", "Texto o término a buscar en la memoria persistente")
+                        })
+                        put("limit", buildJsonObject {
+                            put("type", "integer")
+                            put("description", "Límite máximo de resultados (por defecto 10)")
+                        })
+                    },
+                    required = listOf("query"),
+                ),
+            ) { request -> execute(request.arguments) }
+        }
+
+        companion object {
+            const val TOOL_NAME = "memory_search"
+        }
+    }
+
+/**
+ * Lista las claves de memoria existentes por ámbito.
+ */
+class FenixMemoryListHandler
+    @Inject
+    constructor(
+        private val db: FenixMemoryDb,
+    ) {
+        suspend fun execute(arguments: JsonObject?): CallToolResult =
+            try {
+                val ambito = McpToolUtils.optionalString(arguments, "ambito", "")
+                val limit = McpToolUtils.optionalInt(arguments, "limit", 50)
+                val results = db.kvListar(ambito.ifEmpty { null }, limit)
+                val arr = buildJsonArray {
+                    results.forEach { (clave, amb, cat) ->
+                        add(
+                            buildJsonObject {
+                                put("clave", clave)
+                                put("ambito", amb)
+                                put("categoria", cat)
+                            },
+                        )
+                    }
+                }
+                val out = buildJsonObject {
+                    put("status", "ok")
+                    put("total", results.size)
+                    put("claves", arr)
+                }
+                McpToolUtils.untrustedTextResult(Json.encodeToString(out))
+            } catch (e: McpToolException) {
+                throw e
+            } catch (e: Exception) {
+                throw McpToolException.ActionFailed("Error al listar memoria: ${e.message}")
+            }
+
+        fun register(registrar: LoggedToolRegistrar, toolNamePrefix: String) {
+            registrar.addTool(
+                toolName = TOOL_NAME,
+                name = "$toolNamePrefix$TOOL_NAME",
+                description = "Lista las claves almacenadas en la memoria persistente SQLite del teléfono.",
+                inputSchema = ToolSchema(
+                    properties = buildJsonObject {
+                        put("ambito", buildJsonObject {
+                            put("type", "string")
+                            put("description", "Ámbito o categoría opcional de filtrado")
+                        })
+                        put("limit", buildJsonObject {
+                            put("type", "integer")
+                            put("description", "Cantidad máxima de claves a retornar")
+                        })
+                    },
+                    required = listOf(),
+                ),
+            ) { request -> execute(request.arguments) }
+        }
+
+        companion object {
+            const val TOOL_NAME = "memory_list"
+        }
+    }
+
+/**
+ * Administra sesiones de trabajo y conversaciones persistentes en SQLite.
+ */
+class FenixSessionManageHandler
+    @Inject
+    constructor(
+        private val db: FenixMemoryDb,
+    ) {
+        suspend fun execute(arguments: JsonObject?): CallToolResult =
+            try {
+                val action = McpToolUtils.optionalString(arguments, "action", "list").lowercase()
+                val sessionId = McpToolUtils.optionalString(arguments, "session_id", "")
+                val title = McpToolUtils.optionalString(arguments, "title", "Nueva sesión")
+
+                val out = when (action) {
+                    "create" -> {
+                        val id = if (sessionId.isNotBlank()) sessionId else java.util.UUID.randomUUID().toString()
+                        val record = db.crearSesion(id, title)
+                        buildJsonObject {
+                            put("status", "created")
+                            put("session_id", record.id)
+                            put("titulo", record.titulo)
+                            put("creado", record.creado)
+                        }
+                    }
+                    "list" -> {
+                        val sessions = db.listarSesiones()
+                        val arr = buildJsonArray {
+                            sessions.forEach { s ->
+                                add(
+                                    buildJsonObject {
+                                        put("id", s.id)
+                                        put("titulo", s.titulo)
+                                        put("actualizado", s.actualizado)
+                                        put("estado", s.estado)
+                                    },
+                                )
+                            }
+                        }
+                        buildJsonObject {
+                            put("status", "ok")
+                            put("total_sesiones", sessions.size)
+                            put("sesiones", arr)
+                        }
+                    }
+                    "context" -> {
+                        if (sessionId.isBlank()) throw McpToolException.InvalidParams("Se requiere session_id para consultar contexto")
+                        val entries = db.listarEntradas(sessionId)
+                        val arr = buildJsonArray {
+                            entries.forEach { e ->
+                                add(
+                                    buildJsonObject {
+                                        put("id", e.id)
+                                        put("tipo", e.tipo)
+                                        put("evento", e.evento)
+                                        put("detalle", e.detalle)
+                                        put("ts", e.ts)
+                                    },
+                                )
+                            }
+                        }
+                        buildJsonObject {
+                            put("status", "ok")
+                            put("session_id", sessionId)
+                            put("total_entradas", entries.size)
+                            put("entradas", arr)
+                        }
+                    }
+                    "delete" -> {
+                        if (sessionId.isBlank()) throw McpToolException.InvalidParams("Se requiere session_id para eliminar sesión")
+                        val deleted = db.eliminarSesion(sessionId)
+                        buildJsonObject {
+                            put("status", if (deleted) "deleted" else "not_found")
+                            put("session_id", sessionId)
+                        }
+                    }
+                    else -> throw McpToolException.InvalidParams("Acción inválida: $action (use create, list, context, delete)")
+                }
+
+                McpToolUtils.untrustedTextResult(Json.encodeToString(out))
+            } catch (e: McpToolException) {
+                throw e
+            } catch (e: Exception) {
+                throw McpToolException.ActionFailed("Error en gestión de sesiones: ${e.message}")
+            }
+
+        fun register(registrar: LoggedToolRegistrar, toolNamePrefix: String) {
+            registrar.addTool(
+                toolName = TOOL_NAME,
+                name = "$toolNamePrefix$TOOL_NAME",
+                description = "Gestiona sesiones de conversación persistentes en SQLite. Permite crear, listar, consultar contexto o eliminar sesiones.",
+                inputSchema = ToolSchema(
+                    properties = buildJsonObject {
+                        put("action", buildJsonObject {
+                            put("type", "string")
+                            put("enum", JsonArray(listOf(JsonPrimitive("create"), JsonPrimitive("list"), JsonPrimitive("context"), JsonPrimitive("delete"))))
+                        })
+                        put("session_id", buildJsonObject { put("type", "string") })
+                        put("title", buildJsonObject { put("type", "string") })
+                    },
+                    required = listOf(),
+                ),
+            ) { request -> execute(request.arguments) }
+        }
+
+        companion object {
+            const val TOOL_NAME = "session_manage"
         }
     }
 
@@ -928,6 +1168,97 @@ class FenixSkillCatalogHandler {
     }
 }
 
+/**
+ * Centro de autodescubrimiento y activación de habilidades (Skills) a demanda.
+ * Permite a cualquier IA (Gemini, Claude, GPT o SLMs locales) explorar capacidades
+ * dinámicamente sin inundar su ventana de contexto con esquemas innecesarios.
+ */
+class FenixSkillsDiscoveryHandler {
+    suspend fun execute(arguments: JsonObject?): CallToolResult =
+        try {
+            val action = McpToolUtils.optionalString(arguments, "action", "list").lowercase()
+            val skillId = McpToolUtils.optionalString(arguments, "skill", "").lowercase()
+            val query = McpToolUtils.optionalString(arguments, "query", "")
+
+            val out = when (action) {
+                "list" -> {
+                    val catalog = com.fenix.mobilemcp.mcp.registry.FenixToolRegistry.getSkillCatalog()
+                    buildJsonObject {
+                        put("status", "ok")
+                        put("total_skills", catalog.size)
+                        put("skills", JsonArray(catalog))
+                        put("instruccion", "Para activar una habilidad y recibir sus herramientas específicas, invoca fenix_skills_discovery con action='activate' y el id de la habilidad deseada.")
+                    }
+                }
+                "search" -> {
+                    val detected = com.fenix.mobilemcp.mcp.registry.FenixToolRegistry.detectRelevantCategories(query)
+                    val matchedSkills = detected.map { cat ->
+                        val catTools = com.fenix.mobilemcp.mcp.registry.FenixToolRegistry.getByCategory(cat)
+                        buildJsonObject {
+                            put("id", cat.id)
+                            put("nombre", cat.displayName)
+                            put("descripcion", cat.description)
+                            put("herramientas", JsonArray(catTools.map { JsonPrimitive(it.name) }))
+                        }
+                    }
+                    buildJsonObject {
+                        put("status", "ok")
+                        put("query", query)
+                        put("habilidades_coincidentes", JsonArray(matchedSkills))
+                    }
+                }
+                "activate" -> {
+                    val category = com.fenix.mobilemcp.mcp.registry.FenixSkillCategory.fromId(skillId)
+                    val tools = com.fenix.mobilemcp.mcp.registry.FenixToolRegistry.getByCategory(category)
+                    buildJsonObject {
+                        put("status", "activated")
+                        put("skill_id", category.id)
+                        put("skill_nombre", category.displayName)
+                        put("herramientas_activadas", JsonArray(tools.map { JsonPrimitive(it.name) }))
+                        put("mensaje", "La habilidad '${category.displayName}' ha sido activada en esta sesión. Sus herramientas ahora están listas para ser ejecutadas.")
+                    }
+                }
+                else -> throw McpToolException.InvalidParams("Acción desconocida: $action. Use 'list', 'search' o 'activate'")
+            }
+
+            McpToolUtils.untrustedTextResult(Json.encodeToString(out))
+        } catch (e: McpToolException) {
+            throw e
+        } catch (e: Exception) {
+            throw McpToolException.ActionFailed("Error en autodescubrimiento de skills: ${e.message}")
+        }
+
+    fun register(registrar: LoggedToolRegistrar, prefix: String) {
+        registrar.addTool(
+            toolName = TOOL_NAME,
+            name = "$prefix$TOOL_NAME",
+            description = "Centro de autodescubrimiento y activación de habilidades a demanda de Fénix. Permite consultar el catálogo ('action': 'list'), buscar por intención ('action': 'search') o activar herramientas específicas ('action': 'activate', 'skill': 'archivos'). Protege el contexto y reduce cuotas drásticamente.",
+            inputSchema = ToolSchema(
+                properties = buildJsonObject {
+                    put("action", buildJsonObject {
+                        put("type", "string")
+                        put("enum", JsonArray(listOf(JsonPrimitive("list"), JsonPrimitive("search"), JsonPrimitive("activate"))))
+                        put("description", "Acción a realizar: 'list' (ver catálogo), 'search' (buscar por palabras clave), 'activate' (activar habilidad en la sesión)")
+                    })
+                    put("skill", buildJsonObject {
+                        put("type", "string")
+                        put("description", "Identificador de la habilidad a activar (ej: 'archivos', 'memoria', 'dispositivo', 'seguridad', 'red', 'accesibilidad', 'conectores', 'diagnostico')")
+                    })
+                    put("query", buildJsonObject {
+                        put("type", "string")
+                        put("description", "Término de búsqueda cuando action es 'search'")
+                    })
+                },
+                required = listOf(),
+            ),
+        ) { req -> execute(req.arguments) }
+    }
+
+    companion object {
+        const val TOOL_NAME = "fenix_skills_discovery"
+    }
+}
+
 class FenixProviderCooldownHandler(
     private val db: FenixMemoryDb,
 ) {
@@ -1066,7 +1397,701 @@ class FenixConnectorManageHandler {
     }
 }
 
-/** Registro del bundle Fénix completo (memoria + zonas + turnos + 9 conectores + seguridad + skills). */
+/**
+ * Herramienta para auditar, activar, desactivar y reiniciar el servicio de accesibilidad a demanda.
+ */
+class FenixAccessibilityControlHandler(
+    private val context: android.content.Context,
+) {
+    @Suppress("TooGenericExceptionCaught")
+    suspend fun execute(arguments: JsonObject?): CallToolResult =
+        try {
+            val action = McpToolUtils.optionalString(arguments, "action", "status").lowercase()
+            val serviceClass = McpAccessibilityService::class.java
+            val isEnabledInSettings = PermissionUtils.isAccessibilityServiceEnabled(context, serviceClass)
+            val isConnected = McpAccessibilityService.instance?.isReady() == true
+            val hasSecurePerm = PermissionUtils.hasWriteSecureSettings(context)
+
+            val out = when (action) {
+                "enable" -> {
+                    val changed = PermissionUtils.setAccessibilityServiceEnabled(context, serviceClass, true)
+                    FenixBlackBoxRecorder.recordAccessibility("ENABLE_REQUEST", "changed=$changed, hasSecurePerm=$hasSecurePerm", changed)
+                    buildJsonObject {
+                        put("action", "enable")
+                        put("success", changed)
+                        put("has_write_secure_settings", hasSecurePerm)
+                        put("instructions", if (!changed) "Requiere conceder WRITE_SECURE_SETTINGS via ADB: adb shell pm grant ${context.packageName} android.permission.WRITE_SECURE_SETTINGS" else "Servicio activado en ajustes")
+                    }
+                }
+                "disable" -> {
+                    val changed = PermissionUtils.setAccessibilityServiceEnabled(context, serviceClass, false)
+                    FenixBlackBoxRecorder.recordAccessibility("DISABLE_REQUEST", "changed=$changed, hasSecurePerm=$hasSecurePerm", changed)
+                    buildJsonObject {
+                        put("action", "disable")
+                        put("success", changed)
+                        put("has_write_secure_settings", hasSecurePerm)
+                    }
+                }
+                "restart" -> {
+                    val restarted = PermissionUtils.restartAccessibilityService(context, serviceClass)
+                    FenixBlackBoxRecorder.recordAccessibility("RESTART_REQUEST", "restarted=$restarted", restarted)
+                    buildJsonObject {
+                        put("action", "restart")
+                        put("success", restarted)
+                        put("has_write_secure_settings", hasSecurePerm)
+                    }
+                }
+                "open_settings" -> {
+                    PermissionUtils.openAccessibilitySettings(context)
+                    FenixBlackBoxRecorder.recordAccessibility("OPEN_SETTINGS", "Pantalla de ajustes abierta", true)
+                    buildJsonObject {
+                        put("action", "open_settings")
+                        put("success", true)
+                        put("message", "Pantalla de Ajustes > Accesibilidad abierta en el dispositivo")
+                    }
+                }
+                "status" -> {
+                    buildJsonObject {
+                        put("action", "status")
+                        put("enabled_in_settings", isEnabledInSettings)
+                        put("is_binder_connected", isConnected)
+                        put("has_write_secure_settings", hasSecurePerm)
+                        put("package_name", context.packageName)
+                        put("service_class", serviceClass.name)
+                    }
+                }
+                else -> throw McpToolException.InvalidParams(
+                    "Accion invalida: $action (use status, enable, disable, restart, open_settings)"
+                )
+            }
+            McpToolUtils.untrustedTextResult(Json.encodeToString(out))
+        } catch (e: McpToolException) {
+            throw e
+        } catch (e: Exception) {
+            throw McpToolException.ActionFailed("Accessibility control error: ${e.message}")
+        }
+
+    fun register(registrar: LoggedToolRegistrar, prefix: String) {
+        registrar.addTool(
+            toolName = TOOL_NAME,
+            name = "$prefix$TOOL_NAME",
+            description = "Audita, conecta, desconecta o reinicia el servicio de accesibilidad del dispositivo a demanda.",
+            inputSchema = ToolSchema(
+                properties = buildJsonObject {
+                    put("action", buildJsonObject { put("type", "string") })
+                },
+                required = emptyList(),
+            ),
+        ) { req -> execute(req.arguments) }
+    }
+
+    companion object {
+        const val TOOL_NAME = "accessibility_control"
+    }
+}
+
+/**
+ * Herramienta MCP permanente para diagnostico y telemetria interna (Caja Negra).
+ * Permite a agentes conectados (Gemini, Claude, ChatGPT) auto-diagnosticar fallos y proponer mejoras.
+ */
+class FenixBlackBoxDiagnosticsHandler {
+    @Suppress("TooGenericExceptionCaught")
+    suspend fun execute(arguments: JsonObject?): CallToolResult =
+        try {
+            val action = McpToolUtils.optionalString(arguments, "action", "summary").lowercase()
+            val limit = McpToolUtils.optionalInt(arguments, "limit", 20)
+            val category = McpToolUtils.optionalString(arguments, "category", "")
+
+            val resultString = when (action) {
+                "summary" -> {
+                    val summaryObj = FenixBlackBoxRecorder.getSummary()
+                    Json.encodeToString(summaryObj)
+                }
+                "recent_events" -> {
+                    val events = FenixBlackBoxRecorder.getRecentEvents(limit, category.ifBlank { null })
+                    Json.encodeToString(events)
+                }
+                "tool_errors" -> {
+                    val errors = FenixBlackBoxRecorder.getToolErrors(limit)
+                    Json.encodeToString(errors)
+                }
+                "clear" -> {
+                    val ok = FenixBlackBoxRecorder.clearBuffer()
+                    "{\"action\":\"clear\",\"success\":$ok}"
+                }
+                else -> throw McpToolException.InvalidParams(
+                    "Accion invalida: $action (use summary, recent_events, tool_errors, clear)"
+                )
+            }
+            McpToolUtils.untrustedTextResult(resultString)
+        } catch (e: McpToolException) {
+            throw e
+        } catch (e: Exception) {
+            throw McpToolException.ActionFailed("BlackBox error: ${e.message}")
+        }
+
+    fun register(registrar: LoggedToolRegistrar, prefix: String) {
+        registrar.addTool(
+            toolName = TOOL_NAME,
+            name = "$prefix$TOOL_NAME",
+            description = "Inspecciona la Caja Negra permanente de telemetria, eventos internos, errores y metricas del servidor MCP.",
+            inputSchema = ToolSchema(
+                properties = buildJsonObject {
+                    put("action", buildJsonObject { put("type", "string") })
+                    put("limit", buildJsonObject { put("type", "integer") })
+                    put("category", buildJsonObject { put("type", "string") })
+                },
+                required = emptyList(),
+            ),
+        ) { req -> execute(req.arguments) }
+    }
+
+    companion object {
+        const val TOOL_NAME = "blackbox_diagnostics"
+    }
+}
+
+/** Búsqueda recursiva de archivos con filtros de nombre, extensión y tamaño sin root. */
+class FenixFileSearchHandler {
+    @Suppress("TooGenericExceptionCaught")
+    suspend fun execute(arguments: JsonObject?): CallToolResult =
+        try {
+            val startPath = McpToolUtils.optionalString(arguments, "start_path", "")
+            val query = McpToolUtils.optionalString(arguments, "query", "")
+            val extension = McpToolUtils.optionalString(arguments, "extension", "").ifBlank { null }
+            val minSizeBytes = McpToolUtils.optionalLong(arguments, "min_size_bytes", 0L)
+            val maxSizeBytes = McpToolUtils.optionalLong(arguments, "max_size_bytes", Long.MAX_VALUE)
+            val maxResults = McpToolUtils.optionalInt(arguments, "max_results", 50)
+
+            val matches = FenixFileManager.searchFiles(
+                startPath = startPath,
+                query = query,
+                extension = extension,
+                minSizeBytes = minSizeBytes,
+                maxSizeBytes = maxSizeBytes,
+                maxResults = maxResults,
+            )
+
+            val out = buildJsonObject {
+                put("query", query)
+                put("matches_count", matches.size)
+                put("files", buildJsonArray {
+                    matches.forEach { m ->
+                        add(buildJsonObject {
+                            put("name", m.name)
+                            put("path", m.path)
+                            put("size_bytes", m.sizeBytes)
+                            put("is_directory", m.isDirectory)
+                            put("last_modified_ms", m.lastModifiedMs)
+                        })
+                    }
+                })
+            }
+            McpToolUtils.untrustedTextResult(Json.encodeToString(out))
+        } catch (e: McpToolException) {
+            throw e
+        } catch (e: Exception) {
+            throw McpToolException.ActionFailed("File search error: ${e.message}")
+        }
+
+    fun register(registrar: LoggedToolRegistrar, prefix: String) {
+        registrar.addTool(
+            toolName = TOOL_NAME,
+            name = "$prefix$TOOL_NAME",
+            description = "Busca archivos de forma recursiva por nombre, extensión o tamaño en el almacenamiento.",
+            inputSchema = ToolSchema(
+                properties = buildJsonObject {
+                    put("start_path", buildJsonObject { put("type", "string") })
+                    put("query", buildJsonObject { put("type", "string") })
+                    put("extension", buildJsonObject { put("type", "string") })
+                    put("min_size_bytes", buildJsonObject { put("type", "integer") })
+                    put("max_size_bytes", buildJsonObject { put("type", "integer") })
+                    put("max_results", buildJsonObject { put("type", "integer") })
+                },
+                required = emptyList(),
+            ),
+        ) { req -> execute(req.arguments) }
+    }
+
+    companion object {
+        const val TOOL_NAME = "file_search"
+    }
+}
+
+/** Diagnóstico de almacenamiento: clasifica por tipo (docs, código, fotos, audio, video) y detecta archivos pesados (>50MB). */
+class FenixFileClassifyHandler {
+    @Suppress("TooGenericExceptionCaught")
+    suspend fun execute(arguments: JsonObject?): CallToolResult =
+        try {
+            val targetPath = McpToolUtils.optionalString(arguments, "target_path", "")
+            val classification = FenixFileManager.countAndClassify(targetPath)
+            McpToolUtils.untrustedTextResult(Json.encodeToString(classification))
+        } catch (e: McpToolException) {
+            throw e
+        } catch (e: Exception) {
+            throw McpToolException.ActionFailed("File classify error: ${e.message}")
+        }
+
+    fun register(registrar: LoggedToolRegistrar, prefix: String) {
+        registrar.addTool(
+            toolName = TOOL_NAME,
+            name = "$prefix$TOOL_NAME",
+            description = "Clasifica archivos por tipo y peso para diagnosticar y liberar espacio de memoria.",
+            inputSchema = ToolSchema(
+                properties = buildJsonObject {
+                    put("target_path", buildJsonObject { put("type", "string") })
+                },
+                required = emptyList(),
+            ),
+        ) { req -> execute(req.arguments) }
+    }
+
+    companion object {
+        const val TOOL_NAME = "file_classify"
+    }
+}
+
+/** Búsqueda interna de texto y frases (grep) dentro del contenido de archivos de texto o código. */
+class FenixFileGrepHandler {
+    @Suppress("TooGenericExceptionCaught")
+    suspend fun execute(arguments: JsonObject?): CallToolResult =
+        try {
+            val phrase = McpToolUtils.requireString(arguments, "phrase")
+            val startPath = McpToolUtils.optionalString(arguments, "start_path", "")
+            val extension = McpToolUtils.optionalString(arguments, "extension", "").ifBlank { null }
+            val grepResult = FenixFileManager.grepInFiles(startPath, phrase, extension)
+            McpToolUtils.untrustedTextResult(Json.encodeToString(grepResult))
+        } catch (e: McpToolException) {
+            throw e
+        } catch (e: Exception) {
+            throw McpToolException.ActionFailed("File grep error: ${e.message}")
+        }
+
+    fun register(registrar: LoggedToolRegistrar, prefix: String) {
+        registrar.addTool(
+            toolName = TOOL_NAME,
+            name = "$prefix$TOOL_NAME",
+            description = "Busca palabras o frases dentro del contenido de archivos sin conocer la ruta exacta.",
+            inputSchema = ToolSchema(
+                properties = buildJsonObject {
+                    put("phrase", buildJsonObject { put("type", "string") })
+                    put("start_path", buildJsonObject { put("type", "string") })
+                    put("extension", buildJsonObject { put("type", "string") })
+                },
+                required = listOf("phrase"),
+            ),
+        ) { req -> execute(req.arguments) }
+    }
+
+    companion object {
+        const val TOOL_NAME = "file_grep"
+    }
+}
+
+/** Inserción quirúrgica de contenido en un archivo (por línea o después de un patrón). */
+class FenixFileInsertHandler {
+    @Suppress("TooGenericExceptionCaught")
+    suspend fun execute(arguments: JsonObject?): CallToolResult =
+        try {
+            val path = McpToolUtils.requireString(arguments, "path")
+            val content = McpToolUtils.requireString(arguments, "content")
+            val atLine = McpToolUtils.optionalInt(arguments, "at_line_number", 0).takeIf { it > 0 }
+            val afterPattern = McpToolUtils.optionalString(arguments, "after_pattern", "").ifBlank { null }
+
+            val insertResult = FenixFileManager.insertInFile(path, content, atLine, afterPattern)
+            McpToolUtils.untrustedTextResult(Json.encodeToString(insertResult))
+        } catch (e: McpToolException) {
+            throw e
+        } catch (e: Exception) {
+            throw McpToolException.ActionFailed("File insert error: ${e.message}")
+        }
+
+    fun register(registrar: LoggedToolRegistrar, prefix: String) {
+        registrar.addTool(
+            toolName = TOOL_NAME,
+            name = "$prefix$TOOL_NAME",
+            description = "Inserta texto en una posición específica de un archivo (por número de línea o después de un patrón).",
+            inputSchema = ToolSchema(
+                properties = buildJsonObject {
+                    put("path", buildJsonObject { put("type", "string") })
+                    put("content", buildJsonObject { put("type", "string") })
+                    put("at_line_number", buildJsonObject { put("type", "integer") })
+                    put("after_pattern", buildJsonObject { put("type", "string") })
+                },
+                required = listOf("path", "content"),
+            ),
+        ) { req -> execute(req.arguments) }
+    }
+
+    companion object {
+        const val TOOL_NAME = "file_insert"
+    }
+}
+
+/** Lectura universal paginada de archivos de texto o código en el almacenamiento. */
+class FenixFileReadUniversalHandler {
+    @Suppress("TooGenericExceptionCaught")
+    suspend fun execute(arguments: JsonObject?): CallToolResult =
+        try {
+            val path = McpToolUtils.requireString(arguments, "path")
+            val startLine = McpToolUtils.optionalInt(arguments, "start_line", 1)
+            val maxLines = McpToolUtils.optionalInt(arguments, "max_lines", 300)
+
+            val readResult = FenixFileManager.readUniversal(path, startLine, maxLines)
+            McpToolUtils.untrustedTextResult(Json.encodeToString(readResult))
+        } catch (e: McpToolException) {
+            throw e
+        } catch (e: Exception) {
+            throw McpToolException.ActionFailed("File read universal error: ${e.message}")
+        }
+
+    fun register(registrar: LoggedToolRegistrar, prefix: String) {
+        registrar.addTool(
+            toolName = TOOL_NAME,
+            name = "$prefix$TOOL_NAME",
+            description = "Lee archivos de texto, código o documentación con paginación de líneas.",
+            inputSchema = ToolSchema(
+                properties = buildJsonObject {
+                    put("path", buildJsonObject { put("type", "string") })
+                    put("start_line", buildJsonObject { put("type", "integer") })
+                    put("max_lines", buildJsonObject { put("type", "integer") })
+                },
+                required = listOf("path"),
+            ),
+        ) { req -> execute(req.arguments) }
+    }
+
+    companion object {
+        const val TOOL_NAME = "file_read_universal"
+    }
+}
+
+/** Escritura o creación universal de archivos en cualquier carpeta accesible. */
+class FenixFileWriteUniversalHandler {
+    @Suppress("TooGenericExceptionCaught")
+    suspend fun execute(arguments: JsonObject?): CallToolResult =
+        try {
+            val path = McpToolUtils.requireString(arguments, "path")
+            val content = McpToolUtils.requireString(arguments, "content")
+            val append = McpToolUtils.optionalBoolean(arguments, "append", false)
+
+            val writeResult = FenixFileManager.writeUniversal(path, content, append)
+            McpToolUtils.untrustedTextResult(Json.encodeToString(writeResult))
+        } catch (e: McpToolException) {
+            throw e
+        } catch (e: Exception) {
+            throw McpToolException.ActionFailed("File write universal error: ${e.message}")
+        }
+
+    fun register(registrar: LoggedToolRegistrar, prefix: String) {
+        registrar.addTool(
+            toolName = TOOL_NAME,
+            name = "$prefix$TOOL_NAME",
+            description = "Crea o sobrescribe un archivo en el almacenamiento del dispositivo.",
+            inputSchema = ToolSchema(
+                properties = buildJsonObject {
+                    put("path", buildJsonObject { put("type", "string") })
+                    put("content", buildJsonObject { put("type", "string") })
+                    put("append", buildJsonObject { put("type", "boolean") })
+                },
+                required = listOf("path", "content"),
+            ),
+        ) { req -> execute(req.arguments) }
+    }
+
+    companion object {
+        const val TOOL_NAME = "file_write_universal"
+    }
+}
+
+/** Creación de carpetas y directorios en el almacenamiento. */
+class FenixDirectoryCreateHandler {
+    @Suppress("TooGenericExceptionCaught")
+    suspend fun execute(arguments: JsonObject?): CallToolResult =
+        try {
+            val path = McpToolUtils.requireString(arguments, "path")
+            val dirResult = FenixFileManager.createDirectory(path)
+            McpToolUtils.untrustedTextResult(Json.encodeToString(dirResult))
+        } catch (e: McpToolException) {
+            throw e
+        } catch (e: Exception) {
+            throw McpToolException.ActionFailed("Directory create error: ${e.message}")
+        }
+
+    fun register(registrar: LoggedToolRegistrar, prefix: String) {
+        registrar.addTool(
+            toolName = TOOL_NAME,
+            name = "$prefix$TOOL_NAME",
+            description = "Crea una nueva carpeta o estructura de directorios en el almacenamiento.",
+            inputSchema = ToolSchema(
+                properties = buildJsonObject {
+                    put("path", buildJsonObject { put("type", "string") })
+                },
+                required = listOf("path"),
+            ),
+        ) { req -> execute(req.arguments) }
+    }
+
+    companion object {
+        const val TOOL_NAME = "directory_create"
+    }
+}
+
+/** Eliminación segura de archivos o carpetas con filtro perimetral. */
+class FenixFileDeleteSafeHandler {
+    @Suppress("TooGenericExceptionCaught")
+    suspend fun execute(arguments: JsonObject?): CallToolResult =
+        try {
+            val path = McpToolUtils.requireString(arguments, "path")
+            val delResult = FenixFileManager.deleteSafe(path)
+            McpToolUtils.untrustedTextResult(Json.encodeToString(delResult))
+        } catch (e: McpToolException) {
+            throw e
+        } catch (e: Exception) {
+            throw McpToolException.ActionFailed("File delete safe error: ${e.message}")
+        }
+
+    fun register(registrar: LoggedToolRegistrar, prefix: String) {
+        registrar.addTool(
+            toolName = TOOL_NAME,
+            name = "$prefix$TOOL_NAME",
+            description = "Elimina un archivo o directorio de forma segura con verificación perimetral.",
+            inputSchema = ToolSchema(
+                properties = buildJsonObject {
+                    put("path", buildJsonObject { put("type", "string") })
+                },
+                required = listOf("path"),
+            ),
+        ) { req -> execute(req.arguments) }
+    }
+
+    companion object {
+        const val TOOL_NAME = "file_delete_safe"
+    }
+}
+
+/** Inspección de capacidades de hardware (RAM libre, núcleos big.LITTLE y modelos cuantizados compatibles). */
+class FenixHardwareProfileHandler(
+    private val context: android.content.Context? = null,
+) {
+    @Suppress("TooGenericExceptionCaught")
+    suspend fun execute(): CallToolResult =
+        try {
+            val profile = com.fenix.mobilemcp.hardware.HardwareCapabilitiesDetector.inspectHardware(context)
+            McpToolUtils.untrustedTextResult(Json.encodeToString(profile))
+        } catch (e: Exception) {
+            throw McpToolException.ActionFailed("Hardware profile error: ${e.message}")
+        }
+
+    fun register(registrar: LoggedToolRegistrar, prefix: String) {
+        registrar.addTool(
+            toolName = TOOL_NAME,
+            name = "$prefix$TOOL_NAME",
+            description = "Inspecciona en tiempo real la RAM libre/total, la topología de núcleos del procesador (Efficiency vs Performance) y los modelos cuantizados recomendados para este móvil.",
+            inputSchema = ToolSchema(
+                properties = buildJsonObject {},
+                required = emptyList(),
+            ),
+        ) { _ -> execute() }
+    }
+
+    companion object {
+        const val TOOL_NAME = "hardware_profile"
+    }
+}
+
+/** Ejecución y compilación políglota (Python, C, C++, JS, Rust, Go, Bash, SQL) con gestión de núcleos CPU y VMs gratuitas. */
+class FenixCodeExecuteHandler(
+    private val context: android.content.Context? = null,
+) {
+    @Suppress("TooGenericExceptionCaught")
+    suspend fun execute(arguments: JsonObject?): CallToolResult =
+        try {
+            val language = McpToolUtils.requireString(arguments, "language")
+            val code = McpToolUtils.requireString(arguments, "code")
+            val stdin = McpToolUtils.optionalString(arguments, "stdin", "")
+            val provider = McpToolUtils.optionalString(arguments, "provider", "auto")
+
+            val result = com.fenix.mobilemcp.studio.PolyglotExecutionEngine.executeCode(
+                language = language,
+                code = code,
+                stdin = stdin,
+                preferredProvider = provider,
+                context = context,
+            )
+            McpToolUtils.untrustedTextResult(Json.encodeToString(result))
+        } catch (e: McpToolException) {
+            throw e
+        } catch (e: Exception) {
+            throw McpToolException.ActionFailed("Code execute error: ${e.message}")
+        }
+
+    fun register(registrar: LoggedToolRegistrar, prefix: String) {
+        registrar.addTool(
+            toolName = TOOL_NAME,
+            name = "$prefix$TOOL_NAME",
+            description = "Compila y ejecuta código en Python, C, C++, JavaScript, TypeScript, Rust, Go, Bash o SQLite usando los núcleos de rendimiento o servidores virtuales gratuitos sin login (Wandbox, Piston, Godbolt, H2.nexus).",
+            inputSchema = ToolSchema(
+                properties = buildJsonObject {
+                    put("language", buildJsonObject { put("type", "string") })
+                    put("code", buildJsonObject { put("type", "string") })
+                    put("stdin", buildJsonObject { put("type", "string") })
+                    put("provider", buildJsonObject { put("type", "string") })
+                },
+                required = listOf("language", "code"),
+            ),
+        ) { req -> execute(req.arguments) }
+    }
+
+    companion object {
+        const val TOOL_NAME = "code_execute"
+    }
+}
+
+/** Subida de archivos a almacenamiento efímero sin login ni tarjeta (file.io / storage.to / tmpfiles.org). */
+class FenixCloudUploadEphemeralHandler {
+    @Suppress("TooGenericExceptionCaught")
+    suspend fun execute(arguments: JsonObject?): CallToolResult =
+        try {
+            val path = McpToolUtils.requireString(arguments, "path")
+            val provider = McpToolUtils.optionalString(arguments, "provider", "file.io")
+            val res = com.fenix.mobilemcp.connectors.storage.EphemeralCloudStorageClient.uploadFile(
+                filePath = path,
+                preferredProvider = provider,
+            )
+            McpToolUtils.untrustedTextResult(Json.encodeToString(res))
+        } catch (e: McpToolException) {
+            throw e
+        } catch (e: Exception) {
+            throw McpToolException.ActionFailed("Cloud ephemeral upload error: ${e.message}")
+        }
+
+    fun register(registrar: LoggedToolRegistrar, prefix: String) {
+        registrar.addTool(
+            toolName = TOOL_NAME,
+            name = "$prefix$TOOL_NAME",
+            description = "Sube un archivo del móvil a un servidor efímero gratuito sin login (file.io, storage.to, tmpfiles.org) y devuelve el enlace de descarga.",
+            inputSchema = ToolSchema(
+                properties = buildJsonObject {
+                    put("path", buildJsonObject { put("type", "string") })
+                    put("provider", buildJsonObject { put("type", "string") })
+                },
+                required = listOf("path"),
+            ),
+        ) { req -> execute(req.arguments) }
+    }
+
+    companion object {
+        const val TOOL_NAME = "cloud_upload_ephemeral"
+    }
+}
+
+/** Creación de extensiones personalizadas en el Marketplace mediante Vibe Coding. */
+class FenixVibeExtensionCreateHandler {
+    @Suppress("TooGenericExceptionCaught")
+    suspend fun execute(arguments: JsonObject?): CallToolResult =
+        try {
+            val id = McpToolUtils.requireString(arguments, "id")
+            val name = McpToolUtils.requireString(arguments, "name")
+            val shortDescription = McpToolUtils.requireString(arguments, "short_description")
+            val readmeMarkdown = McpToolUtils.optionalString(arguments, "readme_markdown", "# $name\n\n$shortDescription")
+            val sourceCodeJs = McpToolUtils.optionalString(arguments, "source_code_js", "")
+            val endpointUrl = McpToolUtils.optionalString(arguments, "endpoint_url", "")
+
+            val ext = com.fenix.mobilemcp.marketplace.FenixMarketplaceExtension(
+                id = id.trim().lowercase().replace(Regex("[^a-z0-9_-]"), "-"),
+                name = name,
+                publisher = "Vibe Coding / Usuario",
+                version = "1.0.0",
+                category = com.fenix.mobilemcp.marketplace.ExtensionCategory.USER_VIBE_CODING,
+                shortDescription = shortDescription,
+                readmeMarkdown = readmeMarkdown,
+                learnMoreUrl = "https://modelcontextprotocol.io/docs/concepts/tools",
+                endpointUrl = endpointUrl.takeIf { it.isNotBlank() },
+                sourceCodeJs = sourceCodeJs.takeIf { it.isNotBlank() },
+                capabilitiesProvided = listOf("vibe_coded_extension"),
+                isBuiltIn = false,
+                isInstalled = true,
+                isEnabled = true,
+            )
+            com.fenix.mobilemcp.marketplace.FenixExtensionRegistry.registerUserOrVibeExtension(ext)
+            McpToolUtils.untrustedTextResult(Json.encodeToString(ext))
+        } catch (e: McpToolException) {
+            throw e
+        } catch (e: Exception) {
+            throw McpToolException.ActionFailed("Vibe extension create error: ${e.message}")
+        }
+
+    fun register(registrar: LoggedToolRegistrar, prefix: String) {
+        registrar.addTool(
+            toolName = TOOL_NAME,
+            name = "$prefix$TOOL_NAME",
+            description = "Crea e instala una nueva extensión en el Marketplace local de Fénix (Vibe Coding), con su ficha descriptiva estilo VS Code y código opcional.",
+            inputSchema = ToolSchema(
+                properties = buildJsonObject {
+                    put("id", buildJsonObject { put("type", "string") })
+                    put("name", buildJsonObject { put("type", "string") })
+                    put("short_description", buildJsonObject { put("type", "string") })
+                    put("readme_markdown", buildJsonObject { put("type", "string") })
+                    put("source_code_js", buildJsonObject { put("type", "string") })
+                    put("endpoint_url", buildJsonObject { put("type", "string") })
+                },
+                required = listOf("id", "name", "short_description"),
+            ),
+        ) { req -> execute(req.arguments) }
+    }
+
+    companion object {
+        const val TOOL_NAME = "vibe_extension_create"
+    }
+}
+
+/** Control bajo demanda de Pantalla Dividida (Split-Screen / Multi-Window) sobre otras aplicaciones. */
+class FenixSplitScreenControlHandler(
+    private val context: android.content.Context,
+) {
+    @Suppress("TooGenericExceptionCaught")
+    suspend fun execute(arguments: JsonObject?): CallToolResult =
+        try {
+            val action = McpToolUtils.optionalString(arguments, "action", "toggle")
+            val packageName = McpToolUtils.optionalString(arguments, "package_name", "")
+            val forceResizable = McpToolUtils.optionalString(arguments, "force_resizable", "true") != "false"
+
+            val res = com.fenix.mobilemcp.services.accessibility.SplitScreenController.executeCommand(
+                context = context,
+                action = action,
+                targetPackage = packageName.takeIf { it.isNotBlank() },
+                forceResizable = forceResizable,
+            )
+            McpToolUtils.untrustedTextResult(Json.encodeToString(res))
+        } catch (e: McpToolException) {
+            throw e
+        } catch (e: Exception) {
+            throw McpToolException.ActionFailed("Split screen control error: ${e.message}")
+        }
+
+    fun register(registrar: LoggedToolRegistrar, prefix: String) {
+        registrar.addTool(
+            toolName = TOOL_NAME,
+            name = "$prefix$TOOL_NAME",
+            description = "Fuerza o controla el modo de Pantalla Dividida (Split-Screen) en Android para que el agente trabaje simultáneamente sobre otra aplicación. Acciones: 'toggle' (activar/desactivar), 'launch_adjacent' (abrir package_name en la mitad adyacente), 'status'.",
+            inputSchema = ToolSchema(
+                properties = buildJsonObject {
+                    put("action", buildJsonObject { put("type", "string") })
+                    put("package_name", buildJsonObject { put("type", "string") })
+                    put("force_resizable", buildJsonObject { put("type", "string") })
+                },
+                required = listOf("action"),
+            ),
+        ) { req -> execute(req.arguments) }
+    }
+
+    companion object {
+        const val TOOL_NAME = "split_screen_control"
+    }
+}
+
+/** Registro del bundle Fénix completo (memoria + zonas + turnos + 9 conectores + seguridad + skills + suite de archivos + IDE/Marketplace + SplitScreen). */
 fun registerFenixTools(
     registrar: LoggedToolRegistrar,
     db: FenixMemoryDb,
@@ -1077,12 +2102,17 @@ fun registerFenixTools(
     perms: ToolPermissionsConfig,
     context: android.content.Context? = null,
 ) {
+    com.fenix.mobilemcp.marketplace.FenixExtensionRegistry.initialize(db)
+
     if (perms.isToolEnabled(FenixMemorySaveHandler.TOOL_NAME)) {
         FenixMemorySaveHandler(db).register(registrar, toolNamePrefix)
     }
     if (perms.isToolEnabled(FenixMemoryReadHandler.TOOL_NAME)) {
         FenixMemoryReadHandler(db).register(registrar, toolNamePrefix)
     }
+    FenixMemorySearchHandler(db).register(registrar, toolNamePrefix)
+    FenixMemoryListHandler(db).register(registrar, toolNamePrefix)
+    FenixSessionManageHandler(db).register(registrar, toolNamePrefix)
     if (perms.isToolEnabled(FenixZoneCheckHandler.TOOL_NAME)) {
         FenixZoneCheckHandler(matcher, index).register(registrar, toolNamePrefix)
     }
@@ -1104,9 +2134,32 @@ fun registerFenixTools(
     // Herramientas de Privacidad, Skills, Cooldown, Conectores Dinamicos y Modo Calle
     FenixPrivacySanitizeHandler(com.fenix.mobilemcp.privacy.LocalNerSanitizer()).register(registrar, toolNamePrefix)
     FenixSkillCatalogHandler().register(registrar, toolNamePrefix)
+    FenixSkillsDiscoveryHandler().register(registrar, toolNamePrefix)
     FenixProviderCooldownHandler(db).register(registrar, toolNamePrefix)
     FenixConnectorManageHandler().register(registrar, toolNamePrefix)
+
+    // Telemetria Caja Negra
+    FenixBlackBoxDiagnosticsHandler().register(registrar, toolNamePrefix)
+
+    // Suite Universal de Archivos Fénix
+    FenixFileSearchHandler().register(registrar, toolNamePrefix)
+    FenixFileClassifyHandler().register(registrar, toolNamePrefix)
+    FenixFileGrepHandler().register(registrar, toolNamePrefix)
+    FenixFileInsertHandler().register(registrar, toolNamePrefix)
+    FenixFileReadUniversalHandler().register(registrar, toolNamePrefix)
+    FenixFileWriteUniversalHandler().register(registrar, toolNamePrefix)
+    FenixDirectoryCreateHandler().register(registrar, toolNamePrefix)
+    FenixFileDeleteSafeHandler().register(registrar, toolNamePrefix)
+
+    // F-Studio IDE, Hardware Guard, Cloud Sandboxes & Marketplace Vibe Coding
+    FenixHardwareProfileHandler(context).register(registrar, toolNamePrefix)
+    FenixCodeExecuteHandler(context).register(registrar, toolNamePrefix)
+    FenixCloudUploadEphemeralHandler().register(registrar, toolNamePrefix)
+    FenixVibeExtensionCreateHandler().register(registrar, toolNamePrefix)
+
     if (context != null) {
         FenixStreetImmunityHandler(com.fenix.mobilemcp.security.StreetImmunityChecker(context)).register(registrar, toolNamePrefix)
+        FenixAccessibilityControlHandler(context).register(registrar, toolNamePrefix)
+        FenixSplitScreenControlHandler(context).register(registrar, toolNamePrefix)
     }
 }

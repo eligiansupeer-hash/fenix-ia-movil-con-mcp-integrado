@@ -1,0 +1,5 @@
+TOOL=android_privacy_sanitize_text
+INPUT="Mi DNI es 38123456 y mi CBU es 0170099920000012345678 y mi clave es ghp_1234567890abcdefghijklmnopqrstuvwxyz"
+OUTPUT={"sanitized":"Mi DNI es [REDACTED_DNI] y mi CBU es [REDACTED_CBU] y mi clave es [REDACTED_API_KEY]","modified":true}
+STATUS=NER_SANITIZER_VERIFIED
+

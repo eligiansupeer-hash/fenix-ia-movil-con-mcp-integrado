@@ -1,0 +1,3 @@
+Tap executed at (400, 2176)
+Scroll down (medium) executed
+Scroll up (medium) executed

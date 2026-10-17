@@ -1,0 +1,10 @@
+{
+  "id": "S0T-06",
+  "nombre": "Smoke: abrir SUT + snapshot",
+  "fecha": "2026-10-15",
+  "device": "ZY22MK7B2P",
+  "isError": false,
+  "log_must_contain": "@e2",
+  "screen_required": true,
+  "run_id": "1792118836079765522"
+}

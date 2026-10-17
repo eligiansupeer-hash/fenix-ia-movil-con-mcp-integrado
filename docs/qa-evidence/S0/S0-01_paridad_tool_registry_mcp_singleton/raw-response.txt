@@ -1,0 +1,5 @@
+TOOLS_COUNT=64
+MEMORY_SAVE_RESPONSE={"guardado":true,"clave":"s0_01_parity_test"}
+MEMORY_READ_RESPONSE={"clave":"s0_01_parity_test","valor":"val_parity_ok_20261016","hallado":true}
+SINGLETON_STATUS=VERIFIED_SHARED_INSTANCE
+

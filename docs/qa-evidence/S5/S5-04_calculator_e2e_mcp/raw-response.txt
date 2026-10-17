@@ -1,0 +1,1 @@
+{"nodes":[{"node_id":"node_514adb88","text":"42","resourceId":"com.google.android.calculator:id/result_final"}]}

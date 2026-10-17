@@ -1,0 +1,5 @@
+PROVIDER=openrouter
+MODELS_COUNT=465
+HEADERS_VERIFIED=[HTTP-Referer: https://fenix-mobile-mcp.app, X-Title: Fenix-Mobile-MCP]
+STATUS=OPENROUTER_HEADERS_AND_DISCOVERY_PASS
+

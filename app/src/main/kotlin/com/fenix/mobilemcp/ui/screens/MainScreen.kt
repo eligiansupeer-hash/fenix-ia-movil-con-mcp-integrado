@@ -7,7 +7,9 @@ import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Dns
+import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
@@ -68,15 +70,16 @@ fun MainScreen(
             NavigationBar {
                 listOf(
                     Triple(TopLevelRoute.Chat, Icons.Default.Forum, stringResource(R.string.tab_chat)),
+                    Triple(TopLevelRoute.Studio, Icons.Default.Code, stringResource(R.string.tab_studio)),
+                    Triple(TopLevelRoute.Marketplace, Icons.Default.Extension, "F-Market"),
                     Triple(TopLevelRoute.Server, Icons.Default.Dns, stringResource(R.string.tab_server)),
                     Triple(TopLevelRoute.Settings, Icons.Default.Settings, stringResource(R.string.tab_settings)),
-                    Triple(TopLevelRoute.About, Icons.Default.Info, stringResource(R.string.tab_about)),
                 ).forEach { (route, icon, label) ->
                     NavigationBarItem(
                         selected = selectedTabRoute == route.route,
                         onClick = { selectedTabRoute = route.route },
                         icon = { Icon(icon, contentDescription = label) },
-                        label = { Text(label) },
+                        label = { Text(label, maxLines = 1, softWrap = false) },
                     )
                 }
             }
@@ -85,6 +88,19 @@ fun MainScreen(
         when (selectedTabRoute) {
             TopLevelRoute.Chat.route -> {
                 ChatScreen(modifier = Modifier.padding(paddingValues))
+            }
+
+            TopLevelRoute.Studio.route -> {
+                StudioIdeScreen(modifier = Modifier.padding(paddingValues))
+            }
+
+            TopLevelRoute.Marketplace.route -> {
+                MarketplaceScreen(
+                    onOpenInStudio = {
+                        selectedTabRoute = TopLevelRoute.Studio.route
+                    },
+                    modifier = Modifier.padding(paddingValues),
+                )
             }
 
             TopLevelRoute.Server.route -> {

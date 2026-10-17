@@ -1,0 +1,11 @@
+{
+  "id": "S0T-04",
+  "nombre": "Resource fenix-skills visible via MCP",
+  "fecha": "2026-10-15",
+  "device": "ZY22MK7B2P",
+  "isError": false,
+  "log_must_contain": "fenix-skills://qa/fenix-qa-evidence",
+  "screen_required": false,
+  "screen_required_reason": "verificacion por protocolo MCP (stdio), sin accion de pantalla",
+  "run_id": "1792118803432772600"
+}

@@ -1,0 +1,3 @@
+moto g77 (android device target=mobile model="moto g77" os=16) booted=true claimed by session "default" in /home/eli/biblioteca-fenix-v3
+eli (linux device target=desktop) booted=true
+

@@ -1,0 +1,47 @@
+RUN_ID=1792118836079765522 (corrida S0T-06)
+Opened: com.fenix.mobilemcp.foss.debug
+Session state: /home/eli/.agent-device/sessions/cwd_bde87b55c0a57ab1_default
+Page: com.fenix.mobilemcp.foss.debug
+App: com.fenix.mobilemcp.foss.debug
+Snapshot: 18 visible nodes (28 total)
+Collapsed 10 Android helper nodes from the agent-facing text snapshot; use --raw or --json for the full hierarchy.
+@e2 [list] "Presiona una función para comenzar a usarla:" [focused]
+@e3 [group] "Fénix IA Móvil con MCP Integrado"
+@e4 [image] "Recientes"
+@e5 [image] "Atrás"
+@e6 [image] "Principal"
+@e7 [group] "/data/data/com.termux/files/home/models/qwen2.5-0.5b-instruct-q4_k_m.gguf"
+@e9 [group] "Estado Inmunidad Calle"
+@e11 [group] "Bóveda de Claves"
+@e13 [group] "Limpiar Chat"
+@e15 [text-field] [editable]
+@e16 [text] "Mensaje para Fénix..."
+@e17 [group] "F-Voz"
+@e19 [group] "Enviar" [disabled]
+@e21 [group] "F-Chat" [selected]
+@e23 [group] "Servidor"
+@e25 [group] "Ajustes"
+@e27 [group] "Acerca de"
+Page: com.fenix.mobilemcp.foss.debug
+App: com.fenix.mobilemcp.foss.debug
+Snapshot: 18 visible nodes (28 total)
+Collapsed 10 Android helper nodes from the agent-facing text snapshot; use --raw or --json for the full hierarchy.
+@e2 [list] "Presiona una función para comenzar a usarla:" [focused]
+@e3 [group] "Fénix IA Móvil con MCP Integrado"
+@e4 [image] "Recientes"
+@e5 [image] "Atrás"
+@e6 [image] "Principal"
+@e7 [group] "/data/data/com.termux/files/home/models/qwen2.5-0.5b-instruct-q4_k_m.gguf"
+@e9 [group] "Estado Inmunidad Calle"
+@e11 [group] "Bóveda de Claves"
+@e13 [group] "Limpiar Chat"
+@e15 [text-field] [editable]
+@e16 [text] "Mensaje para Fénix..."
+@e17 [group] "F-Voz"
+@e19 [group] "Enviar" [disabled]
+@e21 [group] "F-Chat" [selected]
+@e23 [group] "Servidor"
+@e25 [group] "Ajustes"
+@e27 [group] "Acerca de"
+/home/eli/Documentos/fenix-mobile-mcp/docs/qa-evidence/S0/S0T-06_smoke_snapshot/screen.png (1080x2352)
+Closed: default

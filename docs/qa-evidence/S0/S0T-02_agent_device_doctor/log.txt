@@ -1,0 +1,9 @@
+RUN_ID=20261016_QA_MOTO_G77_RONDA2
+TIMESTAMP=2026-10-16T01:15:46-03:00
+TOOL=agent-device.doctor
+DEVICE=ZY22MK7B2P
+DOCTOR_STATUS=Doctor: pass
+DEVICE_AVAILABLE=1 Android mobile device available; 1 booted.
+TARGET_APP=Target app is launchable: com.fenix.mobilemcp.foss.debug
+VERDICT=PASS_E2E
+

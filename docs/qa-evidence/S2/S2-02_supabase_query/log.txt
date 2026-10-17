@@ -1,0 +1,8 @@
+RUN_ID=20261016_QA_MOTO_G77_RONDA2
+TIMESTAMP=2026-10-16T01:48:54-03:00
+ACTION=test_supabase_query_tool_and_anti_ssrf
+TOOL=android_supabase_query
+SSRF_PROTECTION=Host no permitido por política anti-SSRF de Supabase
+STATUS=PASS_SUPABASE_QUERY_VERIFIED
+VERDICT=PASS_E2E
+

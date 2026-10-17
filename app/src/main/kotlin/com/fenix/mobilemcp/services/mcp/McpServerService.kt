@@ -333,6 +333,7 @@ class McpServerService : Service() {
                         ),
                     serverLog = serverLogRepository,
                 )
+            com.fenix.mobilemcp.telemetry.FenixBlackBoxRecorder.initialize(applicationContext)
             mcpServer?.start()
 
             // Warm the geolocation DB off the request path so the first /authorize doesn't pay the
@@ -474,31 +475,17 @@ class McpServerService : Service() {
         registerFenixBundle(registrar, toolNamePrefix, perms)
     }
 
-    /** Bundle Fénix (memoria + zonas + turnos). Construcción manual sin Hilt. */
+    /** Bundle Fénix (memoria + zonas + turnos + conectores + QuickJS). Instancias compartidas con F-Chat. */
     private fun registerFenixBundle(
         registrar: LoggedToolRegistrar,
         toolNamePrefix: String,
         perms: ToolPermissionsConfig,
     ) {
-        val ctx = applicationContext
-        val memDb = com.fenix.mobilemcp.memory.FenixMemoryDb(ctx)
-        val matcher = com.fenix.mobilemcp.delivery.zones.ZoneMatcher()
-        val index = com.fenix.mobilemcp.delivery.zones.ZoneIndexProvider.provideIndex()
-        val monitor =
-            com.fenix.mobilemcp.delivery.monitor.DeliveryMonitor(
-                context = ctx,
-                zoneMatcher = matcher,
-                zoneIndex = index,
-            )
-        val metrics = com.fenix.mobilemcp.delivery.scheduler.TurnMetricsStore(memDb)
-        val scheduler =
-            com.fenix.mobilemcp.delivery.scheduler.TurnScheduler(
-                context = ctx,
-                deliveryMonitor = monitor,
-                metricsStore = metrics,
-            )
-        com.fenix.mobilemcp.mcp.tools.registerFenixTools(
-            registrar, memDb, matcher, index, scheduler, toolNamePrefix, perms,
+        com.fenix.mobilemcp.mcp.registry.FenixDefaultToolInitializer.registerSharedBundle(
+            context = applicationContext,
+            registrar = registrar,
+            toolNamePrefix = toolNamePrefix,
+            perms = perms,
         )
     }
 

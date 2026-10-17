@@ -2,6 +2,7 @@ package com.fenix.mobilemcp.llm
 
 import com.fenix.mobilemcp.mcp.registry.FenixToolRegistry
 import com.fenix.mobilemcp.memory.FenixMemoryDb
+import com.fenix.mobilemcp.privacy.LocalNerSanitizer
 import com.fenix.mobilemcp.security.SecureKeyStore
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
@@ -18,6 +19,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
@@ -56,6 +58,7 @@ class FenixLlmClient @Inject constructor(
     private val keyStore: SecureKeyStore,
     private val memoryDb: FenixMemoryDb,
     private val modelDiscovery: DynamicModelDiscovery,
+    private val nerSanitizer: LocalNerSanitizer,
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -63,8 +66,8 @@ class FenixLlmClient @Inject constructor(
         HttpClient(OkHttp) {
             engine {
                 config {
-                    connectTimeout(15, TimeUnit.SECONDS)
-                    readTimeout(45, TimeUnit.SECONDS)
+                    connectTimeout(20, TimeUnit.SECONDS)
+                    readTimeout(120, TimeUnit.SECONDS)
                 }
             }
         }
@@ -74,6 +77,7 @@ class FenixLlmClient @Inject constructor(
         model: DiscoveredModel,
         conversation: List<LlmMessage>,
         includeTools: Boolean = true,
+        activeCategories: Set<com.fenix.mobilemcp.mcp.registry.FenixSkillCategory>? = null,
     ): LlmResponse = withContext(Dispatchers.IO) {
         val provider = modelDiscovery.standardProviders.firstOrNull { it.id == model.providerId }
             ?: return@withContext LlmResponse.Error("Proveedor no encontrado: ${model.providerId}")
@@ -82,33 +86,35 @@ class FenixLlmClient @Inject constructor(
         val completionsUrl = "${provider.baseUrl.trimEnd('/')}/chat/completions"
 
         val messagesJsonArray = buildJsonArray {
-            // Mensaje de sistema Fénix
+            // Mensaje de sistema Fénix Soberano con arquitectura de Skills a Demanda
             add(
                 buildJsonObject {
                     put("role", "system")
                     put(
                         "content",
-                        "Eres Fénix, el asistente de inteligencia artificial personal y soberano en Android. " +
-                            "Tienes capacidades de ejecución local a través del MCP integrado. " +
+                        "Eres Fénix IA, el asistente de inteligencia artificial personal y soberano en Android. " +
+                            "Operas con una arquitectura de habilidades a demanda para proteger tu contexto y optimizar recursos. " +
                             "Responde con precisión, concisión y en español. " +
-                            "Utiliza las herramientas provistas cuando necesites acceder al estado del dispositivo, " +
-                            "guardar o recuperar memorias persistentes, o consultar zonas y métricas.",
+                            "Utiliza las herramientas provistas cuando se requiera interactuar con el dispositivo, archivos, memoria persistente o red. " +
+                            "Si necesitas una capacidad que no esté en tus herramientas activas, utiliza 'fenix_skills_discovery' para explorar o activar la habilidad requerida.",
                     )
                 },
             )
 
-            // Mensajes de la conversación
+            // Mensajes de la conversación (sanitizados con LocalNerSanitizer antes de salir a proveedores cloud)
             conversation.forEach { msg ->
+                val safeContent = if (provider.isLocal) msg.content else nerSanitizer.sanitize(msg.content)
                 add(
                     buildJsonObject {
                         put("role", msg.role)
-                        put("content", msg.content)
+                        put("content", safeContent)
                         msg.toolCallId?.let { put("tool_call_id", it) }
                         msg.toolCalls?.let { calls ->
                             put(
                                 "tool_calls",
                                 buildJsonArray {
                                     calls.forEach { call ->
+                                        val safeArgs = if (provider.isLocal) call.argumentsJson else nerSanitizer.sanitize(call.argumentsJson)
                                         add(
                                             buildJsonObject {
                                                 put("id", call.id)
@@ -117,7 +123,7 @@ class FenixLlmClient @Inject constructor(
                                                     "function",
                                                     buildJsonObject {
                                                         put("name", call.functionName)
-                                                        put("arguments", call.argumentsJson)
+                                                        put("arguments", safeArgs)
                                                     },
                                                 )
                                             },
@@ -135,7 +141,7 @@ class FenixLlmClient @Inject constructor(
             put("model", model.id)
             put("messages", messagesJsonArray)
             if (includeTools) {
-                val tools = FenixToolRegistry.toOpenAiToolDefinitions()
+                val tools = FenixToolRegistry.toOpenAiToolDefinitions(activeCategories = activeCategories)
                 if (tools.isNotEmpty()) {
                     put("tools", JsonArray(tools))
                     put("tool_choice", "auto")
@@ -148,6 +154,10 @@ class FenixLlmClient @Inject constructor(
                 contentType(ContentType.Application.Json)
                 if (!apiKey.isNullOrBlank()) {
                     header("Authorization", "Bearer $apiKey")
+                }
+                if (provider.id == "openrouter") {
+                    header("HTTP-Referer", "https://fenix.axiom.local")
+                    header("X-Title", "Fenix Mobile MCP")
                 }
                 setBody(requestPayload.toString())
             }
@@ -176,20 +186,33 @@ class FenixLlmClient @Inject constructor(
                         val id = obj["id"]?.jsonPrimitive?.content ?: "call_${System.currentTimeMillis()}"
                         val fn = obj["function"]?.jsonObject ?: return@mapNotNull null
                         val fnName = fn["name"]?.jsonPrimitive?.content ?: return@mapNotNull null
-                        val fnArgs = fn["arguments"]?.jsonPrimitive?.content ?: "{}"
+                        val rawArgs = fn["arguments"]
+                        val fnArgs = when (rawArgs) {
+                            is JsonPrimitive -> rawArgs.content
+                            is JsonObject -> rawArgs.toString()
+                            null -> "{}"
+                            else -> rawArgs.toString()
+                        }
                         LlmToolCall(id, fnName, fnArgs)
                     }
                     return@withContext LlmResponse.ToolCalls(calls)
                 }
 
-                val textContent = messageObj["content"]?.jsonPrimitive?.content ?: ""
+                val textContent = (messageObj["content"] as? JsonPrimitive)?.content ?: ""
                 return@withContext LlmResponse.Text(textContent)
             } else {
+                // Si un modelo SLM local o endpoint sin soporte de tools devuelve 400/500 con includeTools=true, reintentar sin tools
+                if (includeTools && (provider.isLocal || response.status == HttpStatusCode.BadRequest || response.status == HttpStatusCode.InternalServerError)) {
+                    return@withContext sendChatCompletion(model, conversation, includeTools = false)
+                }
                 val errorBody = response.bodyAsText()
                 memoryDb.reportProviderFailure(provider.id, "HTTP ${response.status.value}")
                 return@withContext LlmResponse.Error("Error HTTP ${response.status.value}: $errorBody")
             }
         } catch (e: Exception) {
+            if (includeTools && provider.isLocal) {
+                return@withContext sendChatCompletion(model, conversation, includeTools = false)
+            }
             memoryDb.reportProviderFailure(provider.id, e.message ?: "Fallo de conexión")
             return@withContext LlmResponse.Error("Error de comunicación con ${provider.displayName}: ${e.message}")
         }

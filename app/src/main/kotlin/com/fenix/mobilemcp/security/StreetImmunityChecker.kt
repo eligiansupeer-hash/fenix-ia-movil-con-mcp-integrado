@@ -37,6 +37,11 @@ class StreetImmunityChecker @Inject constructor(
             "com.pedidosya",
             "com.grability.rappi"
         )
+
+        fun isDeliveryPackageBlocked(packageName: String?): Boolean {
+            if (packageName.isNullOrBlank()) return false
+            return packageName.trim() in DELIVERY_PACKAGES
+        }
     }
 
     /**
@@ -76,9 +81,14 @@ class StreetImmunityChecker @Inject constructor(
             }
         }
 
-        // 4. Cortafuegos de accesibilidad activo (solo-lectura garantizado)
-        val isFirewallActive = true
-        details["accessibility_firewall"] = "Activo (Solo-Lectura en Rappi/PedidosYa/Uber)"
+        // 4. Cortafuegos de accesibilidad activo (denylist verificada en ActionExecutorImpl)
+        val isFirewallActive = com.fenix.mobilemcp.services.accessibility.ActionExecutorImpl.isAntiBanFirewallEnabled() &&
+            DELIVERY_PACKAGES.containsAll(listOf("com.ubercab.driver", "com.pedidosya", "com.grability.rappi"))
+        details["accessibility_firewall"] = if (isFirewallActive) {
+            "Activo (ANTI_BAN_BLOCKED en ${DELIVERY_PACKAGES.joinToString(",")})"
+        } else {
+            "Inactivo (Riesgo)"
+        }
 
         val isFullyImmune = isDevDisabled && isAdbOff && allSocketsClosed && isFirewallActive
 

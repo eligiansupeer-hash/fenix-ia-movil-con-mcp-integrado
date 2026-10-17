@@ -79,6 +79,19 @@ class CloudflareTunnelProvider
             }
         }
 
+        private fun prepareAndroidDnsAndTls(pb: ProcessBuilder) {
+            runCatching {
+                val workDir = java.io.File(System.getProperty("java.io.tmpdir") ?: "/data/local/tmp")
+                if (!workDir.exists()) workDir.mkdirs()
+                val resolvFile = java.io.File(workDir, ".resolv.conf")
+                if (!resolvFile.exists() || resolvFile.length() == 0L) {
+                    resolvFile.writeText("nameserver 1.1.1.1\nnameserver 8.8.8.8\nnameserver 1.0.0.1\n")
+                }
+                pb.directory(workDir)
+                pb.environment()["SSL_CERT_DIR"] = "/system/etc/security/cacerts"
+            }
+        }
+
         private fun startFreeTunnel(
             binaryPath: String,
             localPort: Int,
@@ -100,17 +113,21 @@ class CloudflareTunnelProvider
                 }
                 val pb = ProcessBuilder(args)
                 pb.redirectErrorStream(false)
+                prepareAndroidDnsAndTls(pb)
                 val proc = pb.start()
                 process = proc
 
                 launchStderrReader(proc) { line ->
                     val match = TUNNEL_URL_REGEX.find(line)
-                    if (match != null && _status.value is TunnelStatus.Connecting) {
-                        val url = match.value
-                        Log.i(TAG, "Cloudflare tunnel URL: $url")
+                    val candidateUrl = match?.value
+                    if (candidateUrl != null &&
+                        candidateUrl != "https://api.trycloudflare.com" &&
+                        _status.value is TunnelStatus.Connecting
+                    ) {
+                        Log.i(TAG, "Cloudflare tunnel URL: $candidateUrl")
                         _status.value =
                             TunnelStatus.Connected(
-                                endpoints = listOf(TunnelEndpoint(url = url, valid = true)),
+                                endpoints = listOf(TunnelEndpoint(url = candidateUrl, valid = true)),
                                 providerType = TunnelProviderType.CLOUDFLARE,
                             )
                     }
@@ -154,6 +171,7 @@ class CloudflareTunnelProvider
                 }
                 val pb = ProcessBuilder(args)
                 pb.redirectErrorStream(false)
+                prepareAndroidDnsAndTls(pb)
                 val proc = pb.start()
                 process = proc
 

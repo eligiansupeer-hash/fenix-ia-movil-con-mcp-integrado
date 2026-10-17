@@ -1,0 +1,8 @@
+LIFECYCLE_TEST:
+1. crear_conector: multiplicar_qa -> OK
+2. listar_conectores: multiplicar_qa (1) -> OK
+3. execute multiplicar_qa(a=7, b=6) -> 42 (OK)
+4. eliminar_conector: multiplicar_qa -> OK
+5. listar_conectores: No hay conectores -> OK
+STATUS=DYNAMIC_CONNECTORS_LIFECYCLE_VERIFIED
+

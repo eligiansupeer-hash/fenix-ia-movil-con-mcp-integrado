@@ -5,6 +5,10 @@ sealed class TopLevelRoute(
 ) {
     data object Chat : TopLevelRoute("chat")
 
+    data object Studio : TopLevelRoute("studio")
+
+    data object Marketplace : TopLevelRoute("marketplace")
+
     data object Server : TopLevelRoute("server")
 
     data object Settings : TopLevelRoute("settings")

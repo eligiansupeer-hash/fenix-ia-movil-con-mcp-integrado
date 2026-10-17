@@ -1,5 +1,6 @@
 package com.fenix.mobilemcp.mcp.oauth
 
+import android.util.Log
 import com.fenix.mobilemcp.data.model.ServerLogEntry
 import com.fenix.mobilemcp.data.repository.OAuthClientRepository
 import com.fenix.mobilemcp.data.repository.ServerLogRepository
@@ -25,9 +26,22 @@ class OAuthAccessValidator(
         token: String,
         canonicalResource: String,
     ): Boolean {
-        val claims = tokenService.verifyAccessToken(token) ?: return false
+        val claims = tokenService.verifyAccessToken(token)
+        if (claims == null) {
+            Log.w(TAG, "OAuth validation failed: verifyAccessToken was null (token len=${token.length})")
+            return false
+        }
         val client = clientRepository.getClient(claims.clientId)
-        val valid = OAuthPolicy.resourceMatches(claims.audience, canonicalResource) && client != null
+        if (client == null) {
+            Log.w(TAG, "OAuth validation failed: client not found in repo for clientId=${claims.clientId}")
+            return false
+        }
+        val audMatches = OAuthPolicy.resourceMatches(claims.audience, canonicalResource)
+        if (!audMatches) {
+            Log.w(TAG, "OAuth validation failed: aud mismatch. Token aud='${claims.audience}' vs expected canonicalResource='$canonicalResource'")
+            return false
+        }
+        val valid = true
         if (valid && client != null) {
             val now = nowMs()
             var wonDebounce = false
@@ -64,6 +78,7 @@ class OAuthAccessValidator(
     }
 
     private companion object {
+        const val TAG = "MCP:OAuthAccessValidator"
         const val DEFAULT_DEBOUNCE_MS = 60_000L
         const val MILLIS_PER_MINUTE = 60_000L
     }

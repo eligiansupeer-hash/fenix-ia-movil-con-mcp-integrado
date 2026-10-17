@@ -1,0 +1,5 @@
+TOOL=android_gmail_query
+STATUS=401_HANDLED
+RESPONSE=Gmail HTTP 401: Request had invalid authentication credentials.
+CONTROLLED_ERROR=TRUE
+

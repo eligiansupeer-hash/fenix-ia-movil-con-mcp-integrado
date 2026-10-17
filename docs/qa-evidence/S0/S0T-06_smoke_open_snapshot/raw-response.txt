@@ -1,0 +1,8 @@
+Opened: com.fenix.mobilemcp.foss.debug
+Page: com.fenix.mobilemcp.foss.debug
+App: com.fenix.mobilemcp.foss.debug
+Snapshot: 85 visible nodes (95 total)
+Node: Servidor MCP status: En marcha
+Node: Servidor iniciado en 127.0.0.1:8080
+Token: ce754d4a-f129-4f81-9e20-b80e0dc5f18b
+

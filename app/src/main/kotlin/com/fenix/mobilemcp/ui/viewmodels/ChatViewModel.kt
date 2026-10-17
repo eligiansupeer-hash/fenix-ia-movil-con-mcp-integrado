@@ -8,6 +8,7 @@ import com.fenix.mobilemcp.llm.FenixLlmClient
 import com.fenix.mobilemcp.llm.LlmMessage
 import com.fenix.mobilemcp.llm.LlmResponse
 import com.fenix.mobilemcp.mcp.registry.FenixToolRegistry
+import com.fenix.mobilemcp.memory.FenixMemoryDb
 import com.fenix.mobilemcp.security.SecureKeyStore
 import com.fenix.mobilemcp.security.StreetImmunityChecker
 import com.fenix.mobilemcp.security.StreetImmunityReport
@@ -20,8 +21,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
 import com.fenix.mobilemcp.voice.FenixVoiceActivationManager
 import com.fenix.mobilemcp.voice.VoiceState
 import java.util.UUID
@@ -42,12 +50,19 @@ class ChatViewModel @Inject constructor(
     private val secureKeyStore: SecureKeyStore,
     private val streetImmunityChecker: StreetImmunityChecker,
     private val voiceActivationManager: FenixVoiceActivationManager,
+    private val memoryDb: FenixMemoryDb,
 ) : ViewModel() {
 
     private val jsonParser = Json { ignoreUnknownKeys = true }
 
     private val _messages = MutableStateFlow<List<ChatMessageUi>>(emptyList())
     val messages: StateFlow<List<ChatMessageUi>> = _messages.asStateFlow()
+
+    private val _sessions = MutableStateFlow<List<FenixMemoryDb.SessionRecord>>(emptyList())
+    val sessions: StateFlow<List<FenixMemoryDb.SessionRecord>> = _sessions.asStateFlow()
+
+    private val _currentSessionId = MutableStateFlow<String?>(null)
+    val currentSessionId: StateFlow<String?> = _currentSessionId.asStateFlow()
 
     private val _availableModels = MutableStateFlow<List<DiscoveredModel>>(emptyList())
     val availableModels: StateFlow<List<DiscoveredModel>> = _availableModels.asStateFlow()
@@ -64,6 +79,9 @@ class ChatViewModel @Inject constructor(
     private val _configuredProviders = MutableStateFlow<Set<String>>(emptySet())
     val configuredProviders: StateFlow<Set<String>> = _configuredProviders.asStateFlow()
 
+    private val _activeSkills = MutableStateFlow<Set<com.fenix.mobilemcp.mcp.registry.FenixSkillCategory>>(emptySet())
+    val activeSkills: StateFlow<Set<com.fenix.mobilemcp.mcp.registry.FenixSkillCategory>> = _activeSkills.asStateFlow()
+
     val voiceState: StateFlow<VoiceState> = voiceActivationManager.voiceState
 
     init {
@@ -71,10 +89,79 @@ class ChatViewModel @Inject constructor(
         refreshConfiguredProviders()
         refreshModels()
 
+        viewModelScope.launch(Dispatchers.IO) {
+            refreshSessionsInternal()
+        }
+
         viewModelScope.launch {
             voiceActivationManager.transcribedText.collect { recognizedText ->
                 if (recognizedText.isNotBlank()) {
                     sendMessage(recognizedText)
+                }
+            }
+        }
+    }
+
+    private suspend fun refreshSessionsInternal(selectSessionId: String? = null) {
+        val sessionList = memoryDb.listarSesiones()
+        _sessions.value = sessionList
+        val targetId = selectSessionId ?: sessionList.firstOrNull()?.id
+        if (targetId != null) {
+            _currentSessionId.value = targetId
+            loadSessionInternal(targetId)
+        } else {
+            val newId = UUID.randomUUID().toString()
+            val rec = memoryDb.crearSesion(newId, "Conversación principal")
+            _sessions.value = listOf(rec)
+            _currentSessionId.value = newId
+            loadSessionInternal(newId)
+        }
+    }
+
+    private fun loadSessionInternal(sessionId: String) {
+        val entries = memoryDb.listarEntradas(sessionId)
+        val uiMessages = entries.map { entry ->
+            val toolCalls = if (entry.detalle.isNotBlank()) {
+                deserializeToolCalls(entry.detalle)
+            } else null
+            ChatMessageUi(
+                id = entry.id.toString(),
+                role = entry.tipo,
+                content = entry.evento,
+                toolCalls = if (toolCalls.isNullOrEmpty()) null else toolCalls,
+            )
+        }
+        _messages.value = uiMessages
+    }
+
+    fun loadSession(sessionId: String) {
+        _currentSessionId.value = sessionId
+        viewModelScope.launch(Dispatchers.IO) {
+            loadSessionInternal(sessionId)
+        }
+    }
+
+    fun createNewSession(titulo: String = "Nueva conversación") {
+        viewModelScope.launch(Dispatchers.IO) {
+            val newId = UUID.randomUUID().toString()
+            memoryDb.crearSesion(newId, titulo)
+            _activeSkills.value = emptySet()
+            refreshSessionsInternal(selectSessionId = newId)
+        }
+    }
+
+    fun deleteSession(sessionId: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            memoryDb.eliminarSesion(sessionId)
+            val remaining = memoryDb.listarSesiones()
+            _sessions.value = remaining
+            if (_currentSessionId.value == sessionId) {
+                val nextId = remaining.firstOrNull()?.id
+                if (nextId != null) {
+                    _currentSessionId.value = nextId
+                    loadSessionInternal(nextId)
+                } else {
+                    createNewSession()
                 }
             }
         }
@@ -103,9 +190,10 @@ class ChatViewModel @Inject constructor(
         viewModelScope.launch {
             val models = modelDiscovery.discoverAllAvailableModels()
             _availableModels.value = models
-            if (_selectedModel.value == null && models.isNotEmpty()) {
-                // Preferir modelo local o el primero disponible
-                _selectedModel.value = models.firstOrNull { it.isLocal } ?: models.first()
+            val current = _selectedModel.value
+            if (models.isNotEmpty() && (current == null || models.none { it.id == current.id && it.providerId == current.providerId })) {
+                // Preferir proveedor con API Key configurada o Fénix Cloud Free antes que sondas locales
+                _selectedModel.value = models.firstOrNull { !it.isLocal } ?: models.first()
             }
         }
     }
@@ -141,7 +229,14 @@ class ChatViewModel @Inject constructor(
     }
 
     fun clearConversation() {
+        val currentId = _currentSessionId.value
+        if (currentId != null) {
+            viewModelScope.launch(Dispatchers.IO) {
+                memoryDb.writableDatabase.delete("entradas", "session_id=?", arrayOf(currentId))
+            }
+        }
         _messages.value = emptyList()
+        _activeSkills.value = emptySet()
     }
 
     fun sendMessage(userText: String) {
@@ -152,9 +247,39 @@ class ChatViewModel @Inject constructor(
         if (currentModel == null) {
             _messages.value = _messages.value + ChatMessageUi(
                 role = "assistant",
-                content = "No hay ningún modelo de IA configurado. Por favor configure una clave de API (Groq, OpenRouter, SambaNova, DeepSeek o Gemini) o inicie el servidor local en Termux.",
+                content = "No hay ningún modelo de IA seleccionado. Toca el ícono de la llave (🔑) arriba para configurar una API Key gratuita (Groq, Gemini, OpenRouter, DeepSeek) o selecciona Fénix Free Cloud.",
             )
             return
+        }
+
+        val activeSessionId = _currentSessionId.value ?: run {
+            val newId = UUID.randomUUID().toString()
+            memoryDb.crearSesion(newId, trimmed.take(30))
+            _currentSessionId.value = newId
+            newId
+        }
+
+        // Guardar mensaje de usuario en SQLite
+        viewModelScope.launch(Dispatchers.IO) {
+            memoryDb.agregarEntrada(
+                sessionId = activeSessionId,
+                agente = "user",
+                tipo = "user",
+                evento = trimmed,
+            )
+            // Si el título es genérico, actualizarlo con el resumen del prompt
+            val ses = memoryDb.obtenerSesion(activeSessionId)
+            if (ses != null && (ses.titulo == "Conversación principal" || ses.titulo.startsWith("Nueva conversación"))) {
+                val smartTitle = if (trimmed.length > 32) trimmed.take(29) + "..." else trimmed
+                memoryDb.actualizarSesionTitulo(activeSessionId, smartTitle)
+                _sessions.value = memoryDb.listarSesiones()
+            }
+        }
+
+        // Activación de skills a demanda: detecta intenciones del usuario para pre-activar la skill necesaria
+        val detected = FenixToolRegistry.detectRelevantCategories(trimmed)
+        if (detected.isNotEmpty()) {
+            _activeSkills.value = _activeSkills.value + detected
         }
 
         val userMessage = ChatMessageUi(role = "user", content = trimmed)
@@ -162,114 +287,201 @@ class ChatViewModel @Inject constructor(
         _isGenerating.value = true
 
         viewModelScope.launch {
-            executeConversationTurn(currentModel)
+            executeConversationTurn(currentModel, activeSessionId)
         }
     }
 
-    private suspend fun executeConversationTurn(model: DiscoveredModel) {
-        val conversationHistory = _messages.value.map { msg ->
+    companion object {
+        private const val MAX_TOOL_ITERATIONS = 5
+        private const val MAX_HISTORY_MESSAGES_FOR_LLM = 20
+    }
+
+    private suspend fun executeConversationTurn(model: DiscoveredModel, sessionId: String) {
+        // Enviar ventana de contexto histórico (hasta los últimos 20 mensajes) para no desbordar cuota ni contexto
+        val contextWindow = _messages.value.takeLast(MAX_HISTORY_MESSAGES_FOR_LLM)
+        val workingHistory = contextWindow.map { msg ->
             LlmMessage(
                 role = msg.role,
                 content = msg.content,
             )
+        }.toMutableList()
+
+        var iteration = 0
+        while (iteration < MAX_TOOL_ITERATIONS) {
+            val allowTools = iteration < MAX_TOOL_ITERATIONS - 1
+            when (val response = llmClient.sendChatCompletion(
+                model,
+                workingHistory,
+                includeTools = allowTools,
+                activeCategories = _activeSkills.value,
+            )) {
+                is LlmResponse.Text -> {
+                    _messages.value = _messages.value + ChatMessageUi(
+                        role = "assistant",
+                        content = response.content,
+                    )
+                    viewModelScope.launch(Dispatchers.IO) {
+                        memoryDb.agregarEntrada(
+                            sessionId = sessionId,
+                            agente = model.providerName,
+                            tipo = "assistant",
+                            evento = response.content,
+                        )
+                    }
+                    _isGenerating.value = false
+                    return
+                }
+
+                is LlmResponse.ToolCalls -> {
+                    val toolUiList = mutableListOf<ToolCallUi>()
+                    val toolMessages = mutableListOf<LlmMessage>()
+
+                    for (call in response.calls) {
+                        val argumentsObj = parseJsonArgs(call.argumentsJson)
+
+                        // Si la IA autodescubre o activa una skill dinámicamente, registrarla en la sesión
+                        if (call.functionName.contains("skills_discovery")) {
+                            val action = (argumentsObj?.get("action") as? kotlinx.serialization.json.JsonPrimitive)?.content
+                            val skillName = (argumentsObj?.get("skill") as? kotlinx.serialization.json.JsonPrimitive)?.content
+                            if (action == "activate" && !skillName.isNullOrBlank()) {
+                                val cat = com.fenix.mobilemcp.mcp.registry.FenixSkillCategory.fromId(skillName)
+                                _activeSkills.value = _activeSkills.value + cat
+                            }
+                        }
+
+                        val execResult = FenixToolRegistry.executeInProcess(call.functionName, argumentsObj)
+
+                        toolUiList.add(
+                            ToolCallUi(
+                                toolName = call.functionName,
+                                arguments = call.argumentsJson,
+                                output = execResult.outputText,
+                                durationMs = execResult.durationMs,
+                                isSuccess = execResult.isSuccess,
+                            ),
+                        )
+
+                        toolMessages.add(
+                            LlmMessage(
+                                role = "tool",
+                                content = execResult.outputText,
+                                toolCallId = call.id,
+                            ),
+                        )
+                    }
+
+                    val assistantNotice = "Ejecuté las siguientes herramientas locales:"
+                    _messages.value = _messages.value + ChatMessageUi(
+                        role = "assistant",
+                        content = assistantNotice,
+                        toolCalls = toolUiList,
+                    )
+
+                    // Autoguardado persistente en SQLite de la ejecución de herramientas
+                    viewModelScope.launch(Dispatchers.IO) {
+                        val toolCallsJson = serializeToolCalls(toolUiList)
+                        memoryDb.agregarEntrada(
+                            sessionId = sessionId,
+                            agente = model.providerName,
+                            tipo = "assistant",
+                            evento = assistantNotice,
+                            detalle = toolCallsJson,
+                        )
+                    }
+
+                    workingHistory.add(
+                        LlmMessage(
+                            role = "assistant",
+                            content = "",
+                            toolCalls = response.calls,
+                        ),
+                    )
+                    workingHistory.addAll(toolMessages)
+                    iteration++
+                }
+
+                is LlmResponse.RateLimited -> {
+                    // Auto-rotación de proveedor por 429 excluyendo proveedores en cooldown
+                    val nextModel = _availableModels.value.firstOrNull {
+                        it.providerId != model.providerId && !modelDiscovery.isProviderInCooldown(it.providerId)
+                    }
+                    if (nextModel != null) {
+                        _messages.value = _messages.value + ChatMessageUi(
+                            role = "assistant",
+                            content = "Límite de tasa (429) en ${model.providerName}. Rotando automáticamente a ${nextModel.providerName} (${nextModel.id})...",
+                        )
+                        _selectedModel.value = nextModel
+                        executeConversationTurn(nextModel, sessionId)
+                    } else {
+                        _messages.value = _messages.value + ChatMessageUi(
+                            role = "assistant",
+                            content = "Límite de tasa (429) alcanzado y no hay proveedores alternativos fuera de enfriamiento. Espere 60 segundos.",
+                        )
+                        _isGenerating.value = false
+                    }
+                    return
+                }
+
+                is LlmResponse.Error -> {
+                    val fallbackModel = _availableModels.value.firstOrNull {
+                        it.providerId != model.providerId && !it.isLocal && !modelDiscovery.isProviderInCooldown(it.providerId)
+                    }
+                    if (fallbackModel != null) {
+                        _selectedModel.value = fallbackModel
+                        executeConversationTurn(fallbackModel, sessionId)
+                    } else {
+                        _messages.value = _messages.value + ChatMessageUi(
+                            role = "assistant",
+                            content = "Error: ${response.message}",
+                        )
+                        _isGenerating.value = false
+                    }
+                    return
+                }
+            }
         }
 
-        when (val response = llmClient.sendChatCompletion(model, conversationHistory)) {
-            is LlmResponse.Text -> {
-                _messages.value = _messages.value + ChatMessageUi(
-                    role = "assistant",
-                    content = response.content,
+        _isGenerating.value = false
+    }
+
+    private fun serializeToolCalls(calls: List<ToolCallUi>): String {
+        return buildJsonArray {
+            calls.forEach { call ->
+                add(
+                    buildJsonObject {
+                        put("toolName", call.toolName)
+                        put("arguments", call.arguments)
+                        put("output", call.output)
+                        put("durationMs", call.durationMs)
+                        put("isSuccess", call.isSuccess)
+                    },
                 )
-                _isGenerating.value = false
             }
+        }.toString()
+    }
 
-            is LlmResponse.ToolCalls -> {
-                // Ejecución de herramientas in-memory
-                val toolUiList = mutableListOf<ToolCallUi>()
-                val toolMessages = mutableListOf<LlmMessage>()
-
-                for (call in response.calls) {
-                    val argumentsObj = parseJsonArgs(call.argumentsJson)
-                    val execResult = FenixToolRegistry.executeInProcess(call.functionName, argumentsObj)
-
-                    toolUiList.add(
+    private fun deserializeToolCalls(jsonStr: String): List<ToolCallUi> {
+        return try {
+            val element = jsonParser.parseToJsonElement(jsonStr)
+            if (element is JsonArray) {
+                element.mapNotNull { item ->
+                    if (item is JsonObject) {
                         ToolCallUi(
-                            toolName = call.functionName,
-                            arguments = call.argumentsJson,
-                            output = execResult.outputText,
-                            durationMs = execResult.durationMs,
-                            isSuccess = execResult.isSuccess,
-                        ),
-                    )
-
-                    toolMessages.add(
-                        LlmMessage(
-                            role = "tool",
-                            content = execResult.outputText,
-                            toolCallId = call.id,
-                        ),
-                    )
-                }
-
-                // Añadir mensaje con tarjetas de herramientas
-                _messages.value = _messages.value + ChatMessageUi(
-                    role = "assistant",
-                    content = "Ejecuté las siguientes herramientas locales:",
-                    toolCalls = toolUiList,
-                )
-
-                // Segunda llamada al LLM con los resultados de las herramientas
-                val updatedHistory = conversationHistory + LlmMessage(
-                    role = "assistant",
-                    content = "",
-                    toolCalls = response.calls,
-                ) + toolMessages
-
-                when (val followUp = llmClient.sendChatCompletion(model, updatedHistory, includeTools = false)) {
-                    is LlmResponse.Text -> {
-                        _messages.value = _messages.value + ChatMessageUi(
-                            role = "assistant",
-                            content = followUp.content,
+                            toolName = item["toolName"]?.jsonPrimitive?.content ?: "",
+                            arguments = item["arguments"]?.jsonPrimitive?.content ?: "{}",
+                            output = item["output"]?.jsonPrimitive?.content ?: "",
+                            durationMs = item["durationMs"]?.jsonPrimitive?.doubleOrNull ?: 0.0,
+                            isSuccess = item["isSuccess"]?.jsonPrimitive?.booleanOrNull ?: true,
                         )
+                    } else {
+                        null
                     }
-                    is LlmResponse.Error -> {
-                        _messages.value = _messages.value + ChatMessageUi(
-                            role = "assistant",
-                            content = "Error al sintetizar respuesta final: ${followUp.message}",
-                        )
-                    }
-                    else -> Unit
                 }
-
-                _isGenerating.value = false
+            } else {
+                emptyList()
             }
-
-            is LlmResponse.RateLimited -> {
-                // Auto-rotación de proveedor por 429
-                val nextModel = _availableModels.value.firstOrNull { it.providerId != model.providerId }
-                if (nextModel != null) {
-                    _messages.value = _messages.value + ChatMessageUi(
-                        role = "assistant",
-                        content = "Límite de tasa (429) en ${model.providerName}. Rotando automáticamente a ${nextModel.providerName} (${nextModel.id})...",
-                    )
-                    _selectedModel.value = nextModel
-                    executeConversationTurn(nextModel)
-                } else {
-                    _messages.value = _messages.value + ChatMessageUi(
-                        role = "assistant",
-                        content = "Límite de tasa (429) alcanzado y no hay proveedores alternativos disponibles. Espere 60 segundos.",
-                    )
-                    _isGenerating.value = false
-                }
-            }
-
-            is LlmResponse.Error -> {
-                _messages.value = _messages.value + ChatMessageUi(
-                    role = "assistant",
-                    content = "Error: ${response.message}",
-                )
-                _isGenerating.value = false
-            }
+        } catch (_: Exception) {
+            emptyList()
         }
     }
 

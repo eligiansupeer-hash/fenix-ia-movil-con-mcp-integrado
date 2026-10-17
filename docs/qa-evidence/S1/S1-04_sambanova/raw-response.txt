@@ -1,0 +1,5 @@
+PROVIDER=sambanova
+STATUS=200
+MODELS_COUNT=6
+MODELS_SAMPLE=[DeepSeek-V3.1, DeepSeek-V3.2, Meta-Llama-3.3-70B-Instruct]
+

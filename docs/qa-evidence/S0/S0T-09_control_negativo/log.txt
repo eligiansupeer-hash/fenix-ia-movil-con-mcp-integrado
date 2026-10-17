@@ -1,0 +1,25 @@
+RUN_ID=1792118891904718458 (corrida S0T-09)
+### CN1 carpeta inexistente (esperado FAIL)
+EVIDENCIA_FAIL
+  - FALTA: carpeta '/tmp/qa-cn.E8Db/no_existe' no existe
+exit=1
+### CN2 isError=true (esperado FAIL)
+  - isError==true en result.json (REGLA 1: FAIL)
+EVIDENCIA_FAIL  /tmp/qa-cn.E8Db/con_error
+exit=1
+### CN3 falta screen.png (esperado FAIL)
+  - FALTA: screen.png
+EVIDENCIA_FAIL  /tmp/qa-cn.E8Db/sin_foto
+exit=1
+### CN4 fragmento de log ausente (esperado FAIL)
+  - FALTA: log.txt con el fragmento citado: "PASS_E2E_VERIFICADO"
+EVIDENCIA_FAIL  /tmp/qa-cn.E8Db/log_miente
+exit=1
+### CN5 result.json SIN run_id (esperado FAIL por binding)
+  - FALTA: result.json sin run_id (REGLA 7: binding de corrida)
+EVIDENCIA_FAIL  /tmp/qa-cn.E8Db/sin_runid
+exit=1
+### CN6 run_id declarado pero AUSENTE en log (esperado FAIL por desvinculacion)
+  - FALTA: log.txt sin el RUN_ID de la corrida: "tok-cn6-fantasma" (evidencia desvinculada)
+EVIDENCIA_FAIL  /tmp/qa-cn.E8Db/runid_huerfano
+exit=1

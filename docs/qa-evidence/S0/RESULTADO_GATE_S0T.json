@@ -1,0 +1,101 @@
+{
+  "suite": "S0·T",
+  "nombre": "TOOLING BASE (GATE OBLIGATORIO · bloquea S1-S13)",
+  "fecha": "2026-10-15",
+  "device": "ZY22MK7B2P",
+  "sut": "com.fenix.mobilemcp.foss.debug",
+  "tooling": {
+    "agent_device": "0.21.28",
+    "node": "v22.23.3",
+    "shim": "/home/eli/fenix-mcp/launchers/lanzar_agent_device.sh",
+    "fastmcp": "1.26.0"
+  },
+  "anti_alucinaciones": {
+    "skill": "fenix-skills://qa/fenix-qa-evidence (REGLA 1-8, leida en vivo)",
+    "validador_cli": "scripts/qa-evidence-check.sh (estructura + binding RUN_ID)",
+    "validador_mcp": "fenix_qa_evidence_check (mismos chequeos, clientes sin shell)",
+    "binding_corrida": "cada result.json trae run_id == token RUN_ID dentro de log.txt; sin igualdad exacta -> EVIDENCIA_FAIL",
+    "regla": "REGLA 7: ningun ID cierra sin EVIDENCIA_OK"
+  },
+  "checks": [
+    {
+      "id": "S0T-01",
+      "nombre": "agent-device instalado",
+      "validacion": "qa-evidence-check.sh exit 0",
+      "fragmento_log": "agent-device@0.21.28",
+      "estado": "EVIDENCIA_OK"
+    },
+    {
+      "id": "S0T-02",
+      "nombre": "agent-device doctor verde",
+      "validacion": "qa-evidence-check.sh exit 0",
+      "fragmento_log": "ZY22MK7B2P",
+      "estado": "EVIDENCIA_OK"
+    },
+    {
+      "id": "S0T-03",
+      "nombre": "MCP agent-device en agy via shim estable",
+      "validacion": "qa-evidence-check.sh exit 0",
+      "fragmento_log": "/home/eli/fenix-mcp/launchers/lanzar_agent_device.sh",
+      "estado": "EVIDENCIA_OK"
+    },
+    {
+      "id": "S0T-04",
+      "nombre": "Resource fenix-skills visible via MCP",
+      "validacion": "qa-evidence-check.sh exit 0",
+      "fragmento_log": "fenix-skills://qa/fenix-qa-evidence",
+      "estado": "EVIDENCIA_OK"
+    },
+    {
+      "id": "S0T-05",
+      "nombre": "qa-precheck.sh pasa",
+      "validacion": "qa-evidence-check.sh exit 0",
+      "fragmento_log": "PRECHECK OK",
+      "estado": "EVIDENCIA_OK"
+    },
+    {
+      "id": "S0T-06",
+      "nombre": "Smoke: abrir SUT + snapshot",
+      "validacion": "qa-evidence-check.sh exit 0",
+      "fragmento_log": "@e2",
+      "estado": "EVIDENCIA_OK"
+    },
+    {
+      "id": "S0T-07",
+      "nombre": "Replay smoke.ad <30s",
+      "validacion": "qa-evidence-check.sh exit 0",
+      "fragmento_log": "Replayed 2 steps",
+      "estado": "EVIDENCIA_OK"
+    },
+    {
+      "id": "S0T-08",
+      "nombre": "Validador determinista en verde 7/7",
+      "validacion": "qa-evidence-check.sh exit 0",
+      "fragmento_log": "EVIDENCIA_OK",
+      "estado": "EVIDENCIA_OK"
+    },
+    {
+      "id": "S0T-09",
+      "nombre": "Control negativo: el validador debe fallar",
+      "validacion": "qa-evidence-check.sh exit 0",
+      "fragmento_log": "### CN4",
+      "estado": "EVIDENCIA_OK"
+    }
+  ],
+  "pase": "9/9",
+  "veredicto_global": "GATE VERDE — 9/9 IDs con evidencia integra y ligada a su corrida (RUN_ID), verificada por programa; 6/6 controles negativos detectados",
+  "pendiente_runtime": "listado de resources/prompts desde antigravity y opencode al reconectar (S0T-04 lado cliente)",
+  "artefactos": [
+    "smoke.ad",
+    "S0T-01_agent_device_instalado/",
+    "S0T-02_doctor_verde/",
+    "S0T-03_mcp_agy/",
+    "S0T-04_resource_visible/",
+    "S0T-05_precheck_ok/",
+    "S0T-06_smoke_snapshot/",
+    "S0T-07_replay_smoke/",
+    "S0T-08_validador_evidencia/",
+    "S0T-09_control_negativo/"
+  ],
+  "controles_negativos": "6/6 detectados (carpeta inexistente, isError=true, falta screen.png, fragmento ausente, sin run_id, run_id huerfano)"
+}

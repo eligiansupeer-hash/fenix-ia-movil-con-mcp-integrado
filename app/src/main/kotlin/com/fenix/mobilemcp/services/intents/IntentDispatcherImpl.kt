@@ -52,22 +52,52 @@ class IntentDispatcherImpl
             }
         }
 
+        private fun validateSafeUri(rawUri: String) {
+            val trimmed = rawUri.trim()
+            val lower = trimmed.lowercase()
+            if (lower.startsWith("file:") || lower.startsWith("intent:") || lower.startsWith("javascript:")) {
+                throw IllegalArgumentException(
+                    "URI_SCHEME_BLOCKED: Scheme in '$trimmed' is forbidden for security reasons (file/intent/javascript blocked)",
+                )
+            }
+            if (lower.startsWith("tel:")) {
+                val payload = trimmed.substringAfter(":")
+                if (payload.contains("*") || payload.contains("#") || lower.contains("%23") || lower.contains("%2a")) {
+                    throw IllegalArgumentException(
+                        "USSD_BLOCKED: USSD/MMI codes (* or #) are forbidden in tel: URIs",
+                    )
+                }
+            }
+        }
+
         private fun buildIntent(request: SendIntentRequest): Intent {
             val intent = Intent()
 
             if (request.action != null) {
+                val actLower = request.action.lowercase()
+                if (actLower == "android.intent.action.call" || actLower == "android.intent.action.reboot" || actLower == "android.intent.action.master_clear") {
+                    throw IllegalArgumentException("INTENT_ACTION_BLOCKED: Action '${request.action}' is forbidden")
+                }
                 intent.action = request.action
             }
 
             if (request.data != null) {
+                validateSafeUri(request.data)
                 intent.data = Uri.parse(request.data)
             }
 
             if (request.component != null) {
-                intent.component = parseComponent(request.component).getOrThrow()
+                val comp = parseComponent(request.component).getOrThrow()
+                if (com.fenix.mobilemcp.security.StreetImmunityChecker.isDeliveryPackageBlocked(comp.packageName)) {
+                    throw IllegalArgumentException("ANTI_BAN_BLOCKED: Component in delivery package '${comp.packageName}' is forbidden")
+                }
+                intent.component = comp
             }
 
             if (request.packageName != null) {
+                if (com.fenix.mobilemcp.security.StreetImmunityChecker.isDeliveryPackageBlocked(request.packageName)) {
+                    throw IllegalArgumentException("ANTI_BAN_BLOCKED: Target package '${request.packageName}' is forbidden")
+                }
                 intent.setPackage(request.packageName)
             }
 
@@ -97,6 +127,10 @@ class IntentDispatcherImpl
             mimeType: String?,
         ): Result<Unit> =
             try {
+                validateSafeUri(uri)
+                if (com.fenix.mobilemcp.security.StreetImmunityChecker.isDeliveryPackageBlocked(packageName)) {
+                    throw IllegalArgumentException("ANTI_BAN_BLOCKED: Opening URI in delivery package '$packageName' is forbidden")
+                }
                 val intent =
                     if (mimeType != null) {
                         Intent(Intent.ACTION_VIEW).apply {
@@ -115,6 +149,9 @@ class IntentDispatcherImpl
                 context.startActivity(intent)
                 Logger.i(TAG, "URI opened: ${truncateUri(uri)}")
                 Result.success(Unit)
+            } catch (e: IllegalArgumentException) {
+                Logger.w(TAG, "Blocked or invalid URI: ${truncateUri(uri)}", e)
+                Result.failure(e)
             } catch (e: ActivityNotFoundException) {
                 Logger.w(TAG, "No app found to handle URI: ${truncateUri(uri)}", e)
                 Result.failure(IllegalArgumentException("No app found to handle URI"))

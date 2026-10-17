@@ -15,7 +15,7 @@
     <string name="app_bar_title">Fénix IA Móvil con MCP Integrado</string>
 
     <!-- Pestañas -->
-    <string name="tab_chat">F-Chat</string>
+    <string name="tab_chat">Fénix IA</string>
     <string name="tab_server">Servidor</string>
     <string name="tab_settings">Ajustes</string>
     <string name="tab_about">Acerca de</string>
@@ -213,7 +213,24 @@
     <string name="remote_access_route_misconfigured">La ruta no apunta a este servidor</string>
 
     <!-- Info de conexión -->
-    <string name="connection_info_title">Datos de conexión</string>
+    <string name="connection_info_title">Conexión con Agentes de IA</string>
+    <string name="connection_info_subtitle">Conecta modelos de inteligencia artificial y agentes autónomos (Gemini, Claude, Manus) con este dispositivo.</string>
+    <string name="connection_info_public_url_clean_label">URL Pública de Conexión MCP</string>
+    <string name="connection_info_public_url_desc">Esta URL pública permite conectar con aplicaciones de inteligencia artificial que admiten conectores personalizados (como Gemini o Claude). Al intentar conectar por primera vez, la aplicación te solicitará aprobación en este teléfono.</string>
+    <string name="connection_info_copy_url_only">Copiar URL para Gemini / Claude</string>
+    <string name="connection_info_url_copied">URL MCP copiada al portapapeles</string>
+    <string name="connection_info_token_desc">Identificador de seguridad para autorizar conexiones si la app de IA no usa aprobación automática.</string>
+    <string name="connection_info_copy_token_only">Copiar Token</string>
+    <string name="connection_info_token_copied">Token Bearer copiado al portapapeles</string>
+    <string name="connection_info_tunnel_offline_warning">Acceso remoto apagado. El servidor solo es visible dentro de este mismo teléfono.</string>
+    <string name="connection_info_tunnel_enable_quick">Activar Acceso Remoto (Cloudflare)</string>
+    <string name="connection_info_advanced_toggle">Configuración avanzada / Entre agentes</string>
+    <string name="connection_info_copy_json">Copiar Configuración JSON</string>
+    <string name="connection_info_json_copied">Configuración JSON copiada al portapapeles</string>
+    <string name="connection_info_docs_link">Más información sobre conexiones MCP…</string>
+    <string name="settings_tunnel_info_title">¿Qué es un túnel?</string>
+    <string name="settings_tunnel_info_body">Un túnel crea un puente seguro y cifrado desde internet hacia tu móvil sin necesidad de abrir puertos en tu router. El modo rápido de Cloudflare genera una URL temporal gratuita por sesión, mientras que el modo con Token te permite usar tu propio dominio con una URL fija y permanente.</string>
+    <string name="settings_tunnel_docs_link">Más información sobre túneles de Cloudflare…</string>
     <string name="connection_info_ip">Dirección IP</string>
     <string name="connection_info_port">Puerto</string>
     <string name="connection_info_url">URL</string>
@@ -392,4 +409,46 @@
     <string name="privacy_card_title">¿Tus datos personales?</string>
     <string name="privacy_card_action">Activar Modo Privacidad</string>
     <string name="privacy_card_dismiss">Descartar</string>
+
+    <!-- Tarjetas explicativas y enlaces oficiales para Ajustes -->
+    <string name="settings_security_info_title">Firewall Bancario y Regla de Oro</string>
+    <string name="settings_security_info_body">Protege tus fondos bloqueando automáticamente cualquier intento de interacción con aplicaciones bancarias, billeteras virtuales o pasarelas de pago. Cero transacciones o movimientos de dinero permitidos bajo ninguna circunstancia.</string>
+    <string name="settings_security_docs_link">Más información sobre seguridad de aplicaciones en Android…</string>
+    <string name="settings_security_dev_options_title">Opciones de Desarrollador y Depuración USB</string>
+    <string name="settings_security_dev_options_desc">Acceso rápido a los ajustes de desarrollador del sistema Android. Para máxima seguridad en la calle o apps bancarias, se recomienda mantener la depuración USB desactivada cuando no estés programando.</string>
+    <string name="settings_security_dev_options_button">Abrir Ajustes de Desarrollador Android</string>
+
+    <string name="settings_access_info_title">Autenticación y Protección de Clientes</string>
+    <string name="settings_access_info_body">OAuth activa una ventana emergente en este teléfono para que apruebes con un toque cada conexión externa entrante. El Token Bearer requiere una clave fija. Desactivar ambos deja el servidor totalmente expuesto a cualquiera en tu red o en internet.</string>
+    <string name="settings_access_docs_link">Más información sobre OAuth 2.0 y seguridad MCP…</string>
+
+    <string name="settings_general_info_title">Dirección de Enlace y Conectividad</string>
+    <string name="settings_general_info_body">Localhost (127.0.0.1) aísla el servidor estrictamente dentro de este móvil, ideal para máxima seguridad junto al túnel de Cloudflare. Red (0.0.0.0) permite acceso directo desde tu Wi-Fi local, pero cambia o deja de funcionar al salir o pasar a datos móviles.</string>
+    <string name="settings_general_docs_link">Más información sobre configuración de red en Android…</string>
+
+    <string name="settings_permissions_info_title">Explicación Exhaustiva: Permisos del Sistema</string>
+    <string name="settings_permissions_info_body">1. Servicio de Accesibilidad: Permite al servidor leer la pantalla e interactuar con botones para agentes de IA autónomos.\n2. Superposición: Muestra pantallas de aprobación instantánea y alertas de seguridad encima de otras aplicaciones.\n3. Notificaciones: Mantiene el servicio de fondo persistente sin que el optimizador de memoria de Android lo detenga.\n4. Optimización de Batería: Evita que el sistema congele o cierre el servidor durante tareas prolongadas.\n5. Ajustes Restringidos (Android 13+): Android bloquea accesibilidad en APKs instalados manualmente; tocá el botón de abajo para autorizarlos en Info de la App.</string>
+    <string name="settings_permissions_docs_link">Más información sobre Accesibilidad y Seguridad en Android…</string>
+
+    <string name="settings_privacy_info_title">NER en el Dispositivo y Anonimización</string>
+    <string name="settings_privacy_info_body">Analiza localmente el texto en pantalla mediante Reconocimiento de Entidades (NER) para anonimizar nombres, correos, teléfonos y direcciones antes de enviarlos a los modelos de IA. Cero telemetría hacia la nube.</string>
+    <string name="settings_privacy_docs_link">Más información sobre Privacidad y Datos Personales en Android…</string>
+
+    <string name="settings_mcp_tools_info_title">Catálogo de Herramientas MCP y Sandbox</string>
+    <string name="settings_mcp_tools_info_body">Define las acciones que un modelo de IA puede ejecutar en tu teléfono: gestos táctiles, capturas de pantalla, archivos, cámara y llamadas a apps. Podés activar o desactivar cada categoría o exigir confirmación manual previa.</string>
+    <string name="settings_mcp_tools_docs_link">Más información sobre la especificación oficial de MCP…</string>
+
+    <string name="settings_storage_info_title">Almacenamiento Aislado (Scoped Storage)</string>
+    <string name="settings_storage_info_body">Android aísla el almacenamiento por seguridad. Al agregar carpetas autorizadas, permitís que las herramientas de archivo lean o creen documentos únicamente dentro de esas carpetas, protegiendo tus fotos y datos privados.</string>
+    <string name="settings_storage_docs_link">Más información sobre Almacenamiento seguro en Android…</string>
+
+    <string name="settings_channel_info_title">Canal de Eventos en Tiempo Real (SSE)</string>
+    <string name="settings_channel_info_body">Transmite en tiempo real eventos del móvil (notificaciones entrantes, cambios de pantalla) hacia orquestadores y agentes externos vía SSE (Server-Sent Events), permitiendo automatizaciones proactivas.</string>
+    <string name="settings_channel_docs_link">Más información sobre Server-Sent Events (SSE)…</string>
+
+    <string name="tab_studio">F-Studio</string>
+    <string name="tab_marketplace">Extensiones</string>
+    <string name="studio_ide_title">F-Studio • IDE &amp; Documentos en Vivo</string>
+    <string name="studio_run_compile_btn">Ejecutar / Compilar (%1$s)</string>
+    <string name="marketplace_title">F-Market • Extensiones y AXIOM</string>
 </resources>

@@ -1,0 +1,5 @@
+PROVIDER=cohere
+STATUS=200
+MODELS_COUNT=35
+MODELS_SAMPLE=[c4ai-aya-expanse-32b, c4ai-aya-vision-32b, cohere-transcribe-03-2026]
+

@@ -15,7 +15,7 @@
     <string name="app_bar_title">Fénix IA Móvil con MCP Integrado</string>
 
     <!-- Tabs -->
-    <string name="tab_chat">F-Chat</string>
+    <string name="tab_chat">Fénix IA</string>
     <string name="tab_server">Server</string>
     <string name="tab_settings">Settings</string>
     <string name="tab_about">About</string>
@@ -213,7 +213,24 @@
     <string name="remote_access_route_misconfigured">Route does not point to this server</string>
 
     <!-- Connection Info -->
-    <string name="connection_info_title">Connection Info</string>
+    <string name="connection_info_title">AI Agents Connection</string>
+    <string name="connection_info_subtitle">Connect AI models and autonomous agents (Gemini, Claude, Manus) to this mobile device.</string>
+    <string name="connection_info_public_url_clean_label">Public MCP Connection URL</string>
+    <string name="connection_info_public_url_desc">This public URL allows connecting to artificial intelligence applications supporting custom connectors (such as Claude or Gemini). When connecting for the first time, this app will prompt for approval.</string>
+    <string name="connection_info_copy_url_only">Copy URL for Gemini / Claude</string>
+    <string name="connection_info_url_copied">MCP URL copied to clipboard</string>
+    <string name="connection_info_token_desc">Security identifier used to authorize requests if the AI agent does not use automatic OAuth approval.</string>
+    <string name="connection_info_copy_token_only">Copy Token</string>
+    <string name="connection_info_token_copied">Bearer Token copied to clipboard</string>
+    <string name="connection_info_tunnel_offline_warning">Remote access is turned off. The server is only reachable from this phone.</string>
+    <string name="connection_info_tunnel_enable_quick">Enable Remote Access (Cloudflare)</string>
+    <string name="connection_info_advanced_toggle">Advanced / Agent-to-Agent Setup</string>
+    <string name="connection_info_copy_json">Copy JSON Configuration</string>
+    <string name="connection_info_json_copied">JSON configuration copied to clipboard</string>
+    <string name="connection_info_docs_link">More info about MCP connection…</string>
+    <string name="settings_tunnel_info_title">What is a Tunnel?</string>
+    <string name="settings_tunnel_info_body">A tunnel creates a secure encrypted bridge from the internet to your phone without opening ports in your home router. Cloudflare Quick Tunnel assigns a temporary free URL each session, while Token Mode lets you use your own domain for a static, permanent URL.</string>
+    <string name="settings_tunnel_docs_link">More info about Cloudflare Tunnels…</string>
     <string name="connection_info_ip">IP Address</string>
     <string name="connection_info_port">Port</string>
     <string name="connection_info_url">URL</string>
@@ -392,4 +409,46 @@
     <string name="privacy_card_title">Worried about personal data?</string>
     <string name="privacy_card_action">Set up Privacy Mode</string>
     <string name="privacy_card_dismiss">Dismiss</string>
+
+    <!-- Settings Explanatory Cards & Official Docs Links -->
+    <string name="settings_security_info_title">Bank Apps Firewall &amp; Zero Trust</string>
+    <string name="settings_security_info_body">Protects your financial assets by automatically intercepting and blocking any attempt to interact with banking, fintech, or payment applications. Zero transactions or money movements are permitted under any circumstances.</string>
+    <string name="settings_security_docs_link">More info about Android app security…</string>
+    <string name="settings_security_dev_options_title">Developer Options &amp; USB Debugging</string>
+    <string name="settings_security_dev_options_desc">Quick shortcut to Android system developer settings. For maximum street safety and banking protection, it is strongly recommended to keep USB debugging turned off when not actively developing.</string>
+    <string name="settings_security_dev_options_button">Open Android Developer Settings</string>
+
+    <string name="settings_access_info_title">Authentication &amp; Client Protection</string>
+    <string name="settings_access_info_body">OAuth enables interactive popups on this screen to review and approve each external client request with a single tap. Bearer Token uses a static secret key. Disabling both leaves your server completely exposed to anyone on your network or internet.</string>
+    <string name="settings_access_docs_link">More info about OAuth 2.0 and MCP Security…</string>
+
+    <string name="settings_general_info_title">Network Binding &amp; Communication</string>
+    <string name="settings_general_info_body">Localhost (127.0.0.1) restricts connections strictly to this phone, ideal for maximum security paired with a Cloudflare tunnel. Network (0.0.0.0) allows direct access from your local Wi-Fi, but will change or break when roaming or switching to cellular data.</string>
+    <string name="settings_general_docs_link">More info about Android Network Config…</string>
+
+    <string name="settings_permissions_info_title">Deep Dive: Required System Permissions</string>
+    <string name="settings_permissions_info_body">1. Accessibility Service: Allows introspecting on-screen UI nodes and simulating touches/gestures for autonomous agents.\n2. Overlay: Displays instant approval popups and security shields directly on top of other running apps.\n3. Notifications: Keeps the background MCP server persistent without being killed by Android memory managers.\n4. Battery Optimization: Exempts the server from aggressive Doze mode during long-running agent workflows.\n5. Restricted Settings (Android 13+): Android blocks accessibility on sideloaded APKs; tap the button below to allow restricted settings in app info.</string>
+    <string name="settings_permissions_docs_link">More info about Android Accessibility and Security…</string>
+
+    <string name="settings_privacy_info_title">On-Device NER &amp; Anonymization</string>
+    <string name="settings_privacy_info_body">Locally analyzes on-screen text using Named Entity Recognition (NER) to redact names, emails, phone numbers, and addresses before sending data to AI models. Operates entirely on-device with zero cloud telemetry.</string>
+    <string name="settings_privacy_docs_link">More info about On-Device Privacy &amp; PII…</string>
+
+    <string name="settings_mcp_tools_info_title">MCP Tool Catalog &amp; Sandboxing</string>
+    <string name="settings_mcp_tools_info_body">Defines the actions an AI agent can execute on your device: gestures, screenshots, file operations, camera, and intents. Each tool category can be toggled individually or configured to require manual user approval before execution.</string>
+    <string name="settings_mcp_tools_docs_link">More info about Model Context Protocol Specification…</string>
+
+    <string name="settings_storage_info_title">Scoped Storage &amp; Access Framework</string>
+    <string name="settings_storage_info_body">Android isolates storage for user protection. Granting specific folders enables MCP file tools to read or create documents exclusively inside your chosen directories, protecting your personal gallery and sensitive app data.</string>
+    <string name="settings_storage_docs_link">More info about Android Scoped Storage…</string>
+
+    <string name="settings_channel_info_title">Server-Sent Events &amp; Automation</string>
+    <string name="settings_channel_info_body">Stream real-time device state changes (notifications, incoming messages, screen transitions) to remote orchestrators and autonomous agents via Server-Sent Events (SSE), enabling proactive automation.</string>
+    <string name="settings_channel_docs_link">More info about Server-Sent Events (SSE)…</string>
+
+    <string name="tab_studio">F-Studio</string>
+    <string name="tab_marketplace">Extensions</string>
+    <string name="studio_ide_title">F-Studio • Live IDE &amp; Workspace</string>
+    <string name="studio_run_compile_btn">Run / Compile (%1$s)</string>
+    <string name="marketplace_title">F-Market • Extensions &amp; AXIOM</string>
 </resources>

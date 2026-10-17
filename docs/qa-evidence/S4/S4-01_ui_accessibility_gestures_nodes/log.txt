@@ -1,0 +1,9 @@
+RUN_ID=20261016_QA_MOTO_G77_RONDA2
+DEVICE=ZY22MK7B2P
+TEST=S4-01
+TOOL_FIND_NODES=Servidor tab found at [319, 2151, 485, 2202]
+TOOL_TAP=Tap executed at (400, 2176)
+TOOL_SCROLL=Scroll down (medium) executed
+TOOL_SCROLL_UP=Scroll up (medium) executed
+TOOL_GET_SCREEN_STATE=Compose hierarchy parsed successfully
+STATUS=UI_GESTURES_AND_NODES_OK

@@ -1,0 +1,5 @@
+TOOL=android_open_uri
+TEST_FILE_SCHEME=file:///data/data/... -> URI_SCHEME_BLOCKED (file/intent/javascript blocked)
+TEST_USSD_INJECTION=tel:*%2306%23 -> USSD_BLOCKED (USSD/MMI codes forbidden)
+STATUS=DESTRUCTIVE_URI_SCHEMES_BLOCKED_PASS
+

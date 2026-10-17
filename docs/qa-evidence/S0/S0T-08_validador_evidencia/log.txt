@@ -1,0 +1,16 @@
+RUN_ID=1792118891380073200 (corrida S0T-08)
+### qa-evidence-check.sh sobre S0T-01..07 (con binding RUN_ID)
+EVIDENCIA_OK  docs/qa-evidence/S0/S0T-01_agent_device_instalado/
+exit=0
+EVIDENCIA_OK  docs/qa-evidence/S0/S0T-02_doctor_verde/
+exit=0
+EVIDENCIA_OK  docs/qa-evidence/S0/S0T-03_mcp_agy/
+exit=0
+EVIDENCIA_OK  docs/qa-evidence/S0/S0T-04_resource_visible/
+exit=0
+EVIDENCIA_OK  docs/qa-evidence/S0/S0T-05_precheck_ok/
+exit=0
+EVIDENCIA_OK  docs/qa-evidence/S0/S0T-06_smoke_snapshot/
+exit=0
+EVIDENCIA_OK  docs/qa-evidence/S0/S0T-07_replay_smoke/
+exit=0

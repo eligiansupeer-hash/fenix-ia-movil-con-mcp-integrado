@@ -1,0 +1,5 @@
+PROVIDER=mistral
+STATUS=200
+MODELS_COUNT=45
+MODELS_SAMPLE=[codestral-2508, codestral-latest, mistral-code-latest]
+

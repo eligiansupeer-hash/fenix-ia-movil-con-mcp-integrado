@@ -1,0 +1,6 @@
+TOOL=android_street_immunity_check
+STATUS=200
+ANTI_BAN_TEST=com.ubercab.driver -> ANTI_BAN_BLOCKED (Bloqueado por cortafuegos de Modo Calle)
+AUDIT_RESULT={"accessibility_firewall":"Activo (ANTI_BAN_BLOCKED en com.ubercab.driver,com.pedidosya,com.grability.rappi)","isAccessibilityFirewallActive":true}
+STATUS=STREET_IMMUNITY_AUDIT_PASS
+

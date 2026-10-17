@@ -1,0 +1,5 @@
+TOOL=android_turn_watch
+SCHEDULE_EXACT_ALARM_ENFORCED=TRUE
+CONTROLLED_ERROR=Failed to watch turns: Caller needs to hold android.permission.SCHEDULE_EXACT_ALARM
+STATUS=TURN_WATCH_PERMISSION_BOUND_PASS
+

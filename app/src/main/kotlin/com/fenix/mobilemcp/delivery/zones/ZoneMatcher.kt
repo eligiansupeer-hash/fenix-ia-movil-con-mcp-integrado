@@ -31,6 +31,13 @@ data class ZoneEntry(
 class ZoneMatcher
     @Inject
     constructor() {
+        companion object {
+            private val RAW_COORDS_REGEX = Regex("""^\s*-?\d{1,3}\.\d+\s*,\s*-?\d{1,3}\.\d+\s*$""")
+            private val KNOWN_DEPARTMENTS = listOf("rawson", "capital", "chimbas", "santa lucia", "pocito", "rivadavia")
+        }
+
+        fun isRawCoordinates(raw: String): Boolean = RAW_COORDS_REGEX.matches(raw)
+
         fun normalize(raw: String): String {
             val lower = raw.lowercase()
             val noAccents =
@@ -50,19 +57,41 @@ class ZoneMatcher
             addressText: String,
             index: List<ZoneEntry>,
         ): List<ZoneHit> {
-            val norm = normalize(addressText)
-            if (norm.isBlank()) return emptyList()
+            val normFull = normalize(addressText)
+            if (normFull.isBlank()) return emptyList()
+
+            // Detectar si el usuario especificó explícitamente un departamento en la dirección
+            val mentionedDepartments = KNOWN_DEPARTMENTS.filter { dept ->
+                Regex("""\b${Regex.escape(dept)}\b""").containsMatchIn(normFull)
+            }
+
+            // Evitar que "Av. Libertador General San Martín" dispare el alias "san martin" de Barrio San Martín (Pocito)
+            val normForKeywords = normFull
+                .replace(Regex("""\b(av\.?|avenida)\s+libertador(\s+(gral\.?|general))?(\s+san\s+martin)?\b"""), " ")
+                .replace(Regex("""\blibertador\s+(gral\.?|general)\s+san\s+martin\b"""), " ")
+                .replace("\\s+".toRegex(), " ")
+                .trim()
+
             val interHits = mutableListOf<ZoneHit>()
             val keyHits = mutableListOf<ZoneHit>()
             for (zone in index) {
+                val zoneDeptNorm = normalize(zone.department)
+                if (mentionedDepartments.isNotEmpty() && zoneDeptNorm !in mentionedDepartments) {
+                    continue
+                }
+
                 if (zone.intersection.size >= 2 &&
-                    zone.intersection.all { normalize(it) in norm }
+                    zone.intersection.all { normalize(it) in normForKeywords }
                 ) {
                     interHits.add(zone.toHit())
                     continue
                 }
                 val allTerms = zone.names + zone.aliases
-                if (allTerms.any { normalize(it).isNotBlank() && normalize(it) in norm }) {
+                if (allTerms.any {
+                        val termNorm = normalize(it)
+                        termNorm.isNotBlank() && Regex("""\b${Regex.escape(termNorm)}\b""").containsMatchIn(normForKeywords)
+                    }
+                ) {
                     keyHits.add(zone.toHit())
                 }
             }

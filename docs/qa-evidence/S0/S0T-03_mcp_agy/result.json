@@ -1,0 +1,11 @@
+{
+  "id": "S0T-03",
+  "nombre": "MCP agent-device en agy via shim estable",
+  "fecha": "2026-10-15",
+  "device": "ZY22MK7B2P",
+  "isError": false,
+  "log_must_contain": "/home/eli/fenix-mcp/launchers/lanzar_agent_device.sh",
+  "screen_required": false,
+  "screen_required_reason": "listado de configuracion de cliente; sin accion de pantalla",
+  "run_id": "1792118795628269035"
+}

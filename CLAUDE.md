@@ -662,5 +662,38 @@ Local development requires Android SDK, emulator/device, and standard Android de
 - Workflow defined in `.github/workflows/ci.yml`.
 - Runs on: push to main, pull requests.
 - Jobs: lint → test-unit (includes JVM integration tests) → test-e2e → build-release.
-- Upload APK as artifact on successful build.
-- Fail build if any test or lint check fails.
+  - Upload APK as artifact on successful build.
+  - Fail build if any test or lint check fails.
+
+## 12) QA Device Protocol — Anti-Conflict (P1-P6)
+
+> Fuente: `docs/INTEGRACION_TOOLING_QA.md` §5. Todo driver de dispositivo pasa por
+> **agent-device** (MCP) o Fénix MCP del móvil. Prohibido `adb shell input` crudo.
+> Skill de reglas duras: resource MCP `fenix-skills://qa/fenix-qa-evidence`.
+> Gate obligatorio: **SUITE 0·T** en `docs/PLAN_MAESTRO_QA_FENIX_MOBILE.md` (bloquea S1-S13).
+
+| # | Regla | Mecanismo |
+|---|---|---|
+| P1 | Sesión única por worktree | agent-device reclama device por git worktree; verificar con `agent-device device status` antes de empezar |
+| P2 | Liberar claims al terminar | `agent-device device release --stale` si hay sesión colgada |
+| P3 | bash del agente: solo lectura de device | Permitido: `adb devices`, `adb shell dumpsys`, `adb logcat -d`. **Bloqueado**: `input tap/swipe/text/keyevent`, `uiautomator`, `screencap` |
+| P4 | Fósforo de sesión | Antes de cada suite: `agent-device sessions.close` + reopen fresh; evitar reusar refs de snapshot viejo (refs caducan tras `--settle`) |
+| P5 | Termux llama-server :8081 | Es SUT/vecino, NO se mata durante S1-S6. Solo se toca en S8-02 (modo calle) con gate explícito |
+| P6 | Fénix MCP móvil :8080 | Es SUT. driver = agent-device desde PC. Probar el servidor del móvil ≠ automatizar UI del móvil |
+
+Pre-suites: ejecutar `scripts/qa-precheck.sh` (debe dar `PRECHECK OK`). Whitelist de
+dispositivo: solo `ZY22MK7B2P`; cualquier otro serial → ABORT.
+
+### Cierre anti-alucinaciones (REGLA 7-8) — agnóstico a agente
+
+**Ningún ID se marca PASS sin validador verde.** Dos equivalentes, elegir el que admita el entorno:
+
+- CLI (con shell): `scripts/qa-evidence-check.sh docs/qa-evidence/S{suite}/S{X}-{NN}_{nombre}`
+  → exit 0 = evidencia íntegra; exit ≠ 0 = PASS rechazado.
+- Tool MCP (clientes sin shell): `fenix_qa_evidence_check(carpeta)` → `EVIDENCIA_OK` / `EVIDENCIA_FAIL`.
+
+Qué exige: `result.json` válido con `isError == false` (parseado por programa), `screen.png`
+presente (salvo `screen_required: false` con motivo) y `log.txt` conteniendo literalmente el
+fragmento citado en `log_must_contain`. Antes de las suites, hacer el **control negativo
+(REGLA 8)**: un caso que debe fallar tiene que reportarse FAIL; si reporta PASS → no calibrado.
+No exige sub-agentes ni nombres de agente: ejecutor y verificador son sombreros, no personas.

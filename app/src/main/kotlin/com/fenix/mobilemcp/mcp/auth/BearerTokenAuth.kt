@@ -139,7 +139,13 @@ val McpAuthPlugin =
             val remoteAddr = call.request.local.remoteAddress
             val forwardedFor = call.request.headers["X-Forwarded-For"]
             val addrInfo = if (forwardedFor != null) "$remoteAddr (forwarded-for: $forwardedFor)" else remoteAddr
-            Log.w(TAG, "Authentication failed from $addrInfo")
+            val hasAuth = authHeader != null
+            val isBearer = hasAuth && authHeader.startsWith(BEARER_PREFIX, ignoreCase = true)
+            Log.w(
+                TAG,
+                "Authentication failed from $addrInfo for ${call.request.httpMethod.value} ${call.request.path()} " +
+                    "(authHeaderPresent=$hasAuth, isBearer=$isBearer, tokenLength=${providedToken.length})",
+            )
             onAuthFailure?.invoke(addrInfo)
             if (oauthEnabled) {
                 call.response.header(

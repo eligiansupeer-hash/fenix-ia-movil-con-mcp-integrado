@@ -1,0 +1,9 @@
+Doctor: pass
+✓ agent-device: agent-device 0.21.28 using /home/eli/.agent-device
+✓ session: Active session default targets moto g77
+✓ device: 1 Android mobile device available; 1 booted.
+✓ target-app: Target app is launchable: com.fenix.mobilemcp.foss.debug
+✓ android-test-ime: Android test IME helper is not active on ZY22MK7B2P; the device's normal IME is in use.
+- toolchain: Android toolchain: Android Debug Bridge version 1.0.41; ANDROID_HOME unset.
+- web-agent-browser-processes: Managed web backend is not installed; no agent-device-owned browser processes counted.
+

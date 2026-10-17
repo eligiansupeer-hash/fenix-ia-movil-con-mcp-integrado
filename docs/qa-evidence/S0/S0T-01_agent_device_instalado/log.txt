@@ -1,0 +1,7 @@
+RUN_ID=1792118790556817435 (corrida S0T-01)
+### agent-device --version
+0.21.28
+### npm ls -g agent-device
+/home/eli/.config/nvm/versions/node/v22.23.3/lib
+└── agent-device@0.21.28
+

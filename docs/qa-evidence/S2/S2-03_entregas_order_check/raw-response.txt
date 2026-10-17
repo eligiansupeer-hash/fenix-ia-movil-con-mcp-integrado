@@ -1,0 +1,4 @@
+TOOL=android_entregas_order_check
+STATUS=200
+RESPONSE={"table_orders":"orders","table_outbox":"notification_outbox","kind":"pool_order","address":"Plaza 25 de Mayo, Capital, San Juan","amount":3500.0,"peligrosa":false,"realtime_channels":["notification_outbox","orders"],"hits":[]}
+

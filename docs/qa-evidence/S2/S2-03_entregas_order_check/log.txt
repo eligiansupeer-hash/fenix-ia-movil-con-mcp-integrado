@@ -1,0 +1,10 @@
+RUN_ID=20261016_QA_MOTO_G77_RONDA2
+TIMESTAMP=2026-10-16T01:50:07-03:00
+ACTION=test_entregas_order_check
+TOOL=android_entregas_order_check
+ADDRESS=Plaza 25 de Mayo, Capital, San Juan
+AMOUNT=3500.0
+TABLE_OUTBOX=notification_outbox
+STATUS=PASS_ENTREGAS_ORDER_CHECK_VERIFIED
+VERDICT=PASS_E2E
+

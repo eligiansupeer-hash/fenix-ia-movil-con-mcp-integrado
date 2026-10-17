@@ -1,0 +1,7 @@
+RUN_ID=20261016_QA_MOTO_G77_RONDA2
+DEVICE=ZY22MK7B2P
+TEST=S7-R01
+TAB_NAVIGATION=Switched from F-Chat to Servidor
+VERIFIED_CARD=Servidor MCP status: En marcha
+VERIFIED_LOGS=Live logs displayed under Registros with elapsed ms
+STATUS=COMPOSE_NAVIGATION_TABS_OK

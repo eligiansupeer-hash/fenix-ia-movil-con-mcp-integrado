@@ -1,0 +1,5 @@
+TOOL=android_supabase_query
+ANTI_SSRF_TEST=https://127.0.0.1:8080 -> BLOCKED (Host no permitido por politica anti-SSRF)
+HEARTBEAT_TEST=https://xyzcompany.supabase.co -> CONTROLLED_ERROR (Supabase heartbeat failed)
+STATUS=SUPABASE_LITE_TOOL_AND_SSRF_PROTECTION_VERIFIED
+

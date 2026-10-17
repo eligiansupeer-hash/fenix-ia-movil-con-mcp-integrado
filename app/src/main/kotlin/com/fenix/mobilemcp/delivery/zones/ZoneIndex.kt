@@ -31,6 +31,7 @@ object ZoneIndex {
         ZoneEntry("CHI-06", "Chimbas", listOf("Barrio Los Cardos"), listOf("los cardos", "cardos"), listOf()),
         ZoneEntry("CHI-07", "Chimbas", listOf("Barrio Arenales"), listOf("arenales"), listOf()),
         ZoneEntry("CHI-08", "Chimbas", listOf("Barrio La Amistad"), listOf("la amistad"), listOf()),
+        ZoneEntry("CHI-09", "Chimbas", listOf("Villa San Patricio"), listOf("san patricio", "villa san patricio"), listOf()),
         ZoneEntry("SLU-01", "Santa Lucía", listOf("Colonia San Lorenzo"), listOf("san lorenzo", "colonia san lorenzo"), listOf()),
         ZoneEntry("SLU-02", "Santa Lucía", listOf("Barrio Noreste 3"), listOf("noreste 3"), listOf()),
         ZoneEntry("SLU-03", "Santa Lucía", listOf("Asentamiento Pedro Echagüe"), listOf("pedro echague", "echague"), listOf()),

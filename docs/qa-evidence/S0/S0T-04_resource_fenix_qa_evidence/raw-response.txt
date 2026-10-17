@@ -1,0 +1,5 @@
+uri: fenix-skills://qa/fenix-qa-evidence
+name: fenix-qa-evidence
+mimeType: text/markdown
+description: Reglas duras de QA Fénix: PASS con evidencia, estados semánticos, prohibición ADB crudo, rutas de artefactos, whitelist de dispositivo. Obligatoria antes de ejecutar suites S0-S13 del PLAN_MAESTRO_QA.
+

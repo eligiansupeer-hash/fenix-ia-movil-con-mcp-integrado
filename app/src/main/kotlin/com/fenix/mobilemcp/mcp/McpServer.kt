@@ -18,10 +18,12 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.engine.sslConnector
 import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
+import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondBytes
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
+import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -167,7 +169,7 @@ class McpServer(
             oauthEnabled = config.oauthEnabled
             baseUrlOf = { effectiveBaseUrl(it, config.publicUrlOverride) }
             validateOAuthToken = { token, resource -> accessValidator.validate(token, resource) }
-            excludedPaths = setOf("/health", "/register", "/token", "/authorize", "/authorize/status", "/openapi.json")
+            excludedPaths = setOf("/health", "/register", "/token", "/authorize", "/authorize/status")
             excludedPathPrefixes = setOf(EphemeralFileLinkService.PATH_PREFIX, "/.well-known/")
             onAuthFailure = { serverLog.log(ServerLogEntry.Type.AUTH, "Authentication failed from $it") }
         }
@@ -190,6 +192,50 @@ class McpServer(
                 )
                 call.respondText(
                     openApiJson,
+                    ContentType.Application.Json,
+                    HttpStatusCode.OK,
+                )
+            }
+
+            post("/tools/{name}") {
+                val toolName = call.parameters["name"].orEmpty()
+                val tool = com.fenix.mobilemcp.mcp.registry.FenixToolRegistry.get(toolName)
+                if (tool == null) {
+                    call.respondText(
+                        """{"isError":true,"error":"Tool '$toolName' not found"}""",
+                        ContentType.Application.Json,
+                        HttpStatusCode.NotFound,
+                    )
+                    return@post
+                }
+                val rawBody = try {
+                    call.receiveText()
+                } catch (_: Exception) {
+                    ""
+                }
+                val argsObj = if (rawBody.isBlank()) {
+                    null
+                } else {
+                    try {
+                        kotlinx.serialization.json.Json.parseToJsonElement(rawBody) as? kotlinx.serialization.json.JsonObject
+                    } catch (e: Exception) {
+                        call.respondText(
+                            """{"isError":true,"error":"Invalid JSON body: ${e.message?.replace("\"", "'")}"}""",
+                            ContentType.Application.Json,
+                            HttpStatusCode.BadRequest,
+                        )
+                        return@post
+                    }
+                }
+                val execResult = com.fenix.mobilemcp.mcp.registry.FenixToolRegistry.executeInProcess(toolName, argsObj)
+                val responseJson = kotlinx.serialization.json.buildJsonObject {
+                    put("tool", kotlinx.serialization.json.JsonPrimitive(tool.name))
+                    put("isError", kotlinx.serialization.json.JsonPrimitive(!execResult.isSuccess))
+                    put("durationMs", kotlinx.serialization.json.JsonPrimitive(execResult.durationMs))
+                    put("output", kotlinx.serialization.json.JsonPrimitive(execResult.outputText))
+                }.toString()
+                call.respondText(
+                    responseJson,
                     ContentType.Application.Json,
                     HttpStatusCode.OK,
                 )

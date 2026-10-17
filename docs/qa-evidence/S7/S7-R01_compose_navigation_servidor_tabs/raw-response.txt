@@ -1,0 +1,4 @@
+Servidor MCP status: En marcha
+Registros:
+02:35:07 find_nodes 626ms
+02:34:58 scroll 395ms
