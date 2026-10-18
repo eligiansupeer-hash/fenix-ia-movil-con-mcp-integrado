@@ -75,3 +75,4 @@ De acuerdo con la auditoría interactiva y el diagnóstico interno reportado por
      - **URL:** `https://<subdominio>.trycloudflare.com/mcp`
      - **Cabecera:** `Authorization: Bearer <token_de_fenix>`
    - Manus descubrirá automáticamente las 97 herramientas nativas y quedará conectado de forma bidireccional al ecosistema móvil.
+
