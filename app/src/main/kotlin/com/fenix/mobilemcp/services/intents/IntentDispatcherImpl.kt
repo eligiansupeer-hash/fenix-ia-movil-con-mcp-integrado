@@ -8,12 +8,18 @@ import android.net.Uri
 import com.fenix.mobilemcp.utils.Logger
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
+import com.fenix.mobilemcp.policy.PolicyGate
+import com.fenix.mobilemcp.policy.PolicyDecision
+import com.fenix.mobilemcp.policy.UiAction
+import com.fenix.mobilemcp.McpApplication
 
 class IntentDispatcherImpl
     @Inject
     constructor(
         @param:ApplicationContext private val context: Context,
     ) : IntentDispatcher {
+        
+        private val policyGate = PolicyGate(McpApplication.instance)
         override suspend fun sendIntent(request: SendIntentRequest): Result<Unit> {
             if (request.type !in VALID_TYPES) {
                 return Result.failure(
@@ -88,15 +94,19 @@ class IntentDispatcherImpl
 
             if (request.component != null) {
                 val comp = parseComponent(request.component).getOrThrow()
-                if (com.fenix.mobilemcp.security.StreetImmunityChecker.isDeliveryPackageBlocked(comp.packageName)) {
-                    throw IllegalArgumentException("ANTI_BAN_BLOCKED: Component in delivery package '${comp.packageName}' is forbidden")
+                val uiAction = UiAction(pkg = comp.packageName, actionType = "dispatchIntent")
+                val decision = policyGate.evaluate(uiAction)
+                if (decision is PolicyDecision.Deny) {
+                    throw IllegalArgumentException("POLICY_BLOCKED: Component in package '${comp.packageName}' is forbidden: ${decision.reasonCode}")
                 }
                 intent.component = comp
             }
 
             if (request.packageName != null) {
-                if (com.fenix.mobilemcp.security.StreetImmunityChecker.isDeliveryPackageBlocked(request.packageName)) {
-                    throw IllegalArgumentException("ANTI_BAN_BLOCKED: Target package '${request.packageName}' is forbidden")
+                val uiAction = UiAction(pkg = request.packageName, actionType = "dispatchIntent")
+                val decision = policyGate.evaluate(uiAction)
+                if (decision is PolicyDecision.Deny) {
+                    throw IllegalArgumentException("POLICY_BLOCKED: Target package '${request.packageName}' is forbidden: ${decision.reasonCode}")
                 }
                 intent.setPackage(request.packageName)
             }
@@ -128,8 +138,10 @@ class IntentDispatcherImpl
         ): Result<Unit> =
             try {
                 validateSafeUri(uri)
-                if (com.fenix.mobilemcp.security.StreetImmunityChecker.isDeliveryPackageBlocked(packageName)) {
-                    throw IllegalArgumentException("ANTI_BAN_BLOCKED: Opening URI in delivery package '$packageName' is forbidden")
+                val uiAction = UiAction(pkg = packageName, actionType = "openUri")
+                val decision = policyGate.evaluate(uiAction)
+                if (decision is PolicyDecision.Deny) {
+                    throw IllegalArgumentException("POLICY_BLOCKED: Opening URI in package '$packageName' is forbidden: ${decision.reasonCode}")
                 }
                 val intent =
                     if (mimeType != null) {

@@ -75,6 +75,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fenix.mobilemcp.llm.DiscoveredModel
 import com.fenix.mobilemcp.security.StreetImmunityReport
 import com.fenix.mobilemcp.ui.components.ToolCallCard
+import com.fenix.mobilemcp.ui.components.ModesBar
+import com.fenix.mobilemcp.ui.components.CompactBar
+import com.fenix.mobilemcp.ui.components.QuotaSolutionCard
 import com.fenix.mobilemcp.ui.viewmodels.ChatMessageUi
 import com.fenix.mobilemcp.ui.viewmodels.ChatViewModel
 
@@ -489,49 +492,58 @@ fun ChatMessageBubble(message: ChatMessageUi) {
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = if (isUser) Alignment.End else Alignment.Start,
     ) {
-        Surface(
-            shape = RoundedCornerShape(
-                topStart = 16.dp,
-                topEnd = 16.dp,
-                bottomStart = if (isUser) 16.dp else 4.dp,
-                bottomEnd = if (isUser) 4.dp else 16.dp,
-            ),
-            color = if (isUser) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.surfaceVariant
-            },
-            modifier = Modifier.fillMaxWidth(if (isUser) 0.85f else 0.95f),
-        ) {
-            Column(modifier = Modifier.padding(12.dp)) {
-                Text(
-                    text = if (isUser) "Tú" else "Fénix",
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isUser) {
-                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                    },
-                )
+        if (message.content == "RATE_LIMITED_PLACEHOLDER") {
+            QuotaSolutionCard(
+                onObtainKeyClick = { /* Accion para obtener key */ },
+                onChangeProviderClick = { /* Accion de rotacion de proveedor */ },
+                onWaitClick = { /* Esperar restablecimiento */ },
+                onAddProviderClick = { /* Agregar proveedor */ }
+            )
+        } else {
+            Surface(
+                shape = RoundedCornerShape(
+                    topStart = 16.dp,
+                    topEnd = 16.dp,
+                    bottomStart = if (isUser) 16.dp else 4.dp,
+                    bottomEnd = if (isUser) 4.dp else 16.dp,
+                ),
+                color = if (isUser) {
+                    MaterialTheme.colorScheme.primaryContainer
+                } else {
+                    MaterialTheme.colorScheme.surfaceVariant
+                },
+                modifier = Modifier.fillMaxWidth(if (isUser) 0.85f else 0.95f),
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(
+                        text = if (isUser) "Tú" else "Fénix",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isUser) {
+                            MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        },
+                    )
 
-                Spacer(Modifier.height(4.dp))
+                    Spacer(Modifier.height(4.dp))
 
-                Text(
-                    text = message.content,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (isUser) {
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-                )
+                    Text(
+                        text = message.content,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (isUser) {
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                    )
 
-                // Renderizar llamadas a herramientas si existen
-                message.toolCalls?.let { tools ->
-                    Spacer(Modifier.height(8.dp))
-                    tools.forEach { toolCall ->
-                        ToolCallCard(toolCall = toolCall)
+                    // Renderizar llamadas a herramientas si existen
+                    message.toolCalls?.let { tools ->
+                        Spacer(Modifier.height(8.dp))
+                        tools.forEach { toolCall ->
+                            ToolCallCard(toolCall = toolCall)
+                        }
                     }
                 }
             }

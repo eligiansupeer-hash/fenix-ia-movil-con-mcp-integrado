@@ -106,5 +106,11 @@ class McpApplication :
         const val MCP_SERVER_CHANNEL_ID = "mcp_server_channel"
         const val OAUTH_APPROVAL_CHANNEL_ID = "oauth_approval_channel"
         const val UPDATE_CHANNEL_ID = "update_channel"
+        lateinit var instance: McpApplication
+            private set
+    }
+    
+    init {
+        instance = this
     }
 }

@@ -54,6 +54,8 @@ import com.fenix.mobilemcp.ui.components.LanguageSelector
 import com.fenix.mobilemcp.ui.components.PrivacyModeCard
 import com.fenix.mobilemcp.ui.components.ServerLogsSection
 import com.fenix.mobilemcp.ui.components.ServerStatusCard
+import com.fenix.mobilemcp.ui.components.EmergencyLatchCard
+import com.fenix.mobilemcp.security.EmergencyKillSwitchManager
 import com.fenix.mobilemcp.ui.viewmodels.ChannelViewModel
 import com.fenix.mobilemcp.ui.viewmodels.LogsViewModel
 import com.fenix.mobilemcp.ui.viewmodels.MainViewModel
@@ -94,6 +96,7 @@ fun ServerScreen(
     val deviceIp = remember(context) { NetworkUtils.getDeviceIpAddress(context) ?: "N/A" }
     val copiedToClipboardMessage = stringResource(R.string.copied_to_clipboard)
     var showChannelNotConfiguredDialog by remember { mutableStateOf(false) }
+    val isEmergencyHalted by EmergencyKillSwitchManager.isEmergencyHaltedFlow.collectAsStateWithLifecycle()
 
     Column(modifier = modifier.fillMaxSize()) {
         TopAppBar(
@@ -153,6 +156,13 @@ fun ServerScreen(
                 )
                 Spacer(Modifier.height(16.dp))
             }
+            
+            EmergencyLatchCard(
+                isHalted = isEmergencyHalted,
+                onHaltClick = { EmergencyKillSwitchManager.triggerEmergencyHalt(context, "Boton de UI") },
+                onResetClick = { EmergencyKillSwitchManager.resetEmergencyState() }
+            )
+            Spacer(Modifier.height(16.dp))
 
             ServerStatusCard(
                 serverStatus = serverStatus,

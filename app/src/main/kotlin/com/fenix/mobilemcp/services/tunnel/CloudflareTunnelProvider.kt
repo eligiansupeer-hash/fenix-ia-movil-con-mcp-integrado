@@ -6,6 +6,7 @@ import com.fenix.mobilemcp.data.model.ServerConfig
 import com.fenix.mobilemcp.data.model.TunnelEndpoint
 import com.fenix.mobilemcp.data.model.TunnelProviderType
 import com.fenix.mobilemcp.data.model.TunnelStatus
+import com.fenix.mobilemcp.McpApplication
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -99,6 +100,17 @@ class CloudflareTunnelProvider
         ) {
             _status.value = TunnelStatus.Connecting
             try {
+                val identityManager = TunnelIdentityManager(McpApplication.instance)
+                var credentialsFile = ""
+                kotlinx.coroutines.runBlocking {
+                    val identity = identityManager.getIdentity()
+                    if (identity != null && identity.credentialsFileContent.isNotBlank()) {
+                        val file = java.io.File(System.getProperty("java.io.tmpdir") ?: "/data/local/tmp", "tunnel_creds.json")
+                        file.writeText(identity.credentialsFileContent)
+                        credentialsFile = file.absolutePath
+                    }
+                }
+                
                 val args =
                     mutableListOf(
                         binaryPath,
@@ -108,6 +120,11 @@ class CloudflareTunnelProvider
                         "--output",
                         "json",
                     )
+                
+                if (credentialsFile.isNotBlank()) {
+                    args.add("--credentials-file")
+                    args.add(credentialsFile)
+                }
                 if (config.cloudflareTunnelExtraArgs.isNotBlank()) {
                     args.addAll(parseCommandLineArguments(config.cloudflareTunnelExtraArgs))
                 }

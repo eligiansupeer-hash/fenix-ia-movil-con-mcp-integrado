@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Dns
@@ -32,6 +33,7 @@ import com.fenix.mobilemcp.R
 import com.fenix.mobilemcp.ui.components.UpdateAvailableBanner
 import com.fenix.mobilemcp.ui.navigation.SettingsRoute
 import com.fenix.mobilemcp.ui.navigation.TopLevelRoute
+import com.fenix.mobilemcp.ui.components.FloatingOverlayBanner
 import com.fenix.mobilemcp.ui.viewmodels.MainViewModel
 import com.fenix.mobilemcp.ui.viewmodels.UpdateViewModel
 
@@ -48,6 +50,7 @@ fun MainScreen(
     var pendingSettingsRoute by rememberSaveable { mutableStateOf<String?>(null) }
     val availableUpdate by updateViewModel.availableUpdate.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    var showFloatingBanner by rememberSaveable { mutableStateOf(true) } // Simulacion inicial para QA
 
     // Back on the other tabs returns to the Chat tab instead of leaving the app.
     BackHandler(enabled = selectedTabRoute != TopLevelRoute.Chat.route) {
@@ -56,14 +59,25 @@ fun MainScreen(
 
     Scaffold(
         topBar = {
-            availableUpdate?.let { update ->
-                UpdateAvailableBanner(
-                    versionName = update.versionName,
-                    onClick = {
-                        // No-op if the device has no browser to handle ACTION_VIEW (never crash).
-                        runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(update.releaseUrl))) }
-                    },
-                )
+            Column {
+                if (showFloatingBanner) {
+                    FloatingOverlayBanner(
+                        title = "\uD83D\uDD14 Solicitud de Conexión Externa",
+                        scope = "Read-Only",
+                        description = "Claude Desktop solicita vincularse al MCP local vía túnel persistente.",
+                        onAllow = { showFloatingBanner = false },
+                        onReject = { showFloatingBanner = false }
+                    )
+                }
+                availableUpdate?.let { update ->
+                    UpdateAvailableBanner(
+                        versionName = update.versionName,
+                        onClick = {
+                            // No-op if the device has no browser to handle ACTION_VIEW (never crash).
+                            runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(update.releaseUrl))) }
+                        },
+                    )
+                }
             }
         },
         bottomBar = {

@@ -53,6 +53,7 @@ import com.fenix.mobilemcp.R
 import com.fenix.mobilemcp.data.model.CertificateSource
 import com.fenix.mobilemcp.data.model.ServerStatus
 import com.fenix.mobilemcp.ui.viewmodels.MainViewModel
+import com.fenix.mobilemcp.ui.screens.settings.MasterKeySettingsCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -136,6 +137,10 @@ fun SecuritySettingsScreen(
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            MasterKeySettingsCard()
 
             Spacer(modifier = Modifier.height(16.dp))
 

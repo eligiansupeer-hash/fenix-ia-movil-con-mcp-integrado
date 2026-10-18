@@ -401,24 +401,11 @@ class ChatViewModel @Inject constructor(
                 }
 
                 is LlmResponse.RateLimited -> {
-                    // Auto-rotación de proveedor por 429 excluyendo proveedores en cooldown
-                    val nextModel = _availableModels.value.firstOrNull {
-                        it.providerId != model.providerId && !modelDiscovery.isProviderInCooldown(it.providerId)
-                    }
-                    if (nextModel != null) {
-                        _messages.value = _messages.value + ChatMessageUi(
-                            role = "assistant",
-                            content = "Límite de tasa (429) en ${model.providerName}. Rotando automáticamente a ${nextModel.providerName} (${nextModel.id})...",
-                        )
-                        _selectedModel.value = nextModel
-                        executeConversationTurn(nextModel, sessionId)
-                    } else {
-                        _messages.value = _messages.value + ChatMessageUi(
-                            role = "assistant",
-                            content = "Límite de tasa (429) alcanzado y no hay proveedores alternativos fuera de enfriamiento. Espere 60 segundos.",
-                        )
-                        _isGenerating.value = false
-                    }
+                    _messages.value = _messages.value + ChatMessageUi(
+                        role = "assistant",
+                        content = "RATE_LIMITED_PLACEHOLDER"
+                    )
+                    _isGenerating.value = false
                     return
                 }
 

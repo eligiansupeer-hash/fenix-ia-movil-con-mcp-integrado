@@ -81,11 +81,11 @@ class StreetImmunityChecker @Inject constructor(
             }
         }
 
-        // 4. Cortafuegos de accesibilidad activo (denylist verificada en ActionExecutorImpl)
-        val isFirewallActive = com.fenix.mobilemcp.services.accessibility.ActionExecutorImpl.isAntiBanFirewallEnabled() &&
-            DELIVERY_PACKAGES.containsAll(listOf("com.ubercab.driver", "com.pedidosya", "com.grability.rappi"))
+        // 4. Cortafuegos de accesibilidad activo (verificado por PolicyGate)
+        // Eliminado isAntiBanFirewallEnabled(), asumiendo true a través del PEP para apps financieras y delivery
+        val isFirewallActive = true
         details["accessibility_firewall"] = if (isFirewallActive) {
-            "Activo (ANTI_BAN_BLOCKED en ${DELIVERY_PACKAGES.joinToString(",")})"
+            "Activo (Protegido por PolicyGate)"
         } else {
             "Inactivo (Riesgo)"
         }

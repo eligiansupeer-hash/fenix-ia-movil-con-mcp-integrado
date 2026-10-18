@@ -11,6 +11,10 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 import kotlin.coroutines.resume
+import com.fenix.mobilemcp.policy.PolicyGate
+import com.fenix.mobilemcp.policy.PolicyDecision
+import com.fenix.mobilemcp.policy.UiAction
+import com.fenix.mobilemcp.McpApplication
 
 /**
  * Executes accessibility actions on nodes and the screen.
@@ -646,6 +650,8 @@ class ActionExecutorImpl
         // ─────────────────────────────────────────────────────────────────────────
         // Internal Helpers
         // ─────────────────────────────────────────────────────────────────────────
+        
+        private val policyGate = PolicyGate(McpApplication.instance)
 
         // DESIGN NOTE — Timing gap between parse and act:
         // The caller parsed window trees at time T1 via getFreshWindows() and passes them here
@@ -679,10 +685,13 @@ class ActionExecutorImpl
                 root.recycle()
                 pkg
             }
-            if (com.fenix.mobilemcp.security.StreetImmunityChecker.isDeliveryPackageBlocked(activePkg)) {
-                Log.w(TAG, "ANTI_BAN_BLOCKED: Node action '$actionName' blocked on delivery package '$activePkg'")
+            
+            val uiAction = UiAction(pkg = activePkg, actionType = actionName)
+            val decision = policyGate.evaluate(uiAction)
+            if (decision is PolicyDecision.Deny) {
+                Log.w(TAG, "POLICY_BLOCKED: Node action '$actionName' blocked on package '$activePkg', reason: ${decision.reasonCode}")
                 return Result.failure(
-                    SecurityException("ANTI_BAN_BLOCKED: Acción '$actionName' prohibida sobre app de reparto '$activePkg'"),
+                    SecurityException("POLICY_BLOCKED: Acción '$actionName' prohibida sobre app '$activePkg', motivo: ${decision.reasonCode}"),
                 )
             }
 
@@ -709,9 +718,11 @@ class ActionExecutorImpl
                         )
                     if (refreshedId == nodeId) {
                         val nodePkg = cached.node.packageName?.toString()
-                        if (com.fenix.mobilemcp.security.StreetImmunityChecker.isDeliveryPackageBlocked(nodePkg)) {
+                        val cacheUiAction = UiAction(pkg = nodePkg, actionType = actionName)
+                        val cacheDecision = policyGate.evaluate(cacheUiAction)
+                        if (cacheDecision is PolicyDecision.Deny) {
                             return Result.failure(
-                                SecurityException("ANTI_BAN_BLOCKED: Acción '$actionName' prohibida sobre nodo de '$nodePkg'"),
+                                SecurityException("POLICY_BLOCKED: Acción '$actionName' prohibida sobre nodo de '$nodePkg', motivo: ${cacheDecision.reasonCode}"),
                             )
                         }
                         Log.d(TAG, "Cache hit for node '$nodeId', identity verified")
@@ -750,9 +761,11 @@ class ActionExecutorImpl
                 val realWindowById = realWindows.associateBy { it.id }
                 try {
                     for (windowData in windows) {
-                        if (com.fenix.mobilemcp.security.StreetImmunityChecker.isDeliveryPackageBlocked(windowData.packageName)) {
+                        val winUiAction = UiAction(pkg = windowData.packageName, actionType = actionName)
+                        val winDecision = policyGate.evaluate(winUiAction)
+                        if (winDecision is PolicyDecision.Deny) {
                             return Result.failure(
-                                SecurityException("ANTI_BAN_BLOCKED: Ventana de '${windowData.packageName}' protegida en solo-lectura"),
+                                SecurityException("POLICY_BLOCKED: Ventana de '${windowData.packageName}' protegida en solo-lectura, motivo: ${winDecision.reasonCode}"),
                             )
                         }
                         val realWindow = realWindowById[windowData.windowId] ?: continue
@@ -904,10 +917,12 @@ class ActionExecutorImpl
                 root.recycle()
                 pkg
             }
-            if (com.fenix.mobilemcp.security.StreetImmunityChecker.isDeliveryPackageBlocked(activePkg)) {
-                Log.w(TAG, "ANTI_BAN_BLOCKED: Gesture '$description' blocked on delivery package '$activePkg'")
+            val uiAction = UiAction(pkg = activePkg, actionType = description)
+            val decision = policyGate.evaluate(uiAction)
+            if (decision is PolicyDecision.Deny) {
+                Log.w(TAG, "POLICY_BLOCKED: Gesture '$description' blocked on package '$activePkg', reason: ${decision.reasonCode}")
                 return Result.failure(
-                    SecurityException("ANTI_BAN_BLOCKED: Gesto '$description' prohibido sobre app de reparto '$activePkg'"),
+                    SecurityException("POLICY_BLOCKED: Gesto '$description' prohibido sobre app '$activePkg', motivo: ${decision.reasonCode}"),
                 )
             }
             return withTimeoutOrNull(GESTURE_TIMEOUT_MS) {
@@ -1018,7 +1033,5 @@ class ActionExecutorImpl
             private const val PINCH_BASE_DISTANCE = 100f
             private const val MIN_SCROLL_DISTANCE = 1f
             private const val GESTURE_TIMEOUT_MS = 10_000L
-
-            fun isAntiBanFirewallEnabled(): Boolean = true
         }
     }

@@ -70,6 +70,7 @@ import com.fenix.mobilemcp.data.model.BuiltinStorageLocation
 import com.fenix.mobilemcp.data.model.StorageLocation
 import com.fenix.mobilemcp.services.storage.StorageLocationProvider
 import com.fenix.mobilemcp.ui.viewmodels.MainViewModel
+import com.fenix.mobilemcp.ui.screens.settings.PortabilitySettingsCard
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -154,6 +155,10 @@ fun StorageSettingsScreen(
                         .verticalScroll(rememberScrollState())
                         .padding(16.dp),
             ) {
+                PortabilitySettingsCard()
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 // Tarjeta explicativa de Almacenamiento Aislado (Scoped Storage)
                 OutlinedCard(
                     modifier = Modifier.fillMaxWidth(),

@@ -57,6 +57,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fenix.mobilemcp.R
 import com.fenix.mobilemcp.ui.viewmodels.AccessViewModel
+import com.fenix.mobilemcp.ui.screens.settings.AuthIdentityCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -199,6 +200,10 @@ fun AccessSettingsScreen(
                     modifier = Modifier.clickable(onClick = onNavigateClients),
                 )
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            AuthIdentityCard()
 
             Spacer(modifier = Modifier.height(16.dp))
 

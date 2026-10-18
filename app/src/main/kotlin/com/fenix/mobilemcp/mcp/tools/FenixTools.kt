@@ -1027,8 +1027,13 @@ class FenixStreetImmunityHandler(
     suspend fun execute(arguments: JsonObject?): CallToolResult =
         try {
             val checkPkg = McpToolUtils.optionalString(arguments, "check_package", "").trim()
-            if (checkPkg.isNotEmpty() && com.fenix.mobilemcp.security.StreetImmunityChecker.isDeliveryPackageBlocked(checkPkg)) {
-                throw IllegalStateException("ANTI_BAN_BLOCKED: Interacción directa con '$checkPkg' bloqueada por cortafuegos de Modo Calle")
+            if (checkPkg.isNotEmpty()) {
+                val uiAction = com.fenix.mobilemcp.policy.UiAction(pkg = checkPkg, actionType = "checkImmunity")
+                val policyGate = com.fenix.mobilemcp.policy.PolicyGate(com.fenix.mobilemcp.McpApplication.instance)
+                val decision = policyGate.evaluate(uiAction)
+                if (decision is com.fenix.mobilemcp.policy.PolicyDecision.Deny) {
+                    throw IllegalStateException("POLICY_BLOCKED: Interacción con '$checkPkg' bloqueada por PolicyGate (Razón: ${decision.reasonCode})")
+                }
             }
             val report = checker.auditStreetImmunity()
             val out = buildJsonObject {

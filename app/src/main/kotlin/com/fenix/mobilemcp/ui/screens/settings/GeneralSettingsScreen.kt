@@ -52,6 +52,7 @@ import com.fenix.mobilemcp.data.model.BindingAddress
 import com.fenix.mobilemcp.data.model.ServerStatus
 import com.fenix.mobilemcp.ui.components.LanguageSelector
 import com.fenix.mobilemcp.ui.viewmodels.MainViewModel
+import com.fenix.mobilemcp.ui.screens.settings.SovereignTogglesCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -112,6 +113,10 @@ fun GeneralSettingsScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(16.dp),
         ) {
+            // Toggles Soberanos de Fénix (Ajustes de Privacidad directos)
+            SovereignTogglesCard()
+            Spacer(modifier = Modifier.height(16.dp))
+
             // Idioma (M3-S2: Sistema/ES/EN, rótulos vía resources)
             LanguageSelector()
             Spacer(modifier = Modifier.height(16.dp))
