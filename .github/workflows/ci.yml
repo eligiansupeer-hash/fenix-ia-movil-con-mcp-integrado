@@ -29,7 +29,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          submodules: true
+          submodules: recursive
           # Full history + tags: build.gradle.kts derives versionName/versionCode from
           # git and fails configuration without them (no hardcoded fallback).
           fetch-depth: 0
@@ -73,7 +73,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          submodules: true
+          submodules: recursive
           # Full history + tags: build.gradle.kts derives versionName/versionCode from
           # git and fails configuration without them (no hardcoded fallback).
           fetch-depth: 0
@@ -162,7 +162,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          submodules: true
+          submodules: recursive
           # Full history + tags: build.gradle.kts derives versionName/versionCode from
           # git and fails configuration without them (no hardcoded fallback).
           fetch-depth: 0
@@ -316,7 +316,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          submodules: true
+          submodules: recursive
           # Full history + tags: build.gradle.kts derives versionName/versionCode from
           # git and fails configuration without them (no hardcoded fallback). On
           # pull_request runs this reflects the ephemeral merge ref, not the post-merge

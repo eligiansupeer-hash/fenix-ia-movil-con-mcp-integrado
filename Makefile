@@ -10,7 +10,7 @@
         all ci
 
 # Variables
-ANDROID_HOME ?= $(HOME)/Android/Sdk
+ANDROID_HOME ?= $(if $(wildcard $(HOME)/Android/Sdk),$(HOME)/Android/Sdk,$(if $(wildcard /usr/local/lib/android/sdk),/usr/local/lib/android/sdk,$(if $(wildcard /home/eli/android-dev),/home/eli/android-dev,$(HOME)/Android/Sdk)))
 GRADLE := ./gradlew
 ADB := adb
 APP_ID := com.fenix.mobilemcp
@@ -324,8 +324,12 @@ version-bump-major: ## Bump major version (1.0.0 -> 2.0.0)
 # ─────────────────────────────────────────────────────────────────────────────
 
 # NDK root auto-detection: check ANDROID_HOME/ndk first, then brew cask location
-NDK_ROOT := $(shell \
-	if [ -d "$(ANDROID_HOME)/ndk" ] && ls "$(ANDROID_HOME)/ndk" 2>/dev/null | grep -q .; then \
+NDK_ROOT ?= $(shell \
+	if [ -n "$$ANDROID_NDK_LATEST_HOME" ] && [ -d "$$ANDROID_NDK_LATEST_HOME" ]; then \
+		echo "$$ANDROID_NDK_LATEST_HOME"; \
+	elif [ -n "$$ANDROID_NDK_HOME" ] && [ -d "$$ANDROID_NDK_HOME" ]; then \
+		echo "$$ANDROID_NDK_HOME"; \
+	elif [ -d "$(ANDROID_HOME)/ndk" ] && ls "$(ANDROID_HOME)/ndk" 2>/dev/null | grep -q .; then \
 		ls -d "$(ANDROID_HOME)/ndk"/*/ 2>/dev/null | sort -V | tail -1; \
 	elif [ -d "/opt/homebrew/Caskroom/android-ndk" ]; then \
 		NDK_VER=$$(ls /opt/homebrew/Caskroom/android-ndk/ | sort -V | tail -1); \
