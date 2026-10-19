@@ -55,6 +55,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -105,11 +107,41 @@ fun ChatScreen(
     val activeSkills by viewModel.activeSkills.collectAsStateWithLifecycle()
     val transcribedText by viewModel.transcribedText.collectAsStateWithLifecycle()
     val pendingApprovals by viewModel.pendingApprovals.collectAsStateWithLifecycle()
+    val agentMode by viewModel.agentMode.collectAsStateWithLifecycle()
 
     var inputText by remember { mutableStateOf("") }
+    var attachedFileName by remember { mutableStateOf<String?>(null) }
     
     var configuringApproval by remember { mutableStateOf<com.fenix.mobilemcp.mcp.oauth.PendingApproval?>(null) }
     var showModelDropdown by remember { mutableStateOf(false) }
+    var showInputMenuBottomSheet by remember { mutableStateOf(false) }
+    var showAgentModeSelector by remember { mutableStateOf(false) }
+    var showSkillsPanel by remember { mutableStateOf(false) }
+    var showModelSelector by remember { mutableStateOf(false) }
+    
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val contentResolver = context.contentResolver
+    
+    val filePickerLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let { selectedUri ->
+            context.contentResolver.takePersistableUriPermission(selectedUri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            
+            var name = "Archivo adjunto"
+            val cursor = contentResolver.query(selectedUri, null, null, null, null)
+            cursor?.use {
+                if (it.moveToFirst()) {
+                    val displayNameIndex = it.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                    if (displayNameIndex != -1) {
+                        name = it.getString(displayNameIndex)
+                    }
+                }
+            }
+            
+            attachedFileName = name
+        }
+    }
 
     LaunchedEffect(transcribedText) {
         if (transcribedText.isNotBlank()) {
@@ -420,12 +452,59 @@ fun ChatScreen(
         HorizontalDivider()
 
         // Barra inferior de entrada
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
         ) {
+            AnimatedVisibility(visible = attachedFileName != null) {
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                            Icon(
+                                imageVector = androidx.compose.material.icons.Icons.Default.Cloud,
+                                contentDescription = "Archivo Adjunto",
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                text = attachedFileName ?: "",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                            )
+                        }
+                        IconButton(
+                            onClick = { attachedFileName = null },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Quitar archivo",
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
             OutlinedTextField(
                 value = inputText,
                 onValueChange = { inputText = it },
@@ -433,6 +512,15 @@ fun ChatScreen(
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(24.dp),
                 maxLines = 4,
+                leadingIcon = {
+                    IconButton(onClick = { showInputMenuBottomSheet = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Opciones",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                },
                 trailingIcon = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         // Botón de activación F-Voz (Micrófono)
@@ -462,18 +550,19 @@ fun ChatScreen(
                         // Botón de envío
                         IconButton(
                             onClick = {
-                                if (inputText.isNotBlank() && !isGenerating) {
+                                if ((inputText.isNotBlank() || attachedFileName != null) && !isGenerating) {
                                     val text = inputText
                                     inputText = ""
-                                    viewModel.sendMessage(text)
+                                    viewModel.sendMessage(text, attachedFileName)
+                                    attachedFileName = null
                                 }
                             },
-                            enabled = inputText.isNotBlank() && !isGenerating,
+                            enabled = (inputText.isNotBlank() || attachedFileName != null) && !isGenerating,
                         ) {
                             Icon(
                                 Icons.AutoMirrored.Filled.Send,
                                 contentDescription = "Enviar",
-                                tint = if (inputText.isNotBlank() && !isGenerating) {
+                                tint = if ((inputText.isNotBlank() || attachedFileName != null) && !isGenerating) {
                                     MaterialTheme.colorScheme.primary
                                 } else {
                                     MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
@@ -483,6 +572,7 @@ fun ChatScreen(
                     }
                 }
             )
+            }
         }
     }
 
@@ -493,6 +583,90 @@ fun ChatScreen(
             onValidateAndSaveKey = { provider, key, url -> viewModel.validateAndSaveApiKey(provider, key, url) },
             onDeleteKey = { provider -> viewModel.deleteApiKey(provider) },
             onDismiss = { showKeyVaultDialog = false },
+        )
+    }
+
+    // Menú Input (Botón '+')
+    if (showInputMenuBottomSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showInputMenuBottomSheet = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Opciones",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    com.fenix.mobilemcp.ui.components.InputMenuCard(
+                        icon = Icons.Default.Cloud, // AttachFile
+                        title = "Subir\nArchivo",
+                        onClick = {
+                            showInputMenuBottomSheet = false
+                            filePickerLauncher.launch(arrayOf("*/*"))
+                        }
+                    )
+                    
+                    com.fenix.mobilemcp.ui.components.InputMenuCard(
+                        icon = Icons.Default.Cloud, // SmartToy
+                        title = "Elegir\nModelo",
+                        onClick = {
+                            showInputMenuBottomSheet = false
+                            showModelSelector = true
+                        }
+                    )
+                    
+                    com.fenix.mobilemcp.ui.components.InputMenuCard(
+                        icon = Icons.Default.Cloud, // Psychology
+                        title = "Tipo de\nAgente",
+                        onClick = {
+                            showInputMenuBottomSheet = false
+                            showAgentModeSelector = true
+                        }
+                    )
+                    
+                    com.fenix.mobilemcp.ui.components.InputMenuCard(
+                        icon = Icons.Default.Cloud, // Extension
+                        title = "Habilidades\n(Skills)",
+                        onClick = {
+                            showInputMenuBottomSheet = false
+                            showSkillsPanel = true
+                        }
+                    )
+                }
+                Spacer(modifier = Modifier.height(32.dp))
+            }
+        }
+    }
+    
+    if (showAgentModeSelector) {
+        com.fenix.mobilemcp.ui.components.AgentModeSelector(
+            currentMode = agentMode,
+            onModeSelected = { viewModel.setAgentMode(it) },
+            onDismiss = { showAgentModeSelector = false }
+        )
+    }
+
+    if (showSkillsPanel) {
+        com.fenix.mobilemcp.ui.components.SkillsPanel(
+            activeSkills = activeSkills,
+            onToggleSkill = { viewModel.toggleSkillCategory(it) },
+            onDismiss = { showSkillsPanel = false }
+        )
+    }
+
+    if (showModelSelector) {
+        com.fenix.mobilemcp.ui.components.ModelSelectorPanel(
+            availableModels = availableModels,
+            selectedModel = selectedModel,
+            onModelSelected = { viewModel.selectModel(it) },
+            onDismiss = { showModelSelector = false }
         )
     }
 

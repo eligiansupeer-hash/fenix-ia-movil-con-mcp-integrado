@@ -39,6 +39,12 @@ import com.fenix.mobilemcp.voice.VoiceState
 import java.util.UUID
 import javax.inject.Inject
 
+enum class AgentMode(val displayName: String, val icon: String, val description: String) {
+    GENERAL("Modo General", "⚡", "Asistente universal y tareas rápidas"),
+    PLAN("Modo Plan", "📋", "Planificación previa, análisis y no modificación impulsiva"),
+    BUILD("Modo Build", "🔨", "Programación, ejecución y llamadas MCP")
+}
+
 data class ChatMessageUi(
     val id: String = UUID.randomUUID().toString(),
     val role: String,
@@ -89,6 +95,9 @@ class ChatViewModel @Inject constructor(
 
     private val _activeSkills = MutableStateFlow<Set<com.fenix.mobilemcp.mcp.registry.FenixSkillCategory>>(emptySet())
     val activeSkills: StateFlow<Set<com.fenix.mobilemcp.mcp.registry.FenixSkillCategory>> = _activeSkills.asStateFlow()
+    
+    private val _agentMode = MutableStateFlow(AgentMode.GENERAL)
+    val agentMode: StateFlow<AgentMode> = _agentMode.asStateFlow()
 
     val voiceState: StateFlow<VoiceState> = voiceActivationManager.voiceState
 
@@ -97,6 +106,20 @@ class ChatViewModel @Inject constructor(
 
     fun clearTranscribedText() {
         _transcribedText.value = ""
+    }
+    
+    fun setAgentMode(mode: AgentMode) {
+        _agentMode.value = mode
+    }
+    
+    fun toggleSkillCategory(category: com.fenix.mobilemcp.mcp.registry.FenixSkillCategory) {
+        val current = _activeSkills.value.toMutableSet()
+        if (current.contains(category)) {
+            current.remove(category)
+        } else {
+            current.add(category)
+        }
+        _activeSkills.value = current
     }
 
     fun approveOAuthClient(id: String) {
@@ -294,9 +317,15 @@ class ChatViewModel @Inject constructor(
         _activeSkills.value = emptySet()
     }
 
-    fun sendMessage(userText: String) {
+    fun sendMessage(userText: String, attachedFileRef: String? = null) {
         val trimmed = userText.trim()
-        if (trimmed.isBlank() || _isGenerating.value) return
+        if (trimmed.isBlank() && attachedFileRef == null || _isGenerating.value) return
+        
+        val messageContent = if (attachedFileRef != null) {
+            if (trimmed.isNotBlank()) "$trimmed\n\n[Archivo adjunto: $attachedFileRef]" else "[Archivo adjunto: $attachedFileRef]"
+        } else {
+            trimmed
+        }
 
         val currentModel = _selectedModel.value
         if (currentModel == null) {
@@ -309,7 +338,7 @@ class ChatViewModel @Inject constructor(
 
         val activeSessionId = _currentSessionId.value ?: run {
             val newId = UUID.randomUUID().toString()
-            memoryDb.crearSesion(newId, trimmed.take(30))
+            memoryDb.crearSesion(newId, messageContent.take(30))
             _currentSessionId.value = newId
             newId
         }
@@ -320,24 +349,24 @@ class ChatViewModel @Inject constructor(
                 sessionId = activeSessionId,
                 agente = "user",
                 tipo = "user",
-                evento = trimmed,
+                evento = messageContent,
             )
             // Si el título es genérico, actualizarlo con el resumen del prompt
             val ses = memoryDb.obtenerSesion(activeSessionId)
             if (ses != null && (ses.titulo == "Conversación principal" || ses.titulo.startsWith("Nueva conversación"))) {
-                val smartTitle = if (trimmed.length > 32) trimmed.take(29) + "..." else trimmed
+                val smartTitle = if (messageContent.length > 32) messageContent.take(29) + "..." else messageContent
                 memoryDb.actualizarSesionTitulo(activeSessionId, smartTitle)
                 _sessions.value = memoryDb.listarSesiones()
             }
         }
 
         // Activación de skills a demanda: detecta intenciones del usuario para pre-activar la skill necesaria
-        val detected = FenixToolRegistry.detectRelevantCategories(trimmed)
+        val detected = FenixToolRegistry.detectRelevantCategories(messageContent)
         if (detected.isNotEmpty()) {
             _activeSkills.value = _activeSkills.value + detected
         }
 
-        val userMessage = ChatMessageUi(role = "user", content = trimmed)
+        val userMessage = ChatMessageUi(role = "user", content = messageContent)
         _messages.value = _messages.value + userMessage
         _isGenerating.value = true
 
