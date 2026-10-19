@@ -234,20 +234,42 @@ class ChatViewModel @Inject constructor(
         _selectedModel.value = model
     }
 
-    fun saveApiKey(providerId: String, apiKey: String) {
-        secureKeyStore.saveApiKey(providerId, apiKey)
-        refreshConfiguredProviders()
-        viewModelScope.launch {
-            val provider = modelDiscovery.standardProviders.firstOrNull { it.id == providerId }
-            if (provider != null) {
-                val newModels = modelDiscovery.discoverModelsForProvider(provider)
-                val current = _availableModels.value.filter { it.providerId != providerId }
-                val updated = current + newModels
-                _availableModels.value = updated
-                if (_selectedModel.value == null && updated.isNotEmpty()) {
-                    _selectedModel.value = updated.first()
-                }
+    suspend fun validateAndSaveApiKey(providerId: String, apiKey: String, customBaseUrl: String? = null): DynamicModelDiscovery.ValidationResult {
+        if (providerId.startsWith("connector_")) {
+            secureKeyStore.saveApiKey(providerId, apiKey)
+            refreshConfiguredProviders()
+            return DynamicModelDiscovery.ValidationResult.Success
+        }
+        
+        val result = modelDiscovery.validateProviderKey(providerId, apiKey, customBaseUrl)
+        if (result is DynamicModelDiscovery.ValidationResult.Success) {
+            secureKeyStore.saveApiKey(providerId, apiKey)
+            if (customBaseUrl != null) {
+                secureKeyStore.saveApiKey("${providerId}_baseurl", customBaseUrl)
             }
+            refreshConfiguredProviders()
+            val provider = modelDiscovery.standardProviders.firstOrNull { it.id == providerId }
+                ?: AiProviderConfig(
+                    id = providerId,
+                    displayName = "Custom Provider",
+                    baseUrl = customBaseUrl ?: "",
+                    requiresKey = true,
+                    isLocal = customBaseUrl?.contains("127.0.0.1") == true || customBaseUrl?.contains("localhost") == true
+                )
+            val newModels = modelDiscovery.discoverModelsForProvider(provider)
+            val current = _availableModels.value.filter { it.providerId != providerId }
+            val updated = current + newModels
+            _availableModels.value = updated
+            if (_selectedModel.value == null && updated.isNotEmpty()) {
+                _selectedModel.value = updated.first()
+            }
+        }
+        return result
+    }
+
+    fun saveApiKey(providerId: String, apiKey: String) {
+        viewModelScope.launch {
+            validateAndSaveApiKey(providerId, apiKey)
         }
     }
 

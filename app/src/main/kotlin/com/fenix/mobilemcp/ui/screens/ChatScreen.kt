@@ -53,6 +53,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -61,8 +63,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import com.fenix.mobilemcp.llm.DynamicModelDiscovery
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -485,7 +490,7 @@ fun ChatScreen(
     if (showKeyVaultDialog) {
         KeyVaultDialog(
             configuredProviders = configuredProviders,
-            onSaveKey = { provider, key -> viewModel.saveApiKey(provider, key) },
+            onValidateAndSaveKey = { provider, key, url -> viewModel.validateAndSaveApiKey(provider, key, url) },
             onDeleteKey = { provider -> viewModel.deleteApiKey(provider) },
             onDismiss = { showKeyVaultDialog = false },
         )
@@ -591,6 +596,7 @@ fun ChatMessageBubble(message: ChatMessageUi) {
     }
 }
 
+
 private data class ProviderVaultItem(
     val id: String,
     val name: String,
@@ -598,14 +604,16 @@ private data class ProviderVaultItem(
     val docsUrl: String,
 )
 
+
 @Composable
 fun KeyVaultDialog(
     configuredProviders: Set<String>,
-    onSaveKey: (String, String) -> Unit,
+    onValidateAndSaveKey: suspend (String, String, String?) -> DynamicModelDiscovery.ValidationResult,
     onDeleteKey: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val uriHandler = LocalUriHandler.current
+    val coroutineScope = rememberCoroutineScope()
 
     val providers = listOf(
         ProviderVaultItem(
@@ -652,67 +660,190 @@ fun KeyVaultDialog(
         ),
     )
 
+    val connectors = listOf(
+        ProviderVaultItem("connector_supabase", "Supabase", "Conexión a base de datos y autenticación.", "https://supabase.com/dashboard/project/_/settings/api"),
+        ProviderVaultItem("connector_cloudflare", "Cloudflare", "Tokens para Workers y almacenamiento.", "https://dash.cloudflare.com/profile/api-tokens"),
+        ProviderVaultItem("connector_github", "GitHub", "Personal Access Token para repositorios.", "https://github.com/settings/tokens"),
+        ProviderVaultItem("connector_telegram", "Telegram Bot", "Bot Token de @BotFather.", "https://core.telegram.org/bots/features#botfather"),
+        ProviderVaultItem("connector_whatsapp", "WhatsApp", "Access Token para WhatsApp Business API.", "https://developers.facebook.com/docs/whatsapp/cloud-api/get-started"),
+        ProviderVaultItem("connector_gdrive", "Google Drive", "Client ID y Secret para acceso a archivos.", "https://console.cloud.google.com/apis/credentials"),
+        ProviderVaultItem("connector_gmail", "Gmail", "API Key para envío/lectura de correos.", "https://console.cloud.google.com/apis/credentials"),
+    )
+
     var editingProvider by remember { mutableStateOf<ProviderVaultItem?>(null) }
+    var isCustomProvider by remember { mutableStateOf(false) }
+    var customNameInput by remember { mutableStateOf("") }
+    var customUrlInput by remember { mutableStateOf("") }
     var keyInput by remember { mutableStateOf("") }
+    var isValidating by remember { mutableStateOf(false) }
+    var validationError by remember { mutableStateOf<DynamicModelDiscovery.ValidationResult.Error?>(null) }
+    var selectedTabIndex by remember { mutableStateOf(0) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                "Bóveda Segura de Llaves IA",
+                "Bóveda Segura",
                 fontWeight = FontWeight.Bold,
             )
         },
         text = {
             Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                 Text(
-                    "Cifrado local por hardware con AndroidKeyStore (AES-256-GCM). Las claves nunca salen de este teléfono.",
+                    "Cifrado local por hardware con AndroidKeyStore (AES-256-GCM).",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                Spacer(Modifier.height(8.dp))
+                
+                TabRow(selectedTabIndex = selectedTabIndex) {
+                    Tab(selected = selectedTabIndex == 0, onClick = { selectedTabIndex = 0 }) {
+                        Text("Proveedores IA", modifier = Modifier.padding(12.dp), style = MaterialTheme.typography.labelMedium)
+                    }
+                    Tab(selected = selectedTabIndex == 1, onClick = { selectedTabIndex = 1 }) {
+                        Text("Conectores", modifier = Modifier.padding(12.dp), style = MaterialTheme.typography.labelMedium)
+                    }
+                }
                 Spacer(Modifier.height(12.dp))
 
-                if (editingProvider != null) {
+                if (editingProvider != null || isCustomProvider) {
                     Text(
-                        "Clave para ${editingProvider?.name}:",
+                        if (isCustomProvider) "Nuevo Proveedor Personalizado" else "Clave para ${editingProvider?.name}:",
                         fontWeight = FontWeight.SemiBold,
                     )
                     Spacer(Modifier.height(4.dp))
+                    
+                    if (isCustomProvider) {
+                        OutlinedTextField(
+                            value = customNameInput,
+                            onValueChange = { customNameInput = it },
+                            label = { Text("Nombre descriptivo (ej. Ollama Local)") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        OutlinedTextField(
+                            value = customUrlInput,
+                            onValueChange = { customUrlInput = it },
+                            label = { Text("URL Base (ej. http://192.168.1.50:11434/v1)") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                        )
+                        Spacer(Modifier.height(4.dp))
+                    }
+                    
                     OutlinedTextField(
                         value = keyInput,
                         onValueChange = { keyInput = it },
+                        label = { Text("API Key (opcional para endpoints locales)") },
                         placeholder = { Text("Pega tu API key aquí…") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                     )
+                    
+                    if (validationError != null) {
+                        Spacer(Modifier.height(8.dp))
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+                        ) {
+                            Column(modifier = Modifier.padding(8.dp)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(Icons.Default.Warning, contentDescription = "Error", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(16.dp))
+                                    Spacer(Modifier.width(4.dp))
+                                    Text(
+                                        text = validationError!!.message,
+                                        color = MaterialTheme.colorScheme.onErrorContainer,
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                                if (validationError!!.helpUrl != null) {
+                                    TextButton(onClick = { uriHandler.openUri(validationError!!.helpUrl!!) }) {
+                                        Text("Ir a Consola del Proveedor")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
                     Spacer(Modifier.height(8.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        TextButton(onClick = {
-                            editingProvider = null
-                            keyInput = ""
-                        }) {
+                        if (isValidating) {
+                            CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                            Spacer(Modifier.width(8.dp))
+                            Text("Validando clave...", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                            Spacer(Modifier.weight(1f))
+                        }
+                        
+                        TextButton(
+                            onClick = {
+                                editingProvider = null
+                                isCustomProvider = false
+                                keyInput = ""
+                                customNameInput = ""
+                                customUrlInput = ""
+                                validationError = null
+                            },
+                            enabled = !isValidating
+                        ) {
                             Text("Cancelar")
                         }
                         Spacer(Modifier.width(8.dp))
                         Button(
+                            enabled = !isValidating && (if (isCustomProvider) customUrlInput.isNotBlank() && customNameInput.isNotBlank() else keyInput.isNotBlank()),
                             onClick = {
-                                editingProvider?.let { provider ->
-                                    if (keyInput.isNotBlank()) {
-                                        onSaveKey(provider.id, keyInput.trim())
+                                isValidating = true
+                                validationError = null
+                                coroutineScope.launch {
+                                    val providerId = if (isCustomProvider) "custom_${customNameInput.replace(" ", "_").lowercase()}" else editingProvider!!.id
+                                    val url = if (isCustomProvider) customUrlInput else null
+                                    if (providerId.startsWith("connector_")) {
+                                        onValidateAndSaveKey(providerId, keyInput.trim(), null)
+                                        isValidating = false
+                                        editingProvider = null
+                                        isCustomProvider = false
+                                        keyInput = ""
+                                        customNameInput = ""
+                                        customUrlInput = ""
+                                    } else {
+                                        val result = onValidateAndSaveKey(providerId, keyInput.trim(), url)
+                                        isValidating = false
+                                        
+                                        if (result is DynamicModelDiscovery.ValidationResult.Success) {
+                                            editingProvider = null
+                                            isCustomProvider = false
+                                            keyInput = ""
+                                            customNameInput = ""
+                                            customUrlInput = ""
+                                        } else if (result is DynamicModelDiscovery.ValidationResult.Error) {
+                                            validationError = result
+                                        }
                                     }
                                 }
-                                editingProvider = null
-                                keyInput = ""
                             },
                         ) {
-                            Text("Guardar")
+                            Text(if (isCustomProvider) "Validar y Guardar" else "Guardar")
                         }
                     }
                 } else {
-                    providers.forEach { provider ->
+                    if (selectedTabIndex == 0) {
+                    Button(
+                        onClick = { isCustomProvider = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Agregar Proveedor Personalizado")
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    }
+                    
+                    val itemsToShow = if (selectedTabIndex == 0) providers else connectors
+                    itemsToShow.forEach { provider ->
                         val isConfigured = configuredProviders.contains(provider.id)
                         Card(
                             modifier = Modifier
@@ -739,16 +870,16 @@ fun KeyVaultDialog(
                                     }
                                     if (isConfigured) {
                                         IconButton(onClick = { onDeleteKey(provider.id) }) {
-                                            Icon(Icons.Default.Delete, contentDescription = "Borrar clave", tint = MaterialTheme.colorScheme.error)
-                                        }
+                                            Icon(Icons.Default.Delete, contentDescription = "Borrar", tint = MaterialTheme.colorScheme.error)
+                                    }
                                     } else {
                                         OutlinedButton(onClick = {
                                             editingProvider = provider
                                             keyInput = ""
                                         }) {
                                             Text("Configurar", fontSize = 12.sp)
-                                        }
                                     }
+                                }
                                 }
 
                                 Spacer(Modifier.height(4.dp))
@@ -766,18 +897,18 @@ fun KeyVaultDialog(
                                     onClick = { uriHandler.openUri(provider.docsUrl) },
                                     contentPadding = PaddingValues(0.dp),
                                 ) {
-                                    Text("Conseguir API Key", fontSize = 11.sp)
+                                    Text("Más información", fontSize = 11.sp)
                                     Spacer(Modifier.width(4.dp))
                                     Icon(
                                         imageVector = Icons.Default.OpenInNew,
                                         contentDescription = null,
                                         modifier = Modifier.size(12.dp),
                                     )
-                                }
                             }
                         }
                     }
                 }
+            }
             }
         },
         confirmButton = {

@@ -151,6 +151,72 @@ class DynamicModelDiscovery @Inject constructor(
         return memoryDb.isProviderInCooldown(providerId)
     }
 
+    sealed class ValidationResult {
+        data object Success : ValidationResult()
+        data class Error(val message: String, val helpUrl: String? = null) : ValidationResult()
+    }
+
+    /**
+     * Realiza una validación en tiempo real de la clave (o endpoint) consultando `/models`.
+     * Retorna un ValidationResult que la UI puede usar para mostrar errores claros.
+     */
+    suspend fun validateProviderKey(providerId: String, apiKey: String, customBaseUrl: String? = null): ValidationResult = withContext(Dispatchers.IO) {
+        val provider = standardProviders.firstOrNull { it.id == providerId } 
+            ?: AiProviderConfig(
+                id = providerId,
+                displayName = "Custom Provider",
+                baseUrl = customBaseUrl ?: return@withContext ValidationResult.Error("URL base requerida para proveedor personalizado."),
+                requiresKey = true,
+                isLocal = customBaseUrl?.contains("127.0.0.1") == true || customBaseUrl?.contains("localhost") == true
+            )
+            
+        val modelsUrl = "${provider.baseUrl.trimEnd('/')}/models"
+        val client = if (provider.isLocal) localProbeClient else httpClient
+        
+        try {
+            val response = client.get(modelsUrl) {
+                header("Accept", "application/json")
+                if (apiKey.isNotBlank()) {
+                    header("Authorization", "Bearer $apiKey")
+                }
+                if (provider.id == "openrouter") {
+                    header("HTTP-Referer", "https://fenix.axiom.local")
+                    header("X-Title", "Fenix Mobile MCP")
+                }
+            }
+
+            return@withContext when (response.status) {
+                HttpStatusCode.OK -> ValidationResult.Success
+                HttpStatusCode.Unauthorized, HttpStatusCode.Forbidden -> 
+                    ValidationResult.Error(
+                        "Clave inválida o no autorizada.",
+                        getProviderDocsUrl(provider.id)
+                    )
+                HttpStatusCode.TooManyRequests -> 
+                    ValidationResult.Error(
+                        "Límite de cuota agotado en su proveedor. Recargue saldo o actualice su plan.",
+                        getProviderDocsUrl(provider.id)
+                    )
+                else -> ValidationResult.Error("Error del proveedor (${response.status.value}): ${response.status.description}")
+            }
+        } catch (e: Exception) {
+            return@withContext ValidationResult.Error("No se pudo contactar al proveedor. Verifique su conexión a internet o la URL.")
+        }
+    }
+    
+    private fun getProviderDocsUrl(providerId: String): String? {
+        return when (providerId) {
+            "groq" -> "https://console.groq.com/keys"
+            "openrouter" -> "https://openrouter.ai/keys"
+            "gemini" -> "https://aistudio.google.com/app/apikey"
+            "deepseek" -> "https://platform.deepseek.com/api_keys"
+            "cerebras" -> "https://cloud.cerebras.ai/"
+            "sambanova" -> "https://cloud.sambanova.ai/"
+            "mistral" -> "https://console.mistral.ai/api-keys/"
+            else -> null
+        }
+    }
+
     /**
      * Descubre modelos dinámicamente consultando `/models` en el proveedor.
      */
