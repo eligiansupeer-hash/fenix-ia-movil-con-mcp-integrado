@@ -29,6 +29,7 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.Key
@@ -73,7 +74,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fenix.mobilemcp.llm.DiscoveredModel
-import com.fenix.mobilemcp.security.StreetImmunityReport
 import com.fenix.mobilemcp.ui.components.ToolCallCard
 import com.fenix.mobilemcp.ui.components.ModesBar
 import com.fenix.mobilemcp.ui.components.CompactBar
@@ -87,6 +87,7 @@ import com.fenix.mobilemcp.ui.viewmodels.ChatViewModel
 fun ChatScreen(
     modifier: Modifier = Modifier,
     viewModel: ChatViewModel = hiltViewModel(),
+    mainViewModel: com.fenix.mobilemcp.ui.viewmodels.MainViewModel = hiltViewModel(),
 ) {
     val messages by viewModel.messages.collectAsStateWithLifecycle()
     val sessions by viewModel.sessions.collectAsStateWithLifecycle()
@@ -94,7 +95,6 @@ fun ChatScreen(
     val availableModels by viewModel.availableModels.collectAsStateWithLifecycle()
     val selectedModel by viewModel.selectedModel.collectAsStateWithLifecycle()
     val isGenerating by viewModel.isGenerating.collectAsStateWithLifecycle()
-    val streetImmunity by viewModel.streetImmunity.collectAsStateWithLifecycle()
     val configuredProviders by viewModel.configuredProviders.collectAsStateWithLifecycle()
     val voiceState by viewModel.voiceState.collectAsStateWithLifecycle()
     val activeSkills by viewModel.activeSkills.collectAsStateWithLifecycle()
@@ -110,7 +110,7 @@ fun ChatScreen(
         }
     }
     var showKeyVaultDialog by remember { mutableStateOf(false) }
-    var showImmunityDialog by remember { mutableStateOf(false) }
+    var showNetworkServerPanel by remember { mutableStateOf(false) }
     var showSessionsDialog by remember { mutableStateOf(false) }
 
     val listState = rememberLazyListState()
@@ -142,7 +142,7 @@ fun ChatScreen(
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Security,
+                            imageVector = Icons.Default.Cloud,
                             contentDescription = "Fénix IA Logo",
                             modifier = Modifier.size(18.dp),
                             tint = Color.White,
@@ -217,16 +217,15 @@ fun ChatScreen(
             }
             },
             actions = {
-                // Escudo de Inmunidad de Calle
-                IconButton(onClick = {
-                    viewModel.checkStreetImmunity()
-                    showImmunityDialog = true
-                }) {
-                    val isSafe = streetImmunity?.isFullyImmune == true
+                // Panel de Red y Servidor
+                val serverStatus by mainViewModel.serverStatus.collectAsStateWithLifecycle()
+                val isServerRunning = serverStatus is com.fenix.mobilemcp.data.model.ServerStatus.Running
+                
+                IconButton(onClick = { showNetworkServerPanel = true }) {
                     Icon(
-                        imageVector = if (isSafe) Icons.Default.Security else Icons.Default.Warning,
-                        contentDescription = "Estado Inmunidad Calle",
-                        tint = if (isSafe) Color(0xFF2E7D32) else Color(0xFFF57C00),
+                        imageVector = androidx.compose.material.icons.Icons.Default.Cloud,
+                        contentDescription = "Panel de Red y Servidor",
+                        tint = if (isServerRunning) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error,
                     )
                 }
 
@@ -291,7 +290,7 @@ fun ChatScreen(
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Security,
+                            imageVector = Icons.Default.Cloud,
                             contentDescription = "Fénix Soberana",
                             modifier = Modifier.size(42.dp),
                             tint = Color.White,
@@ -457,11 +456,10 @@ fun ChatScreen(
         )
     }
 
-    // Diálogo de Inmunidad Calle
-    if (showImmunityDialog) {
-        ImmunityReportDialog(
-            report = streetImmunity,
-            onDismiss = { showImmunityDialog = false },
+    // Panel de Red y Servidor
+    if (showNetworkServerPanel) {
+        com.fenix.mobilemcp.ui.components.NetworkServerPanel(
+            onDismiss = { showNetworkServerPanel = false }
         )
     }
 
@@ -755,73 +753,6 @@ fun KeyVaultDialog(
     )
 }
 
-@Composable
-fun ImmunityReportDialog(
-    report: StreetImmunityReport?,
-    onDismiss: () -> Unit,
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                val isSafe = report?.isFullyImmune == true
-                Icon(
-                    imageVector = if (isSafe) Icons.Default.Security else Icons.Default.Warning,
-                    contentDescription = null,
-                    tint = if (isSafe) Color(0xFF2E7D32) else Color(0xFFF57C00),
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    text = if (isSafe) "Inmunidad Total Activa" else "Alerta de Modo Taller",
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-        },
-        text = {
-            Column {
-                Text(
-                    text = if (report?.isFullyImmune == true) {
-                        "El dispositivo está 100% seguro para abrir aplicaciones de delivery (Rappi, PedidosYa, Uber Driver). Sin puertos abiertos ni depuración activa."
-                    } else {
-                        "ATENCIÓN: Existen funciones de taller o depuración activas en el teléfono. Para salir a la calle a trabajar de reparto, ejecute el script 'fenix-modo-calle.sh' o desactive depuración USB."
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                Spacer(Modifier.height(12.dp))
-
-                report?.details?.forEach { (k, v) ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 2.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Text(
-                            text = k,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontFamily = FontFamily.Monospace,
-                        )
-                        Text(
-                            text = v,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = if (v.contains("Seguro") || v.contains("Activo") || v.contains("CERRADO")) {
-                                Color(0xFF2E7D32)
-                            } else {
-                                Color(0xFFC62828)
-                            },
-                        )
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Entendido")
-            }
-        },
-    )
-}
 
 @Composable
 fun SessionsDialog(
