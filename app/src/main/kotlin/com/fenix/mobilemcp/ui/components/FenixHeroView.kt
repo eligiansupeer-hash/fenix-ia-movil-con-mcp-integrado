@@ -111,9 +111,9 @@ fun FenixLogoWithFlames() {
                         Color.Transparent
                     ),
                     center = center,
-                    radius = glowRadius * dp.toPx()
+                    radius = glowRadius.dp.toPx()
                 ),
-                radius = glowRadius * dp.toPx(),
+                radius = glowRadius.dp.toPx(),
                 center = center,
                 blendMode = BlendMode.Screen
             )
