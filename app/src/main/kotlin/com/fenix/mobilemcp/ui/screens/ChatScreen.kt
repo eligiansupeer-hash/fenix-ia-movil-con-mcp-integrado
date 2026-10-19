@@ -58,6 +58,9 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
+import com.fenix.mobilemcp.termux.TermuxBridgeStatus
+import com.fenix.mobilemcp.ui.components.TermuxVaultCard
+import android.content.Intent
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -526,8 +529,31 @@ fun ChatScreen(
 
     // Diálogo de Bóveda de Claves
     if (showKeyVaultDialog) {
+        val termuxStatus by viewModel.termuxStatus.collectAsStateWithLifecycle()
         KeyVaultDialog(
             configuredProviders = configuredProviders,
+            termuxStatus = termuxStatus,
+            onDirectDownloadTermux = {
+                val intent = Intent(Intent.ACTION_VIEW, viewModel.getDirectTermuxDownloadUri()).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(intent)
+            },
+            onActivateTermux = { viewModel.activateTermux() },
+            onRefreshTermuxStatus = { viewModel.refreshTermuxStatus() },
+            onInstallOpenCode = { viewModel.installOpenCode() },
+            onInstallAntigravity = { viewModel.installAntigravity() },
+            onStartLoginAntigravity = { slot ->
+                coroutineScope.launch {
+                    val url = viewModel.startAntigravityLogin(slot)
+                    if (!url.isNullOrBlank()) {
+                        uriHandler.openUri(url)
+                    }
+                }
+            },
+            onLogoutAntigravity = { slot -> viewModel.logoutAntigravity(slot) },
+            onSelectAntigravitySlot = { slot -> viewModel.selectAntigravitySlot(slot) },
+            onToggleFailover = { viewModel.toggleAutoFailover(it) },
             onValidateAndSaveKey = { provider, key, url -> viewModel.validateAndSaveApiKey(provider, key, url) },
             onDeleteKey = { provider -> viewModel.deleteApiKey(provider) },
             onDismiss = { showKeyVaultDialog = false },
@@ -750,6 +776,16 @@ private data class ProviderVaultItem(
 @Composable
 fun KeyVaultDialog(
     configuredProviders: Set<String>,
+    termuxStatus: TermuxBridgeStatus,
+    onDirectDownloadTermux: () -> Unit,
+    onActivateTermux: () -> Unit,
+    onRefreshTermuxStatus: () -> Unit,
+    onInstallOpenCode: () -> Unit,
+    onInstallAntigravity: () -> Unit,
+    onStartLoginAntigravity: (slot: String) -> Unit,
+    onLogoutAntigravity: (slot: String) -> Unit,
+    onSelectAntigravitySlot: (slot: String) -> Unit,
+    onToggleFailover: (Boolean) -> Unit,
     onValidateAndSaveKey: suspend (String, String, String?) -> DynamicModelDiscovery.ValidationResult,
     onDeleteKey: (String) -> Unit,
     onDismiss: () -> Unit,
@@ -972,16 +1008,32 @@ fun KeyVaultDialog(
                     }
                 } else {
                     if (selectedTabIndex == 0) {
-                    Button(
-                        onClick = { isCustomProvider = true },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Icon(Icons.Default.Add, contentDescription = null)
-                        Spacer(Modifier.width(8.dp))
-                        Text("Agregar Proveedor Personalizado")
-                    }
-                    Spacer(Modifier.height(8.dp))
+                        // Proveedores Principales Soberanos Locales (Termux, OpenCode, Antigravity)
+                        TermuxVaultCard(
+                            status = termuxStatus,
+                            onDirectDownloadTermux = onDirectDownloadTermux,
+                            onActivateTermux = onActivateTermux,
+                            onRefreshStatus = onRefreshTermuxStatus,
+                            onInstallOpenCode = onInstallOpenCode,
+                            onInstallAntigravity = onInstallAntigravity,
+                            onStartLoginAntigravity = onStartLoginAntigravity,
+                            onLogoutAntigravity = onLogoutAntigravity,
+                            onSelectAntigravitySlot = onSelectAntigravitySlot,
+                            onToggleFailover = onToggleFailover,
+                        )
+
+                        Spacer(Modifier.height(8.dp))
+
+                        Button(
+                            onClick = { isCustomProvider = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = null)
+                            Spacer(Modifier.width(8.dp))
+                            Text("Agregar Proveedor Personalizado")
+                        }
+                        Spacer(Modifier.height(8.dp))
                     }
                     
                     val itemsToShow = if (selectedTabIndex == 0) providers else connectors

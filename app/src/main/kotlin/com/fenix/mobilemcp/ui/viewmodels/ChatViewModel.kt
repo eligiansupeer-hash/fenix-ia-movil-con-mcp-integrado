@@ -40,6 +40,9 @@ import com.fenix.mobilemcp.voice.VoiceState
 import java.util.UUID
 import javax.inject.Inject
 
+import com.fenix.mobilemcp.termux.TermuxBridgeManager
+import com.fenix.mobilemcp.termux.TermuxBridgeStatus
+
 data class OutOfProjectRequest(
     val id: String = UUID.randomUUID().toString(),
     val requestedPath: String,
@@ -70,6 +73,7 @@ class ChatViewModel @Inject constructor(
     private val memoryDb: FenixMemoryDb,
     private val oauthApprovalCoordinator: OAuthApprovalCoordinator,
     private val oauthClientRepository: OAuthClientRepository,
+    private val termuxBridgeManager: TermuxBridgeManager,
 ) : ViewModel() {
 
     private val jsonParser = Json { ignoreUnknownKeys = true }
@@ -119,6 +123,71 @@ class ChatViewModel @Inject constructor(
 
     private val _transcribedText = MutableStateFlow("")
     val transcribedText: StateFlow<String> = _transcribedText.asStateFlow()
+
+    private val _termuxStatus = MutableStateFlow(TermuxBridgeStatus())
+    val termuxStatus: StateFlow<TermuxBridgeStatus> = _termuxStatus.asStateFlow()
+
+    fun getDirectTermuxDownloadUri(): Uri = termuxBridgeManager.getDirectDownloadUri()
+
+    fun refreshTermuxStatus() {
+        viewModelScope.launch {
+            val status = termuxBridgeManager.queryStatus()
+            _termuxStatus.value = status
+            if (status.isBridgeActive) {
+                refreshModels()
+            }
+        }
+    }
+
+    fun activateTermux() {
+        viewModelScope.launch {
+            termuxBridgeManager.activateTermux()
+            // Reintentar sondeo luego de 1.5s para dar tiempo a arranque del proceso
+            kotlinx.coroutines.delay(1500)
+            refreshTermuxStatus()
+        }
+    }
+
+    fun installOpenCode() {
+        viewModelScope.launch {
+            termuxBridgeManager.installOpenCode()
+            refreshTermuxStatus()
+        }
+    }
+
+    fun installAntigravity() {
+        viewModelScope.launch {
+            termuxBridgeManager.installAntigravity()
+            refreshTermuxStatus()
+        }
+    }
+
+    suspend fun startAntigravityLogin(slot: String): String? {
+        val url = termuxBridgeManager.startAntigravityLogin(slot)
+        refreshTermuxStatus()
+        return url
+    }
+
+    fun logoutAntigravity(slot: String) {
+        viewModelScope.launch {
+            termuxBridgeManager.logoutAntigravity(slot)
+            refreshTermuxStatus()
+        }
+    }
+
+    fun selectAntigravitySlot(slot: String) {
+        viewModelScope.launch {
+            termuxBridgeManager.selectAntigravitySlot(slot)
+            refreshTermuxStatus()
+        }
+    }
+
+    fun toggleAutoFailover(enabled: Boolean) {
+        viewModelScope.launch {
+            termuxBridgeManager.toggleFailover(enabled)
+            refreshTermuxStatus()
+        }
+    }
 
     fun clearTranscribedText() {
         _transcribedText.value = ""
@@ -179,6 +248,7 @@ class ChatViewModel @Inject constructor(
         checkStreetImmunity()
         refreshConfiguredProviders()
         refreshModels()
+        refreshTermuxStatus()
 
         viewModelScope.launch(Dispatchers.IO) {
             refreshSessionsInternal()
