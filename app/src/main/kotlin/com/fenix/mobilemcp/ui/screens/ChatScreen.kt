@@ -129,6 +129,8 @@ fun ChatScreen(
     
     val context = androidx.compose.ui.platform.LocalContext.current
     val contentResolver = context.contentResolver
+    val uriHandler = LocalUriHandler.current
+    val coroutineScope = rememberCoroutineScope()
     
     val filePickerLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
         contract = androidx.activity.result.contract.ActivityResultContracts.OpenDocument()
