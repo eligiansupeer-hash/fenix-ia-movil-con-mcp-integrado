@@ -2,6 +2,7 @@ package com.fenix.mobilemcp.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.fenix.mobilemcp.llm.AiProviderConfig
 import com.fenix.mobilemcp.llm.DiscoveredModel
 import com.fenix.mobilemcp.llm.DynamicModelDiscovery
 import com.fenix.mobilemcp.llm.FenixLlmClient
