@@ -81,6 +81,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fenix.mobilemcp.llm.DiscoveredModel
+import com.fenix.mobilemcp.ui.components.FenixHeroView
 import com.fenix.mobilemcp.ui.components.ToolCallCard
 import com.fenix.mobilemcp.ui.components.ModesBar
 import com.fenix.mobilemcp.ui.components.CompactBar
@@ -324,80 +325,7 @@ fun ChatScreen(
                 .fillMaxWidth(),
         ) {
             if (messages.isEmpty() && pendingApprovals.isEmpty() && configuringApproval == null) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    // Logotipo central Fénix IA Soberana
-                    Box(
-                        modifier = Modifier
-                            .size(76.dp)
-                            .clip(CircleShape)
-                            .background(
-                                androidx.compose.ui.graphics.Brush.radialGradient(
-                                    listOf(
-                                        Color(0xFFFFD54F),
-                                        Color(0xFFFF7043),
-                                        Color(0xFFD84315),
-                                    ),
-                                ),
-                            ),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Cloud,
-                            contentDescription = "Fénix Soberana",
-                            modifier = Modifier.size(42.dp),
-                            tint = Color.White,
-                        )
-                    }
-
-                    Spacer(Modifier.height(16.dp))
-
-                    Text(
-                        text = "Fénix IA Soberana",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                    )
-
-                    Spacer(Modifier.height(8.dp))
-
-                    Text(
-                        text = "Habilidades a demanda con costo 0, ejecución local y soberanía de datos.\nEscribe tu instrucción para activar herramientas automáticamente.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                    )
-
-                    Spacer(Modifier.height(20.dp))
-
-                    Text(
-                        text = "Habilidades del Sistema (activación a demanda):",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-
-                    Spacer(Modifier.height(8.dp))
-
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        modifier = Modifier.padding(horizontal = 8.dp),
-                    ) {
-                        Text(
-                            text = "📁 Archivos   •   🧠 Memoria   •   📱 Dispositivo\n🛡️ Seguridad   •   🌐 Red Zero-Trust   •   ⚡ Accesibilidad",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                            lineHeight = 20.sp,
-                        )
-                    }
-                }
+                FenixHeroView(modifier = Modifier.fillMaxSize())
             } else {
                 LazyColumn(
                     state = listState,
