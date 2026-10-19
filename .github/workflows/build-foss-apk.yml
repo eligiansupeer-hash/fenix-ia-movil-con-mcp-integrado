@@ -4,7 +4,9 @@ on:
   push:
     branches:
       - feature/implementacion-plan-maestro-axiom
+      - feature/termux-opencode-antigravity-bridge
       - main
+      - 'feature/**'
   workflow_dispatch:
 
 jobs:
