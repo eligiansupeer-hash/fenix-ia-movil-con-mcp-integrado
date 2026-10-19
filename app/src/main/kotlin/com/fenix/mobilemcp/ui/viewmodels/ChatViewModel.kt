@@ -34,10 +34,17 @@ import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
+import android.net.Uri
 import com.fenix.mobilemcp.voice.FenixVoiceActivationManager
 import com.fenix.mobilemcp.voice.VoiceState
 import java.util.UUID
 import javax.inject.Inject
+
+data class OutOfProjectRequest(
+    val id: String = UUID.randomUUID().toString(),
+    val requestedPath: String,
+    val toolName: String
+)
 
 enum class AgentMode(val displayName: String, val icon: String, val description: String) {
     GENERAL("Modo General", "⚡", "Asistente universal y tareas rápidas"),
@@ -99,6 +106,15 @@ class ChatViewModel @Inject constructor(
     private val _agentMode = MutableStateFlow(AgentMode.GENERAL)
     val agentMode: StateFlow<AgentMode> = _agentMode.asStateFlow()
 
+    private val _projectUri = MutableStateFlow<Uri?>(null)
+    val projectUri: StateFlow<Uri?> = _projectUri.asStateFlow()
+
+    private val _projectName = MutableStateFlow<String?>(null)
+    val projectName: StateFlow<String?> = _projectName.asStateFlow()
+
+    private val _pendingOutOfProjectPermission = MutableStateFlow<OutOfProjectRequest?>(null)
+    val pendingOutOfProjectPermission: StateFlow<OutOfProjectRequest?> = _pendingOutOfProjectPermission.asStateFlow()
+
     val voiceState: StateFlow<VoiceState> = voiceActivationManager.voiceState
 
     private val _transcribedText = MutableStateFlow("")
@@ -138,6 +154,25 @@ class ChatViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             oauthClientRepository.updatePermissions(clientId, permissions)
         }
+    }
+
+    fun setProject(uri: Uri, name: String) {
+        _projectUri.value = uri
+        _projectName.value = name
+    }
+
+    fun requestOutOfProjectPermission(path: String, toolName: String) {
+        _pendingOutOfProjectPermission.value = OutOfProjectRequest(requestedPath = path, toolName = toolName)
+    }
+
+    fun approveOutOfProjectPermission() {
+        // Here you would typically resolve a deferred or notify the tool to proceed
+        _pendingOutOfProjectPermission.value = null
+    }
+
+    fun denyOutOfProjectPermission() {
+        // Here you would typically resolve a deferred with an error or notify the tool to stop
+        _pendingOutOfProjectPermission.value = null
     }
 
     init {

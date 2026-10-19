@@ -108,6 +108,9 @@ fun ChatScreen(
     val transcribedText by viewModel.transcribedText.collectAsStateWithLifecycle()
     val pendingApprovals by viewModel.pendingApprovals.collectAsStateWithLifecycle()
     val agentMode by viewModel.agentMode.collectAsStateWithLifecycle()
+    val projectUri by viewModel.projectUri.collectAsStateWithLifecycle()
+    val projectName by viewModel.projectName.collectAsStateWithLifecycle()
+    val pendingOutOfProjectPermission by viewModel.pendingOutOfProjectPermission.collectAsStateWithLifecycle()
 
     var inputText by remember { mutableStateOf("") }
     var attachedFileName by remember { mutableStateOf<String?>(null) }
@@ -153,6 +156,21 @@ fun ChatScreen(
     var showNetworkServerPanel by remember { mutableStateOf(false) }
     var showSessionsDialog by remember { mutableStateOf(false) }
 
+    val projectPickerLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        uri?.let { selectedUri ->
+            context.contentResolver.takePersistableUriPermission(
+                selectedUri,
+                android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            )
+            
+            // Extract a display name from the URI
+            val name = selectedUri.lastPathSegment?.split(":")?.lastOrNull() ?: "Proyecto"
+            viewModel.setProject(selectedUri, name)
+        }
+    }
+
     val listState = rememberLazyListState()
 
     LaunchedEffect(messages.size) {
@@ -193,7 +211,7 @@ fun ChatScreen(
 
                     Column {
                         Text(
-                            text = "Fénix IA",
+                            text = if (projectName != null) "Proyecto: $projectName" else "Sesión Global",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                         )
@@ -420,7 +438,7 @@ fun ChatScreen(
                     }
 
                     items(messages, key = { it.id }) { msg ->
-                        ChatMessageBubble(message = msg)
+                        ChatMessageBubble(message = msg, projectUri = projectUri)
                     }
 
                     if (isGenerating) {
@@ -690,16 +708,29 @@ fun ChatScreen(
                 viewModel.createNewSession()
                 showSessionsDialog = false
             },
+            onNewProject = {
+                projectPickerLauncher.launch(null)
+                showSessionsDialog = false
+            },
             onDeleteSession = { id ->
                 viewModel.deleteSession(id)
             },
             onDismiss = { showSessionsDialog = false },
         )
     }
+
+    pendingOutOfProjectPermission?.let { request ->
+        com.fenix.mobilemcp.ui.components.OutOfProjectPermissionCard(
+            requestedPath = request.requestedPath,
+            toolName = request.toolName,
+            onConfirm = { viewModel.approveOutOfProjectPermission() },
+            onDeny = { viewModel.denyOutOfProjectPermission() }
+        )
+    }
 }
 
 @Composable
-fun ChatMessageBubble(message: ChatMessageUi) {
+fun ChatMessageBubble(message: ChatMessageUi, projectUri: android.net.Uri? = null) {
     val isUser = message.role == "user"
 
     Column(
@@ -754,6 +785,7 @@ fun ChatMessageBubble(message: ChatMessageUi) {
                         MarkdownTextRenderer(
                             text = cleanText,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            projectUri = projectUri
                         )
                     }
 
@@ -1100,33 +1132,40 @@ fun SessionsDialog(
     currentSessionId: String?,
     onSelectSession: (String) -> Unit,
     onNewSession: () -> Unit,
+    onNewProject: () -> Unit,
     onDeleteSession: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "Sesiones y Memoria",
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.titleLarge,
-                )
-                IconButton(onClick = onNewSession) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Nueva Sesión",
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
-                }
-            }
+            Text(
+                text = "Proyectos y Sesiones",
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleLarge,
+            )
         },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = onNewSession,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Nueva Sesión")
+                    }
+                    Button(
+                        onClick = onNewProject,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Nuevo Proyecto")
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+
                 Text(
                     text = "Memoria persistente SQLite 100% local. Cada sesión preserva su propio contexto.",
                     style = MaterialTheme.typography.bodySmall,

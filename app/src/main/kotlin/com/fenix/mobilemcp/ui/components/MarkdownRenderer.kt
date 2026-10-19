@@ -20,12 +20,14 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import android.net.Uri
 
 @Composable
 fun MarkdownTextRenderer(
     text: String,
     modifier: Modifier = Modifier,
-    color: Color = Color.Unspecified
+    color: Color = Color.Unspecified,
+    projectUri: Uri? = null
 ) {
     // Split by code blocks
     val parts = text.split(Regex("```"))
@@ -36,20 +38,24 @@ fun MarkdownTextRenderer(
             if (i % 2 == 1) {
                 // Code block
                 // Sometimes the code block starts with the language name, e.g., ```kotlin\ncode...
-                // We can optionally strip the first line if it's just the language identifier without spaces
-                val codeContent = part.replaceFirst(Regex("^[a-zA-Z0-9_]+\\n"), "").trim()
+                // We extract the language if present
+                val firstLineEnd = part.indexOf('\n')
+                var language = "txt"
+                var codeContent = part.trim()
                 
-                Text(
-                    text = codeContent,
-                    color = Color.LightGray,
-                    fontFamily = FontFamily.Monospace,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFF1E1E1E))
-                        .padding(12.dp)
-                        .horizontalScroll(rememberScrollState())
+                if (firstLineEnd != -1) {
+                    val firstLine = part.substring(0, firstLineEnd).trim()
+                    if (firstLine.matches(Regex("^[a-zA-Z0-9_]+$"))) {
+                        language = firstLine
+                        codeContent = part.substring(firstLineEnd + 1).trim()
+                    }
+                }
+                
+                ArtifactPreviewCard(
+                    language = language,
+                    content = codeContent,
+                    projectUri = projectUri,
+                    modifier = Modifier.padding(vertical = 4.dp)
                 )
             } else {
                 // Regular text (with inline markdown)
