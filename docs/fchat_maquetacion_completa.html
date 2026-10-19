@@ -3,14 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fénix Mobile MCP — Maqueta de Producción Integral</title>
+<title>Fénix Mobile MCP — Maqueta Interactiva de Producción</title>
 <style>
   :root {
     --bg-main: #0B0F19;
-    --bg-card: #131B2E;
-    --bg-card-hover: #1A243D;
-    --bg-input: #0F1626;
-    --border-subtle: #232D45;
+    --bg-surface: #101726;
+    --bg-card: #151F33;
+    --bg-card-hover: #1C2A45;
+    --bg-input: #0D1424;
+    --border-subtle: #22304C;
     --border-active: #3B82F6;
     --text-primary: #F3F4F6;
     --text-secondary: #9CA3AF;
@@ -33,7 +34,7 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    padding: 12px;
+    padding: 14px;
   }
 
   /* Marco del Teléfono Móvil */
@@ -44,7 +45,7 @@
     background: var(--bg-main);
     border-radius: 46px;
     border: 9px solid #1F2937;
-    box-shadow: 0 25px 60px -15px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.08);
+    box-shadow: 0 25px 60px -15px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.08);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -63,11 +64,92 @@
     color: var(--text-secondary);
     background: var(--bg-main);
     z-index: 100;
+    flex-shrink: 0;
   }
 
-  .status-icons { display: flex; gap: 8px; align-items: center; }
+  .status-icons { display: flex; gap: 8px; align-items: center; font-size: 12px; }
 
-  /* Contenedor de Vistas */
+  /* Floating Overlay Banner (Heads-Up MCP Approval) */
+  .floating-overlay-banner {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.98));
+    border: 1px solid var(--accent-blue);
+    border-radius: 16px;
+    margin: 8px 12px 4px 12px;
+    padding: 12px 14px;
+    box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 90;
+    animation: slideDown 0.25s ease-out;
+  }
+
+  @keyframes slideDown {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .banner-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .banner-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #93C5FD;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .banner-scope {
+    font-size: 10px;
+    padding: 2px 6px;
+    background: rgba(59, 130, 246, 0.25);
+    color: #BFDBFE;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+
+  .banner-desc {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+
+  .banner-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 2px;
+  }
+
+  .btn-banner-allow {
+    flex: 1;
+    background: var(--accent-blue);
+    color: white;
+    border: none;
+    padding: 6px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .btn-banner-deny {
+    flex: 1;
+    background: rgba(239, 68, 68, 0.15);
+    color: #FCA5A5;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    padding: 6px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Contenedor de Pantallas */
   .screen-viewport {
     flex: 1;
     overflow-y: auto;
@@ -80,54 +162,291 @@
   .screen-view {
     display: none;
     flex-direction: column;
-    height: 100%;
-    padding: 16px;
+    min-height: 100%;
+    animation: fadeIn 0.18s ease-in;
+  }
+
+  .screen-view.active {
+    display: flex;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0.7; transform: scale(0.99); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  /* Header Superior Común */
+  .top-app-bar {
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--bg-main);
+    flex-shrink: 0;
+  }
+
+  .app-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .app-icon-badge {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 15px;
+  }
+
+  .app-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+  .app-subtitle { font-size: 11px; color: var(--text-muted); }
+
+  /* ModesBar (Fase 1) */
+  .modes-bar {
+    display: flex;
+    gap: 8px;
+    padding: 8px 12px;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--bg-surface);
+    scrollbar-width: none;
+    flex-shrink: 0;
+  }
+  .modes-bar::-webkit-scrollbar { display: none; }
+
+  .mode-chip {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .mode-chip.active {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: var(--accent-blue);
+    color: #93C5FD;
+  }
+
+  /* CompactBar (Fase 1) */
+  .compact-bar {
+    background: rgba(30, 41, 59, 0.45);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 6px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+
+  .compact-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-secondary);
+  }
+
+  .compact-status {
+    color: #60A5FA;
+    font-weight: 700;
+  }
+
+  .btn-purge {
+    background: transparent;
+    color: #F87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Chat Messages */
+  .chat-scroll-area {
+    flex: 1;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+  }
+
+  .chat-bubble {
+    max-width: 88%;
+    padding: 10px 14px;
+    border-radius: 16px;
+    font-size: 13px;
+    line-height: 1.45;
+    position: relative;
+  }
+
+  .chat-user {
+    align-self: flex-end;
+    background: #1E3A8A;
+    color: #EFF6FF;
+    border-bottom-right-radius: 4px;
+  }
+
+  .chat-assistant {
+    align-self: flex-start;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    border-bottom-left-radius: 4px;
+  }
+
+  /* Pensamiento colapsable */
+  details.thought-box {
+    margin: 6px 0;
+    padding: 8px 10px;
+    background: rgba(15, 23, 42, 0.6);
+    border-left: 3px solid #6366F1;
+    border-radius: 6px;
+    font-size: 11px;
+    color: #A5B4FC;
+  }
+
+  details.thought-box summary {
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    outline: none;
+  }
+
+  .thought-content {
+    margin-top: 6px;
+    color: #CBD5E1;
+    line-height: 1.4;
+  }
+
+  /* QuotaSolutionCard (Fase 4) */
+  .quota-solution-card {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(180, 83, 9, 0.15));
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    border-radius: 14px;
+    padding: 12px;
+    margin: 4px 0;
+  }
+
+  .quota-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #FBBF24;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .quota-desc {
+    font-size: 11px;
+    color: #E5E7EB;
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+
+  .quota-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .btn-quota {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn-quota-primary {
+    background: #F59E0B;
+    color: #000;
+  }
+
+  .btn-quota-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #F3F4F6;
+    border: 1px solid var(--border-subtle);
+  }
+
+  /* Chat Input Bar */
+  .chat-input-bar {
+    padding: 10px 12px;
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .btn-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 15px;
+    transition: background 0.15s;
+  }
+
+  .btn-icon:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+
+  .chat-input {
+    flex: 1;
+    background: var(--bg-input);
+    border: 1px solid var(--border-subtle);
+    border-radius: 20px;
+    padding: 8px 14px;
+    color: var(--text-primary);
+    font-size: 13px;
+    outline: none;
+  }
+
+  .chat-input:focus { border-color: var(--accent-blue); }
+
+  .btn-send {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+    color: white;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 15px;
+  }
+
+  /* F-Server View Styles */
+  .server-container {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
     gap: 14px;
   }
 
-  .screen-view.active { display: flex; }
-
-  /* Barra de Navegación Inferior */
-  .bottom-nav {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 70px;
-    background: rgba(11, 15, 25, 0.95);
-    backdrop-filter: blur(14px);
-    border-top: 1px solid var(--border-subtle);
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    z-index: 90;
-    padding-bottom: 6px;
-  }
-
-  .nav-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    color: var(--text-muted);
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    background: none;
-    border: none;
-    transition: all 0.2s ease;
-    padding: 6px 12px;
-    border-radius: 12px;
-  }
-
-  .nav-item.active {
-    color: var(--accent-blue);
-    background: rgba(59, 130, 246, 0.1);
-  }
-
-  .nav-item .icon { font-size: 19px; }
-
-  /* Componentes Comunes */
   .card {
     background: var(--bg-card);
     border: 1px solid var(--border-subtle);
@@ -138,318 +457,285 @@
     gap: 10px;
   }
 
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 3px 8px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-  }
-  .badge-emerald { background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3); }
-  .badge-blue { background: rgba(59, 130, 246, 0.15); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.3); }
-  .badge-amber { background: rgba(245, 158, 11, 0.15); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.3); }
-  .badge-rose { background: rgba(239, 68, 68, 0.15); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-  .badge-purple { background: rgba(139, 92, 246, 0.15); color: #C084FC; border: 1px solid rgba(139, 92, 246, 0.3); }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 9px 14px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    transition: all 0.2s;
-  }
-  .btn-primary { background: var(--accent-blue); color: white; }
-  .btn-primary:hover { background: #2563EB; }
-  .btn-outline { background: transparent; border: 1px solid var(--border-subtle); color: var(--text-primary); }
-  .btn-outline:hover { background: var(--bg-card-hover); border-color: var(--border-active); }
-  .btn-danger { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #F87171; }
-  .btn-sm { padding: 5px 10px; font-size: 11px; border-radius: 8px; }
-
-  /* Switches / Toggles */
-  .toggle-row {
+  .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 6px 0;
   }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
   .switch {
     position: relative;
     display: inline-block;
     width: 44px;
     height: 24px;
   }
+
   .switch input { opacity: 0; width: 0; height: 0; }
+
   .slider {
-    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #374151; transition: .3s; border-radius: 24px;
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #374151;
+    transition: .2s;
+    border-radius: 24px;
   }
+
   .slider:before {
-    position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
-    background-color: white; transition: .3s; border-radius: 50%;
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .2s;
+    border-radius: 50%;
   }
+
   input:checked + .slider { background-color: var(--accent-blue); }
   input:checked + .slider:before { transform: translateX(20px); }
 
-  /* ---------------- PANTALLA 1: F-CHAT ---------------- */
-  .chat-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--bg-card);
-    border: 1px solid var(--border-subtle);
-    border-radius: 14px;
-    padding: 8px 12px;
-  }
-  .model-selector {
+  .url-badge {
     background: var(--bg-input);
     border: 1px solid var(--border-subtle);
-    color: var(--text-primary);
-    padding: 5px 10px;
     border-radius: 8px;
-    font-size: 12px;
-    font-weight: 600;
-  }
-
-  .modes-bar {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding-bottom: 2px;
-  }
-  .mode-chip {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    background: var(--bg-card);
-    border: 1px solid var(--border-subtle);
-    color: var(--text-secondary);
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  .mode-chip.active {
-    background: rgba(59, 130, 246, 0.15);
-    border-color: var(--accent-blue);
-    color: #60A5FA;
-  }
-
-  .compact-bar {
+    padding: 8px 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(15, 22, 38, 0.8);
-    border: 1px solid var(--border-subtle);
-    padding: 6px 12px;
-    border-radius: 10px;
+    font-family: monospace;
     font-size: 11px;
+    color: #60A5FA;
+    overflow-x: auto;
   }
 
-  .chat-messages {
-    flex: 1;
-    overflow-y: auto;
+  .btn-copy {
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #93C5FD;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 10px;
+    cursor: pointer;
+  }
+
+  /* Emergency Latch Card (Fase 3) */
+  .emergency-card {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(153, 27, 27, 0.2));
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: 16px;
+    padding: 14px;
+  }
+
+  .btn-emergency-abort {
+    background: #DC2626;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    width: 100%;
+    margin-top: 6px;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+  }
+
+  /* F-Studio View Styles */
+  .studio-container {
+    padding: 14px;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding: 4px 0;
+    flex: 1;
   }
 
-  .message {
+  .studio-tabs {
     display: flex;
-    flex-direction: column;
     gap: 6px;
-    max-width: 90%;
-    padding: 10px 14px;
-    border-radius: 14px;
-    font-size: 13px;
-    line-height: 1.45;
-  }
-  .message.user {
-    align-self: flex-end;
-    background: #1E3A8A;
-    color: #EFF6FF;
-    border-bottom-right-radius: 4px;
-  }
-  .message.assistant {
-    align-self: flex-start;
-    background: var(--bg-card);
+    background: var(--bg-surface);
+    padding: 4px;
+    border-radius: 10px;
     border: 1px solid var(--border-subtle);
-    border-bottom-left-radius: 4px;
   }
 
-  .attachment-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(0,0,0,0.25);
-    padding: 4px 8px;
-    border-radius: 8px;
-    font-size: 11px;
-    color: #93C5FD;
-    border: 1px solid rgba(147, 197, 253, 0.3);
-  }
-
-  .solution-card {
-    background: rgba(245, 158, 11, 0.08);
-    border: 1px solid rgba(245, 158, 11, 0.35);
-    border-radius: 12px;
-    padding: 10px;
-    margin-top: 6px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .solution-card h4 { font-size: 12px; color: #FBBF24; display: flex; align-items: center; gap: 6px; }
-
-  .opaque-pill-btn {
-    background: var(--bg-input);
-    border: 1px solid var(--accent-blue);
-    color: #93C5FD;
-    padding: 6px 10px;
-    border-radius: 8px;
+  .studio-tab-btn {
+    flex: 1;
+    padding: 6px;
     font-size: 11px;
     font-weight: 600;
-    cursor: pointer;
-    text-align: left;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .connectors-strip {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    padding: 4px 0;
-  }
-  .connector-tag {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    background: var(--bg-input);
-    border: 1px solid var(--border-subtle);
-    padding: 4px 8px;
-    border-radius: 8px;
-    font-size: 10px;
     color: var(--text-secondary);
-    white-space: nowrap;
-  }
-
-  .chat-input-box {
-    background: var(--bg-card);
-    border: 1px solid var(--border-subtle);
-    border-radius: 16px;
-    padding: 8px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .input-row { display: flex; align-items: center; gap: 8px; }
-  .input-field {
-    flex: 1;
     background: transparent;
     border: none;
-    color: var(--text-primary);
-    font-size: 13px;
-    outline: none;
-  }
-  .input-actions { display: flex; justify-content: space-between; align-items: center; }
-
-  /* ---------------- PANTALLA 2: F-STUDIO ---------------- */
-  .studio-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 6px; }
-  .studio-tab {
-    padding: 5px 10px;
-    font-size: 11px;
-    font-weight: 600;
-    background: var(--bg-card);
     border-radius: 6px;
-    color: var(--text-secondary);
     cursor: pointer;
   }
-  .studio-tab.active { background: #1E293B; color: #60A5FA; border: 1px solid var(--border-active); }
 
-  .code-editor {
-    background: #050811;
+  .studio-tab-btn.active {
+    background: var(--bg-card);
+    color: var(--text-primary);
+  }
+
+  .code-editor-mock {
+    background: #0D1117;
     border: 1px solid var(--border-subtle);
     border-radius: 12px;
-    font-family: monospace;
-    font-size: 12px;
+    padding: 12px;
+    font-family: "JetBrains Mono", Consolas, monospace;
+    font-size: 11px;
     line-height: 1.5;
-    padding: 10px;
-    color: #E2E8F0;
-    height: 380px;
+    color: #E6EDF3;
+    flex: 1;
     overflow-y: auto;
   }
 
-  /* ---------------- PANTALLA 3: F-MARKET ---------------- */
-  .market-category { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-top: 6px; }
-  .market-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--bg-card);
-    border: 1px solid var(--border-subtle);
-    border-radius: 14px;
-    padding: 12px;
-  }
-  .market-meta { display: flex; flex-direction: column; gap: 3px; max-width: 68%; }
-  .market-title { font-size: 13px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; }
-  .market-desc { font-size: 11px; color: var(--text-secondary); }
-
-  /* ---------------- PANTALLA 4: SERVIDOR ---------------- */
-  .tunnel-hero {
-    background: linear-gradient(135deg, rgba(30, 58, 138, 0.4), rgba(15, 23, 42, 0.6));
-    border: 1px solid #1E40AF;
-    border-radius: 18px;
-    padding: 16px;
+  /* F-Market View Styles */
+  .market-container {
+    padding: 14px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
   }
-  .tunnel-url {
+
+  .market-search {
     background: var(--bg-input);
     border: 1px solid var(--border-subtle);
+    border-radius: 12px;
     padding: 8px 12px;
-    border-radius: 10px;
-    font-family: monospace;
+    color: var(--text-primary);
     font-size: 12px;
-    color: #60A5FA;
+    outline: none;
+  }
+
+  .tool-item-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
 
-  /* ---------------- PANTALLA 5: AJUSTES ---------------- */
-  .section-title { font-size: 13px; font-weight: 700; color: #94A3B8; text-transform: uppercase; margin-top: 4px; }
+  .tool-info h4 { font-size: 12px; color: var(--text-primary); margin-bottom: 2px; }
+  .tool-info p { font-size: 10px; color: var(--text-secondary); }
 
-  /* OVERLAY FLOTANTE (DEMOSTRACIÓN INTERACTIVA) */
-  .floating-overlay-banner {
-    position: absolute;
-    top: 50px;
-    left: 14px;
-    right: 14px;
-    background: rgba(17, 24, 39, 0.98);
-    border: 1px solid var(--accent-blue);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.7);
-    border-radius: 16px;
-    padding: 12px 14px;
-    z-index: 200;
-    display: none;
-    flex-direction: column;
-    gap: 8px;
-    animation: slideDown 0.3s ease;
+  .badge-level {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: bold;
+    display: inline-block;
+    margin-top: 4px;
   }
-  @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-  .overlay-title { font-size: 12px; font-weight: 700; color: #93C5FD; display: flex; align-items: center; gap: 6px; }
-  .overlay-actions { display: flex; gap: 8px; margin-top: 4px; }
+  .badge-l0 { background: rgba(239, 68, 68, 0.2); color: #FCA5A5; }
+  .badge-l1 { background: rgba(16, 185, 129, 0.2); color: #6EE7B7; }
+  .badge-l2 { background: rgba(245, 158, 11, 0.2); color: #FDE68A; }
+
+  /* Settings View Styles */
+  .settings-container {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .radio-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    font-size: 11px;
+    cursor: pointer;
+  }
+
+  /* Modal Consent Dialog */
+  .modal-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+
+  .modal-box {
+    background: #1E293B;
+    border: 1px solid var(--border-subtle);
+    border-radius: 20px;
+    padding: 20px;
+    width: 100%;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+  }
+
+  .modal-box h3 { font-size: 14px; color: #F87171; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .modal-box p { font-size: 11px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px; }
+
+  .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+  .btn-modal-cancel { background: transparent; border: none; color: var(--text-secondary); font-size: 12px; cursor: pointer; padding: 6px 12px; }
+  .btn-modal-confirm { background: var(--accent-blue); border: none; color: white; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; padding: 6px 14px; }
+
+  /* Bottom Navigation Bar (Material 3) */
+  .bottom-nav {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    background: #0E1422;
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 95;
+    padding-bottom: 6px;
+  }
+
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 600;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+
+  .nav-item .nav-icon {
+    font-size: 18px;
+    padding: 4px 14px;
+    border-radius: 14px;
+    transition: background 0.15s;
+  }
+
+  .nav-item.active {
+    color: #93C5FD;
+  }
+
+  .nav-item.active .nav-icon {
+    background: rgba(59, 130, 246, 0.2);
+    color: var(--accent-blue);
+  }
 </style>
 </head>
 <body>
@@ -457,386 +743,515 @@
 <div class="device-frame">
   <!-- Barra de Estado Android -->
   <div class="status-bar">
-    <span>16:40</span>
+    <span id="live-time">21:19</span>
     <div class="status-icons">
-      <span>📶 5G</span>
-      <span>🛡️ PEP OK</span>
-      <span>🔋 94%</span>
+      <span>5G</span>
+      <span>▲ 4.2 MB/s</span>
+      <span>📶</span>
+      <span>🔋 98%</span>
     </div>
   </div>
 
-  <!-- BANNER FLOTANTE HEADS-UP DE APROBACIÓN (Fase 4 - DEMO INTERACTIVA) -->
-  <div id="floatingOverlay" class="floating-overlay-banner">
-    <div class="overlay-title">
-      <span>🔔 Solicitud de Conexión Externa</span>
-      <span class="badge badge-blue">Scope: Read-Only</span>
+  <!-- Heads-Up Banner Flotante MCP (Fase 4) -->
+  <div id="floating-banner" class="floating-overlay-banner">
+    <div class="banner-header">
+      <div class="banner-title">
+        <span>🔔</span>
+        <span>Solicitud MCP Externa</span>
+      </div>
+      <span class="banner-scope">Read-Only</span>
     </div>
-    <div style="font-size: 11px; color: var(--text-secondary);">
-      <strong>Claude Desktop</strong> solicita vincularse al MCP local vía túnel persistente.
+    <div class="banner-desc">
+      <strong>Claude Desktop</strong> solicita vincularse al nodo MCP local vía túnel Cloudflare seguro.
     </div>
-    <div class="overlay-actions">
-      <button class="btn btn-primary btn-sm" onclick="dismissOverlay('Conexión de Claude Desktop autorizada.')">✓ Permitir Conexión</button>
-      <button class="btn btn-outline btn-sm" onclick="dismissOverlay('Conexión rechazada.')">✕ Rechazar</button>
+    <div class="banner-actions">
+      <button class="btn-banner-allow" onclick="handleBannerAction(true)">Aprobar Conexión</button>
+      <button class="btn-banner-deny" onclick="handleBannerAction(false)">Denegar</button>
     </div>
   </div>
 
+  <!-- Viewport de Pantallas -->
   <div class="screen-viewport">
-    
-    <!-- ----------------- PANTALLA 1: F-CHAT ----------------- -->
-    <div id="screenChat" class="screen-view active">
-      <!-- Header de F-Chat -->
-      <div class="chat-header">
-        <div style="display:flex; flex-direction:column; gap:2px;">
-          <span style="font-size:11px; font-weight:700; color:var(--text-muted);">PROVEEDOR ACTIVO</span>
-          <select class="model-selector">
-            <option>DeepSeek V3 (Chat API)</option>
-            <option>Gemini 1.5 Pro (Google AI)</option>
-            <option>Claude 3.5 Sonnet (Anthropic)</option>
-            <option>Llama 3.2 1B (Local $0)</option>
-          </select>
+
+    <!-- 1. PANTALLA: F-CHAT -->
+    <div id="screen-chat" class="screen-view active">
+      <div class="top-app-bar">
+        <div class="app-title-group">
+          <div class="app-icon-badge">F</div>
+          <div>
+            <div class="app-title">F-Chat Soberano</div>
+            <div class="app-subtitle" id="tunnel-status-sub">● Túnel: En Espera (Off)</div>
+          </div>
         </div>
-        <div style="text-align:right;">
-          <span class="badge badge-emerald">● 42ms</span>
-          <div style="font-size:10px; color:var(--text-secondary); margin-top:2px;">Cuota: 12.4k tok</div>
+        <div style="font-size: 11px; color: #10B981; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+          <span>🛡️</span> PEP Activo
         </div>
       </div>
 
-      <!-- Barra de los 3 Modos por Defecto (Fase 1) -->
+      <!-- ModesBar -->
       <div class="modes-bar">
         <div class="mode-chip active" onclick="selectMode(this)">⚡ Modo General</div>
         <div class="mode-chip" onclick="selectMode(this)">📋 Modo Planificación</div>
         <div class="mode-chip" onclick="selectMode(this)">🔨 Modo Build</div>
-        <div class="mode-chip" onclick="navTo('screenMarket')">➕ Más en Market</div>
       </div>
 
-      <!-- Barra de Autocompactación Dinámica ($0) -->
+      <!-- CompactBar -->
       <div class="compact-bar">
-        <div style="display:flex; align-items:center; gap:6px;">
+        <div class="compact-info">
           <span>📦 Compactado Dinámico:</span>
-          <strong style="color:#60A5FA;">Activo (Ventana: 128k)</strong>
+          <span class="compact-status">Activo (Ventana: 128k)</span>
         </div>
-        <button class="btn btn-outline btn-sm" onclick="alert('Historial de compactado purgado.')">Purgar Resumen</button>
+        <button class="btn-purge" onclick="purgeContext()">Purgar</button>
       </div>
 
-      <!-- Mensajes de Conversación Multimodal -->
-      <div class="chat-messages">
-        <!-- Mensaje Usuario -->
-        <div class="message user">
-          <div class="attachment-pill">📄 balance_financiero_2026.docx</div>
-          Analiza este documento y organízalo en una tabla de apuntes en F-Studio.
+      <!-- Chat Scroll Area -->
+      <div class="chat-scroll-area" id="chat-messages">
+        <div class="chat-bubble chat-user">
+          Hola Fénix, ¿podrías listar los modelos y verificar el estado del túnel?
         </div>
 
-        <!-- Respuesta Asistente con Grounding y Tarjeta de Error Elegante -->
-        <div class="message assistant">
-          <span>He indexado el archivo correctamente. Cita verificada en <span style="color:#60A5FA; text-decoration:underline;">[balance.docx#Página 2]</span>.</span>
-          
-          <!-- Tarjeta Elegante ante Límite de Cuota (Fase 4) -->
-          <div class="solution-card">
-            <h4>⚠️ Cuota de API temporalmente agotada</h4>
-            <p style="font-size:11px; color:var(--text-secondary);">El proveedor ha devuelto límite de peticiones. Tienes las siguientes soluciones inmediatas:</p>
-            <div style="display:flex; flex-direction:column; gap:6px;">
-              <button class="btn btn-outline btn-sm" onclick="window.open('https://aistudio.google.com')">🔑 1. Obtener nueva clave en consola oficial</button>
-              <button class="btn btn-outline btn-sm" onclick="alert('Cambiado a modelo Llama 3.2 Local.')">🔄 2. Cambiar a Llama 3.2 Local ($0)</button>
-              <button class="btn btn-outline btn-sm" onclick="navTo('screenSettings')">➕ 3. Agregar API Key de otro proveedor</button>
+        <div class="chat-bubble chat-assistant">
+          <details class="thought-box" open>
+            <summary>Pensamiento del Asistente (Fase 1)</summary>
+            <div class="thought-content">
+              Consultando TunnelIdentityManager y PolicyGate para evaluar privilegios antes de emitir respuesta. Verificando cuota del modelo activo.
             </div>
-          </div>
-
-          <!-- Botones Nativos Opacos sin exponer URLs (Fase 2) -->
-          <div style="margin-top:6px; display:flex; flex-direction:column; gap:4px;">
-            <span style="font-size:11px; color:var(--text-muted);">Accesos directos solicitados:</span>
-            <button class="opaque-pill-btn" onclick="navTo('screenSettings')">🛡️ Ver Permisos de WhatsApp</button>
-            <button class="opaque-pill-btn" onclick="navTo('screenServer')">⚙️ Abrir Ajustes de Túnel</button>
-          </div>
+          </details>
+          ¡Hola! He verificado los parámetros del sistema:
+          <br><br>
+          • <strong>Túnel Cloudflare:</strong> Configurado con identidad persistente.<br>
+          • <strong>PEP Unificado:</strong> Políticas de cuarentena activas (Nivel 0 por defecto).<br>
+          • <strong>Modelo Activo:</strong> Qwen2.5-Coder 7B (Ollama Local sin consumo de cuotas).
         </div>
-      </div>
 
-      <!-- Conectores y CLIs Activos (Fase 7) -->
-      <div class="connectors-strip">
-        <span class="connector-tag">🟢 Google Jules CLI</span>
-        <span class="connector-tag">🟢 Antigravity CLI</span>
-        <span class="connector-tag">🟢 OpenCode CLI</span>
-        <span class="connector-tag">🟡 Ollama Local</span>
-      </div>
-
-      <!-- Caja de Entrada Multimodal -->
-      <div class="chat-input-box">
-        <div class="input-row">
-          <button class="btn btn-outline btn-sm" title="Adjuntar PDF, Word, Excel, Código, Video, Audio" onclick="alert('Selector multimodal abierto: PDF, DOCX, XLSX, Código, Audio, Video.')">📎</button>
-          <input type="text" class="input-field" placeholder="Escribe un mensaje o tarea...">
-          <button class="btn btn-outline btn-sm" title="Dictado por Voz Soberano" onclick="alert('Dictado por voz iniciado. La transcripción se mostrará en pantalla antes de enviar.')">🎙️</button>
-          <button class="btn btn-primary btn-sm">➤</button>
-        </div>
-        <div class="input-actions">
-          <span style="font-size:10px; color:var(--text-muted);">Esfuerzo de Razonamiento:</span>
-          <div style="display:flex; gap:4px;">
-            <span class="badge badge-blue">Low</span>
-            <span class="badge badge-emerald">Medium</span>
-            <span class="badge badge-purple">High</span>
+        <!-- Quota Solution Card interactiva -->
+        <div class="quota-solution-card" id="quota-card">
+          <div class="quota-header">
+            <span>⚠️</span> Advertencia de Cuota de Proveedor
+          </div>
+          <div class="quota-desc">
+            El modelo remoto devolvió un límite de tasa (429). Se recomienda activar el fallback a Ollama local para no interrumpir el flujo.
+          </div>
+          <div class="quota-actions">
+            <button class="btn-quota btn-quota-primary" onclick="alert('Activado fallback automático a Ollama Local')">Fallback a Ollama Local</button>
+            <button class="btn-quota btn-quota-secondary" onclick="alert('Reintentando...')">Reintentar</button>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- ----------------- PANTALLA 2: F-STUDIO ----------------- -->
-    <div id="screenStudio" class="screen-view">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h3 style="font-size:15px; font-weight:700;">💻 F-Studio IDE & Visor</h3>
-        <span class="badge badge-emerald">Workspace Sync OK</span>
-      </div>
-
-      <div class="studio-tabs">
-        <div class="studio-tab active">ActionExecutor.kt</div>
-        <div class="studio-tab">apuntes.md</div>
-        <div class="studio-tab">balance.xlsx</div>
-      </div>
-
-      <!-- Editor de Código en Vivo -->
-      <div class="code-editor">
-        <span style="color:#6B7280;">01</span> <span style="color:#F472B6;">package</span> com.fenix.mobilemcp.policy<br>
-        <span style="color:#6B7280;">02</span> <br>
-        <span style="color:#6B7280;">03</span> <span style="color:#38BDF8;">class</span> <span style="color:#FBBF24;">PolicyGate</span>(<span style="color:#F472B6;">private val</span> context: Context) {<br>
-        <span style="color:#6B7280;">04</span>   <span style="color:#F472B6;">fun</span> <span style="color:#A78BFA;">evaluate</span>(action: UiAction): PolicyDecision {<br>
-        <span style="color:#6B7280;">05</span>     <span style="color:#F472B6;">if</span> (isPackageProtected(action.pkg)) {<br>
-        <span style="color:#6B7280;">06</span>       <span style="color:#F472B6;">return</span> PolicyDecision.Deny(REASON_SENSITIVE)<br>
-        <span style="color:#6B7280;">07</span>     }<br>
-        <span style="color:#6B7280;">08</span>     <span style="color:#F472B6;">return</span> PolicyDecision.Allow<br>
-        <span style="color:#6B7280;">09</span>   }<br>
-        <span style="color:#6B7280;">10</span> }
-      </div>
-
-      <div style="display:flex; gap:8px;">
-        <button class="btn btn-primary btn-sm" onclick="alert('Compilación local simulada exitosa.')">▶ Ejecutar Código</button>
-        <button class="btn btn-outline btn-sm" onclick="alert('Vista cambiada a renderizado Markdown / XLSX.')">📊 Ver Tabla / Doc</button>
+      <!-- Chat Input Bar -->
+      <div class="chat-input-bar">
+        <button class="btn-icon" title="Adjuntar Archivo" onclick="alert('Adjuntar documento o imagen')">📎</button>
+        <button class="btn-icon" title="Micrófono" onclick="toggleMic(this)">🎙️</button>
+        <input type="text" id="chat-input-text" class="chat-input" placeholder="Escribe una instrucción..." onkeydown="if(event.key==='Enter') sendChatMessage()">
+        <button class="btn-send" onclick="sendChatMessage()">➤</button>
       </div>
     </div>
 
-    <!-- ----------------- PANTALLA 3: F-MARKET ----------------- -->
-    <div id="screenMarket" class="screen-view">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h3 style="font-size:15px; font-weight:700;">🛍️ F-Market Modular</h3>
-        <span class="badge badge-purple">4 Instaladas</span>
-      </div>
-
-      <div class="market-category">⚡ Runtimes y CLIs de IA (Fase 7)</div>
-      
-      <!-- Google Jules CLI -->
-      <div class="market-item">
-        <div class="market-meta">
-          <div class="market-title">Google Jules CLI <span class="badge badge-blue">Termux</span></div>
-          <div class="market-desc">Automatización de tareas de desarrollo y repositorios GitHub desde Android.</div>
-        </div>
-        <button class="btn btn-primary btn-sm">Instalado</button>
-      </div>
-
-      <!-- Antigravity CLI -->
-      <div class="market-item">
-        <div class="market-meta">
-          <div class="market-title">Antigravity CLI <span class="badge badge-purple">Agentic</span></div>
-          <div class="market-desc">Orquestación de subagentes y generación de artefactos multi-perspectiva.</div>
-        </div>
-        <button class="btn btn-primary btn-sm">Instalado</button>
-      </div>
-
-      <!-- OpenCode CLI -->
-      <div class="market-item">
-        <div class="market-meta">
-          <div class="market-title">OpenCode CLI <span class="badge badge-cyan">OpenSource</span></div>
-          <div class="market-desc">Asistente de codificación abierto y ejecución de scripts.</div>
-        </div>
-        <button class="btn btn-outline btn-sm">Obtener</button>
-      </div>
-
-      <div class="market-category">🧠 Modelos Locales ($0 Sin Duplicar GB)</div>
-      <!-- Llama 3.2 Local -->
-      <div class="market-item">
-        <div class="market-meta">
-          <div class="market-title">Llama 3.2 1B Quant <span class="badge badge-emerald">1.3 GB</span></div>
-          <div class="market-desc">Directorio compartido: <code>/fenix/models/</code>. Funciona en App o en Termux.</div>
-        </div>
-        <button class="btn btn-primary btn-sm">Activo (Nativo)</button>
-      </div>
-
-      <div class="market-category">🛡️ Módulo de Accesibilidad Oficial (Fase 5)</div>
-      <!-- Extensión First-Party con Llave Maestra -->
-      <div class="market-item" style="border-color: rgba(245, 158, 11, 0.4);">
-        <div class="market-meta">
-          <div class="market-title">Broker de Accesibilidad <span class="badge badge-amber">🔒 First-Party</span></div>
-          <div class="market-desc">Control táctil de pantalla. Protegido por Llave Maestra del Propietario.</div>
-        </div>
-        <button class="btn btn-outline btn-sm" onclick="alert('Módulo de accesibilidad autenticado con tu Llave Maestra.')">Verificar</button>
-      </div>
-    </div>
-
-    <!-- ----------------- PANTALLA 4: SERVIDOR ----------------- -->
-    <div id="screenServer" class="screen-view">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h3 style="font-size:15px; font-weight:700;">🌐 Servidor MCP & Red</h3>
-        <span class="badge badge-emerald">● En Ejecución</span>
-      </div>
-
-      <!-- Tarjeta de Túnel y URL Fija Persistente (Fase 0) -->
-      <div class="tunnel-hero">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:12px; font-weight:700; color:#93C5FD;">URL FIJA PERSISTENTE (CLAUDE FREE)</span>
-          <span class="badge badge-blue">Dispositivo #7B2P</span>
-        </div>
-        <div class="tunnel-url">
-          <span>https://fenix-7b2p.trycloudflare.com/mcp</span>
-          <button class="btn btn-outline btn-sm" style="padding:2px 6px;" onclick="alert('URL copiada al portapapeles.')">Copiar</button>
-        </div>
-        <p style="font-size:11px; color:#BFDBFE;">Esta URL no cambiará entre reinstalaciones ni actualizaciones del APK.</p>
-      </div>
-
-      <!-- Cerrojo de Emergencia (Fase 3) -->
-      <div class="card" style="border-color: rgba(239, 68, 68, 0.4);">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
+    <!-- 2. PANTALLA: F-STUDIO -->
+    <div id="screen-studio" class="screen-view">
+      <div class="top-app-bar">
+        <div class="app-title-group">
+          <div class="app-icon-badge" style="background: linear-gradient(135deg, #8B5CF6, #6D28D9);">S</div>
           <div>
-            <h4 style="font-size:13px; color:#F87171;">Cerrojo de Emergencia (Emergency Latch)</h4>
-            <p style="font-size:11px; color:var(--text-muted);">Corta todo tráfico y bloquea reinicios.</p>
+            <div class="app-title">F-Studio IDE</div>
+            <div class="app-subtitle">Previsualización de Documentos y Código</div>
           </div>
-          <button class="btn btn-danger btn-sm" onclick="alert('EMERGENCY_STOPPED activado. Servidor detenido y cerrojo persistido.')">PARAR AHORA</button>
         </div>
+        <button class="btn-copy" onclick="alert('Copiado al portapapeles!')">Copiar Todo</button>
       </div>
 
-      <!-- Conexiones Activas -->
-      <div class="card">
-        <h4 style="font-size:12px; color:var(--text-secondary); text-transform:uppercase;">Conexiones Autorizadas</h4>
-        <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px;">
-          <span>Claude Desktop (Remote Tunnel)</span>
-          <span class="badge badge-emerald">Conectado</span>
+      <div class="studio-container">
+        <div class="studio-tabs">
+          <button class="studio-tab-btn active" onclick="switchStudioTab(this, 'md')">📄 Markdown</button>
+          <button class="studio-tab-btn" onclick="switchStudioTab(this, 'pdf')">📑 Vista PDF</button>
+          <button class="studio-tab-btn" onclick="switchStudioTab(this, 'code')">💻 Kotlin / Código</button>
         </div>
-        <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px;">
-          <span>Google Jules CLI (Local Termux)</span>
-          <span class="badge badge-blue">En Espera</span>
+
+        <div class="code-editor-mock" id="studio-editor">
+<span style="color:#7EE787;">// Fénix PolicyGate - PEP Unificado (Fase 2)</span>
+<span style="color:#FF7B72;">package</span> com.fenix.mobilemcp.policy
+
+<span style="color:#FFA657;">class</span> <span style="color:#79C0FF;">PolicyGate</span>(context: Context) {
+    <span style="color:#FFA657;">fun</span> <span style="color:#D2A8FF;">evaluate</span>(action: UiAction): PolicyDecision {
+        <span style="color:#FF7B72;">if</span> (action.isEmergency) {
+            <span style="color:#FF7B72;">return</span> PolicyDecision.Deny(EMERGENCY_LATCH)
+        }
+        <span style="color:#FF7B72;">if</span> (isFinancial(action.pkg)) {
+            <span style="color:#FF7B72;">return</span> PolicyDecision.Deny(FINANCIAL_PACKAGE)
+        }
+        <span style="color:#FF7B72;">return</span> PolicyDecision.Allow
+    }
+}
         </div>
       </div>
-
-      <!-- Simulación de Banner Flotante -->
-      <button class="btn btn-outline btn-sm" onclick="triggerFloatingDemo()">Probar Banner Flotante de Conexión</button>
     </div>
 
-    <!-- ----------------- PANTALLA 5: AJUSTES ----------------- -->
-    <div id="screenSettings" class="screen-view">
-      <h3 style="font-size:15px; font-weight:700;">⚙️ Ajustes & Soberanía Total</h3>
-
-      <!-- Interruptores Individuales (Fase 5) -->
-      <div class="card">
-        <span class="section-title">Interruptores de Acceso Soberano</span>
-        <div class="toggle-row">
-          <span style="font-size:12px;">🎙️ Acceso a Micrófono (Voz)</span>
-          <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-        </div>
-        <div class="toggle-row">
-          <span style="font-size:12px;">📷 Acceso a Cámara (Visión)</span>
-          <label class="switch"><input type="checkbox"><span class="slider"></span></label>
-        </div>
-        <div class="toggle-row">
-          <span style="font-size:12px;">🔔 Interceptación de Notificaciones</span>
-          <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-        </div>
-        <div class="toggle-row">
-          <span style="font-size:12px;">📁 Acceso a Almacenamiento Local</span>
-          <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+    <!-- 3. PANTALLA: F-MARKET -->
+    <div id="screen-market" class="screen-view">
+      <div class="top-app-bar">
+        <div class="app-title-group">
+          <div class="app-icon-badge" style="background: linear-gradient(135deg, #10B981, #047857);">M</div>
+          <div>
+            <div class="app-title">F-Market Soberano</div>
+            <div class="app-subtitle">Catálogo de Herramientas MCP y Extensiones</div>
+          </div>
         </div>
       </div>
 
-      <!-- Control de Aplicaciones: Matriz de 4 Niveles (Fase 2) -->
-      <div class="card">
-        <span class="section-title">Control de Apps (Matriz 4 Niveles)</span>
-        
-        <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px;">
-          <span>Banco Galicia / Billeteras</span>
-          <span class="badge badge-rose">Nivel 0: Bloqueo</span>
+      <div class="market-container">
+        <input type="text" class="market-search" placeholder="🔍 Buscar herramientas MCP...">
+
+        <div class="tool-item-card">
+          <div class="tool-info">
+            <h4>Browser Automation MCP</h4>
+            <p>Navegación inteligente y scraping web local.</p>
+            <span class="badge-level badge-l1">Nivel 1 — Seguro</span>
+          </div>
+          <button class="btn-copy" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7;">Instalado</button>
         </div>
-        <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px;">
-          <span>WhatsApp Messenger</span>
-          <span class="badge badge-amber">Nivel 1: Solo Lectura</span>
+
+        <div class="tool-item-card">
+          <div class="tool-info">
+            <h4>Telegram Bot Dispatcher</h4>
+            <p>Envío de reportes y notificaciones bidireccionales.</p>
+            <span class="badge-level badge-l1">Nivel 1 — Seguro</span>
+          </div>
+          <button class="btn-copy" style="background: rgba(16, 185, 129, 0.2); color: #6EE7B7;">Instalado</button>
         </div>
-        <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px;">
-          <span>Lector de Libros / Docs</span>
-          <span class="badge badge-emerald">Nivel 3: Automático</span>
+
+        <div class="tool-item-card">
+          <div class="tool-info">
+            <h4>App Policy Scanner</h4>
+            <p>Monitoreo de instalación de paquetes con cuarentena.</p>
+            <span class="badge-level badge-l0">Nivel 0 — Cuarentena</span>
+          </div>
+          <button class="btn-copy">Auditar</button>
+        </div>
+
+        <div class="tool-item-card">
+          <div class="tool-info">
+            <h4>Terminal Executor MCP</h4>
+            <p>Ejecución controlada de scripts en Termux.</p>
+            <span class="badge-level badge-l2">Nivel 2 — Requiere Consentimiento</span>
+          </div>
+          <button class="btn-copy">Habilitar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. PANTALLA: F-SERVER -->
+    <div id="screen-server" class="screen-view">
+      <div class="top-app-bar">
+        <div class="app-title-group">
+          <div class="app-icon-badge" style="background: linear-gradient(135deg, #06B6D4, #0E7490);">S</div>
+          <div>
+            <div class="app-title">F-Server MCP</div>
+            <div class="app-subtitle">Control de Túnel Cloudflare e Identidad</div>
+          </div>
         </div>
       </div>
 
-      <!-- Identidad y Login (Fase 5) -->
-      <div class="card">
-        <span class="section-title">Identidad & Login</span>
-        <div style="display:flex; gap:8px;">
-          <button class="btn btn-outline btn-sm" style="flex:1;" onclick="alert('Iniciando sesión con Google / Gmail...')">Google / Gmail</button>
-          <button class="btn btn-outline btn-sm" style="flex:1;" onclick="alert('Modo local sin cuenta.')">Cuenta Propia</button>
+      <div class="server-container">
+        <!-- Switch Maestro de Servidor -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <span>🌐</span> Estado del Servidor MCP
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="server-toggle" onchange="toggleServer(this)">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div style="font-size: 11px; color: var(--text-secondary);" id="server-desc">
+            El servidor inicia <strong>apagado por defecto</strong> por seguridad. Al encenderlo se solicita tu consentimiento de red.
+          </div>
+          <div class="url-badge">
+            <span id="tunnel-url-text">https://fenix-mcp-tunnel.trycloudflare.com</span>
+            <button class="btn-copy" onclick="copyTunnelUrl()">Copiar</button>
+          </div>
+        </div>
+
+        <!-- Identidad Criptográfica del Túnel (Fase 0) -->
+        <div class="card">
+          <div class="card-title">
+            <span>🔑</span> Identidad Criptográfica de Túnel
+          </div>
+          <div style="font-size: 11px; color: var(--text-secondary);">
+            Node ID: <code style="color:#93C5FD;">fenix-node-7b2p-crypto-identity</code><br>
+            Estado: <span style="color:#10B981; font-weight:bold;">🔒 Persistente y Verificado</span>
+          </div>
+        </div>
+
+        <!-- EmergencyLatchCard (Fase 3) -->
+        <div class="emergency-card">
+          <div class="card-title" style="color: #F87171;">
+            <span>🚨</span> Pestillo de Detención de Emergencia
+          </div>
+          <p style="font-size: 11px; color: #FECACA; margin-top: 4px;">
+            El KillSwitch aborta de inmediato todas las herramientas activas, revoca tokens efímeros y apaga el túnel.
+          </p>
+          <button class="btn-emergency-abort" onclick="triggerEmergencyLatch()">🛑 ABORTAR TODO (KILLSWITCH)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. PANTALLA: AJUSTES -->
+    <div id="screen-settings" class="screen-view">
+      <div class="top-app-bar">
+        <div class="app-title-group">
+          <div class="app-icon-badge" style="background: linear-gradient(135deg, #64748B, #334155);">⚙️</div>
+          <div>
+            <div class="app-title">Ajustes de Soberanía</div>
+            <div class="app-subtitle">Gobernanza Local y Configuración</div>
+          </div>
         </div>
       </div>
 
-      <!-- Llave Criptográfica Maestra del Propietario (Fase 5) -->
-      <div class="card" style="border-color: rgba(139, 92, 246, 0.4);">
-        <span class="section-title" style="color:#C084FC;">Llave Maestra del Propietario</span>
-        <input type="password" class="input-field" value="master_fenix_key_hash_8f992a" style="background:var(--bg-input); padding:6px 10px; border-radius:8px; border:1px solid var(--border-subtle);" readonly>
-        <p style="font-size:10px; color:var(--text-muted);">Solo extensiones con esta firma pueden enlazar al servicio de Accesibilidad.</p>
-      </div>
+      <div class="settings-container">
+        <!-- SovereignTogglesCard (Fases 5-9) -->
+        <div class="card">
+          <div class="card-title">
+            <span>🧠</span> Conector de Modelos LLM Dual
+          </div>
+          <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 6px;">
+            Elige la conexión sin duplicar modelos (comparten <code>/sdcard/Documents/fenix/models/</code>):
+          </div>
+          <label class="radio-option">
+            <input type="radio" name="llm-conn" value="native" checked>
+            <span>Ollama Nativo en App (Sin Termux)</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" name="llm-conn" value="termux">
+            <span>Ollama vía Servidor Termux</span>
+          </label>
+        </div>
 
-      <!-- Portabilidad y Reset (Fase 9) -->
-      <div class="card">
-        <span class="section-title">Portabilidad & Retirada Limpia</span>
-        <div style="display:flex; gap:8px;">
-          <button class="btn btn-outline btn-sm" style="flex:1;" onclick="alert('Backup completo generado en /sdcard/Download/fenix_backup_2026.zip')">📦 Exportar Todo (.zip)</button>
-          <button class="btn btn-danger btn-sm" style="flex:1;" onclick="alert('Limpieza total: claves eliminadas y base de datos reseteada.')">⚠️ Limpieza Total</button>
+        <!-- MasterKeySettingsCard -->
+        <div class="card">
+          <div class="card-title">
+            <span>🛡️</span> Clave Maestra Local
+          </div>
+          <div style="font-size: 11px; color: var(--text-secondary);">
+            Clave AES-GCM: <span id="master-key-val">••••••••••••••••••••••••</span>
+          </div>
+          <div style="display:flex; gap:8px; margin-top: 6px;">
+            <button class="btn-copy" onclick="revealKey()">👁️ Mostrar</button>
+            <button class="btn-copy" onclick="alert('Master Key exportada de forma cifrada!')">Exportar</button>
+          </div>
+        </div>
+
+        <!-- PortabilitySettingsCard -->
+        <div class="card">
+          <div class="card-title">
+            <span>💾</span> Portabilidad y Backups
+          </div>
+          <div style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">
+            Último backup: <code>fenix_code_backup_20261018.tar.gz</code> (471 MB en móvil).
+          </div>
+          <button class="btn-banner-allow" style="margin-top: 6px;" onclick="alert('Generando nuevo backup local...')">Crear Respaldo Local</button>
         </div>
       </div>
     </div>
 
   </div>
 
-  <!-- Barra de Navegación Inferior (5 Pantallas Oficiales) -->
+  <!-- Modal Consent Dialog (Fase 0) -->
+  <div id="consent-modal" class="modal-overlay">
+    <div class="modal-box">
+      <h3>⚠️ Consentimiento de Exposición de Red</h3>
+      <p>
+        Estás a punto de iniciar el túnel Cloudflare seguro hacia el exterior. Esto permitirá que clientes autorizados se conecten a las herramientas MCP de este dispositivo.<br><br>
+        • Se aplicarán las políticas del <strong>PolicyGate</strong>.<br>
+        • Las apps financieras permanecen bloqueadas bajo cuarentena estricta.
+      </p>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" onclick="cancelConsent()">Cancelar</button>
+        <button class="btn-modal-confirm" onclick="confirmConsent()">Aceptar y Encender</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation Bar (Material 3) -->
   <div class="bottom-nav">
-    <button class="nav-item active" onclick="navTo('screenChat', this)">
-      <span class="icon">💬</span>
+    <div class="nav-item active" onclick="navigateTo('chat', this)">
+      <div class="nav-icon">💬</div>
       <span>F-Chat</span>
-    </button>
-    <button class="nav-item" onclick="navTo('screenStudio', this)">
-      <span class="icon">💻</span>
+    </div>
+    <div class="nav-item" onclick="navigateTo('studio', this)">
+      <div class="nav-icon">🎨</div>
       <span>F-Studio</span>
-    </button>
-    <button class="nav-item" onclick="navTo('screenMarket', this)">
-      <span class="icon">🛍️</span>
+    </div>
+    <div class="nav-item" onclick="navigateTo('market', this)">
+      <div class="nav-icon">🏪</div>
       <span>F-Market</span>
-    </button>
-    <button class="nav-item" onclick="navTo('screenServer', this)">
-      <span class="icon">🌐</span>
-      <span>Servidor</span>
-    </button>
-    <button class="nav-item" onclick="navTo('screenSettings', this)">
-      <span class="icon">⚙️</span>
+    </div>
+    <div class="nav-item" onclick="navigateTo('server', this)">
+      <div class="nav-icon">🖥️</div>
+      <span>F-Server</span>
+    </div>
+    <div class="nav-item" onclick="navigateTo('settings', this)">
+      <div class="nav-icon">⚙️</div>
       <span>Ajustes</span>
-    </button>
+    </div>
   </div>
 </div>
 
 <script>
-  function navTo(screenId, btn) {
+  // Reloj en tiempo real
+  function updateTime() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('live-time').innerText = `${h}:${m}`;
+  }
+  setInterval(updateTime, 1000);
+  updateTime();
+
+  // Navegación entre Pantallas
+  function navigateTo(screenId, element) {
     document.querySelectorAll('.screen-view').forEach(s => s.classList.remove('active'));
-    document.getElementById(screenId).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     
-    if (btn) {
-      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+    const target = document.getElementById(`screen-${screenId}`);
+    if (target) {
+      target.classList.add('active');
+      element.classList.add('active');
     }
   }
 
+  // Floating Banner
+  function handleBannerAction(allowed) {
+    const banner = document.getElementById('floating-banner');
+    banner.style.display = 'none';
+    if (allowed) {
+      alert('✅ Conexión MCP externa autorizada para Claude Desktop.');
+    } else {
+      alert('❌ Solicitud de conexión denegada por el usuario.');
+    }
+  }
+
+  // ModesBar
   function selectMode(chip) {
     document.querySelectorAll('.mode-chip').forEach(c => c.classList.remove('active'));
     chip.classList.add('active');
   }
 
-  function triggerFloatingDemo() {
-    const banner = document.getElementById('floatingOverlay');
-    banner.style.display = 'flex';
+  // CompactBar Purge
+  function purgeContext() {
+    if (confirm('¿Deseas purgar la ventana de contexto para liberar tokens?')) {
+      alert('✨ Ventana de contexto purgada. Memoria histórica preservada en FenixMemoryDb SQLite.');
+    }
   }
 
-  function dismissOverlay(msg) {
-    document.getElementById('floatingOverlay').style.display = 'none';
-    alert(msg);
+  // Chat Interactivo
+  function sendChatMessage() {
+    const input = document.getElementById('chat-input-text');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const area = document.getElementById('chat-messages');
+
+    // Mensaje de usuario
+    const userBubble = document.createElement('div');
+    userBubble.className = 'chat-bubble chat-user';
+    userBubble.innerText = text;
+    area.appendChild(userBubble);
+    input.value = '';
+
+    area.scrollTop = area.scrollHeight;
+
+    // Respuesta simulada de Fénix
+    setTimeout(() => {
+      const botBubble = document.createElement('div');
+      botBubble.className = 'chat-bubble chat-assistant';
+      botBubble.innerHTML = `
+        <details class="thought-box" open>
+          <summary>Pensamiento del Asistente</summary>
+          <div class="thought-content">Procesando: "${text}" bajo modo activo y evaluando llamadas a herramientas MCP locales.</div>
+        </details>
+        Recibido. Operación ejecutada bajo parámetros de seguridad de <strong>Fénix Mobile MCP</strong>.
+      `;
+      area.appendChild(botBubble);
+      area.scrollTop = area.scrollHeight;
+    }, 600);
+  }
+
+  // Mic Toggle
+  function toggleMic(btn) {
+    if (btn.style.color === 'rgb(239, 68, 68)') {
+      btn.style.color = 'var(--text-secondary)';
+      btn.style.background = 'var(--bg-card)';
+    } else {
+      btn.style.color = '#EF4444';
+      btn.style.background = 'rgba(239, 68, 68, 0.2)';
+    }
+  }
+
+  // F-Studio Tabs
+  function switchStudioTab(btn, type) {
+    document.querySelectorAll('.studio-tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const editor = document.getElementById('studio-editor');
+    if (type === 'md') {
+      editor.innerHTML = `<span style="color:#79C0FF;"># Fénix Mobile MCP — Plan Maestro</span><br><br>Este documento describe la arquitectura unificada y las directivas de las Fases 0 a 9.<br><br>• <strong>Identidad:</strong> Criptográfica<br>• <strong>Memoria:</strong> SQLite Local<br>• <strong>Costo:</strong> \$0 Absoluto`;
+    } else if (type === 'pdf') {
+      editor.innerHTML = `<div style="text-align:center; padding: 20px; color:#9CA3AF;">📑 [Visualizador PDF Integrado F-Studio]<br><br><em>Documento_Academico_Fenix.pdf (3 páginas)</em><br><br><button class="btn-copy">Descargar PDF</button></div>`;
+    } else {
+      editor.innerHTML = `<span style="color:#7EE787;">// Fénix PolicyGate - PEP Unificado (Fase 2)</span><br><span style="color:#FF7B72;">package</span> com.fenix.mobilemcp.policy<br><br><span style="color:#FFA657;">class</span> <span style="color:#79C0FF;">PolicyGate</span>(context: Context) { ... }`;
+    }
+  }
+
+  // Server Toggle & Consent Modal
+  function toggleServer(toggle) {
+    if (toggle.checked) {
+      document.getElementById('consent-modal').style.display = 'flex';
+    } else {
+      document.getElementById('tunnel-status-sub').innerText = '● Túnel: En Espera (Off)';
+      document.getElementById('tunnel-status-sub').style.color = 'var(--text-muted)';
+      document.getElementById('server-desc').innerHTML = 'El servidor inicia <strong>apagado por defecto</strong> por seguridad.';
+    }
+  }
+
+  function confirmConsent() {
+    document.getElementById('consent-modal').style.display = 'none';
+    document.getElementById('server-toggle').checked = true;
+    document.getElementById('tunnel-status-sub').innerText = '● Túnel: Activo y Conectado';
+    document.getElementById('tunnel-status-sub').style.color = '#10B981';
+    document.getElementById('server-desc').innerHTML = '<span style="color:#10B981; font-weight:bold;">● Túnel Cloudflare en línea.</span> Listo para peticiones remotas.';
+    alert('✅ Consentimiento otorgado. Túnel Cloudflare levantado con URL persistente.');
+  }
+
+  function cancelConsent() {
+    document.getElementById('consent-modal').style.display = 'none';
+    document.getElementById('server-toggle').checked = false;
+  }
+
+  // Copy Tunnel URL
+  function copyTunnelUrl() {
+    navigator.clipboard.writeText('https://fenix-mcp-tunnel.trycloudflare.com');
+    alert('URL de túnel copiada: https://fenix-mcp-tunnel.trycloudflare.com');
+  }
+
+  // Emergency KillSwitch
+  function triggerEmergencyLatch() {
+    if (confirm('🚨 ¿Estás seguro de ABORTAR TODO? Esto detendrá todas las tareas y bajará el túnel de inmediato.')) {
+      document.getElementById('server-toggle').checked = false;
+      document.getElementById('tunnel-status-sub').innerText = '● Túnel: ABORTADO (Emergencia)';
+      document.getElementById('tunnel-status-sub').style.color = '#EF4444';
+      alert('🛑 KILLSWITCH ACTIVADO: Se abortaron todas las herramientas y se desconectó el túnel.');
+    }
+  }
+
+  // Revelar Master Key
+  let keyRevealed = false;
+  function revealKey() {
+    const el = document.getElementById('master-key-val');
+    keyRevealed = !keyRevealed;
+    el.innerText = keyRevealed ? 'fnx-sec-98fa7bc42e1d0987a' : '••••••••••••••••••••••••';
   }
 </script>
+
 </body>
 </html>
-

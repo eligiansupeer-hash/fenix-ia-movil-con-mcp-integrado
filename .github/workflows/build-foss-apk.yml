@@ -56,3 +56,4 @@ jobs:
           name: fenix-foss-debug-apk
           path: app/build/outputs/apk/foss/debug/app-foss-debug.apk
           retention-days: 7
+
