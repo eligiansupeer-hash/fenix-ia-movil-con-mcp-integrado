@@ -20,6 +20,7 @@ enum class ApprovalState { PENDING, APPROVED, DENIED, EXPIRED }
  */
 data class PendingApproval(
     val id: String,
+    val clientId: String,
     val clientName: String,
     val redirectHost: String,
     val matchCode: String,
@@ -31,6 +32,7 @@ data class PendingApproval(
 
 /** The requesting-client identity captured at `/authorize` and surfaced on the approval. */
 data class ApprovalRequest(
+    val clientId: String,
     val clientName: String,
     val redirectHost: String,
     val logoUri: String?,

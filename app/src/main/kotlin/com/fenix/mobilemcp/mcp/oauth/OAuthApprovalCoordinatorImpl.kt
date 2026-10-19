@@ -45,6 +45,7 @@ class OAuthApprovalCoordinatorImpl
                 val approval =
                     PendingApproval(
                         id = randomId(),
+                        clientId = request.clientId,
                         clientName = request.clientName,
                         redirectHost = request.redirectHost,
                         matchCode = matchCode,

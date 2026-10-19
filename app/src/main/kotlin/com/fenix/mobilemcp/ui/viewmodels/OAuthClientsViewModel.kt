@@ -30,6 +30,10 @@ class OAuthClientsViewModel
             viewModelScope.launch(ioDispatcher) { repository.revoke(clientId) }
         }
 
+        fun updateClientPermissions(clientId: String, permissions: Set<String>) {
+            viewModelScope.launch(ioDispatcher) { repository.updatePermissions(clientId, permissions) }
+        }
+
         private companion object {
             const val FLOW_TIMEOUT_MS = 5_000L
         }

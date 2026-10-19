@@ -169,6 +169,26 @@ class OAuthClientRepositoryImpl
             }
         }
 
+        override suspend fun updatePermissions(
+            clientId: String,
+            permissions: Set<String>,
+        ) {
+            mutex.withLock {
+                seedLocked()
+                var changed = false
+                val updated =
+                    snapshot.value.map {
+                        if (it.clientId == clientId) {
+                            changed = true
+                            it.copy(grantedPermissions = permissions)
+                        } else {
+                            it
+                        }
+                    }
+                if (changed) persist(updated)
+            }
+        }
+
         private companion object {
             private val OAUTH_CLIENTS_KEY = stringPreferencesKey("oauth_clients")
         }

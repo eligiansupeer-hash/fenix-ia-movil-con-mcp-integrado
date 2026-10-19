@@ -25,4 +25,5 @@ data class OAuthClient(
     val createdAtMs: Long,
     val lastUsedAtMs: Long,
     val currentRefreshJti: String? = null,
+    val grantedPermissions: Set<String> = emptySet(),
 )

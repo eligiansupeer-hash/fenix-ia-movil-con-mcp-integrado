@@ -148,6 +148,7 @@ private suspend fun ApplicationCall.handleAuthorize(
     val approval =
         deps.approvalCoordinator.createPending(
             ApprovalRequest(
+                clientId = safeClientId,
                 clientName = displayName,
                 redirectHost = redirectHost,
                 logoUri = safeClient.logoUri,

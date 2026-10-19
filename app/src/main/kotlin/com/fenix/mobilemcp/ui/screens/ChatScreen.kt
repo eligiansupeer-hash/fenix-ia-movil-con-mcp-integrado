@@ -99,8 +99,11 @@ fun ChatScreen(
     val voiceState by viewModel.voiceState.collectAsStateWithLifecycle()
     val activeSkills by viewModel.activeSkills.collectAsStateWithLifecycle()
     val transcribedText by viewModel.transcribedText.collectAsStateWithLifecycle()
+    val pendingApprovals by viewModel.pendingApprovals.collectAsStateWithLifecycle()
 
     var inputText by remember { mutableStateOf("") }
+    
+    var configuringApproval by remember { mutableStateOf<com.fenix.mobilemcp.mcp.oauth.PendingApproval?>(null) }
     var showModelDropdown by remember { mutableStateOf(false) }
 
     LaunchedEffect(transcribedText) {
@@ -265,7 +268,7 @@ fun ChatScreen(
                 .weight(1f)
                 .fillMaxWidth(),
         ) {
-            if (messages.isEmpty()) {
+            if (messages.isEmpty() && pendingApprovals.isEmpty() && configuringApproval == null) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -347,6 +350,38 @@ fun ChatScreen(
                     contentPadding = PaddingValues(12.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
+                    item {
+                        pendingApprovals.forEach { approval ->
+                            com.fenix.mobilemcp.ui.components.ClientAuthorizationCard(
+                                approval = approval,
+                                onApprove = {
+                                    configuringApproval = approval
+                                    viewModel.approveOAuthClient(approval.id)
+                                },
+                                onDeny = {
+                                    viewModel.denyOAuthClient(approval.id)
+                                },
+                                onSavePermissions = { perms ->
+                                    viewModel.updateClientPermissions(approval.clientId, perms)
+                                    configuringApproval = null
+                                }
+                            )
+                        }
+
+                        configuringApproval?.let { approval ->
+                            com.fenix.mobilemcp.ui.components.ClientAuthorizationCard(
+                                approval = approval,
+                                onApprove = { },
+                                onDeny = { },
+                                onSavePermissions = { perms ->
+                                    viewModel.updateClientPermissions(approval.clientId, perms)
+                                    configuringApproval = null
+                                },
+                                initialIsAccessGranted = true
+                            )
+                        }
+                    }
+
                     items(messages, key = { it.id }) { msg ->
                         ChatMessageBubble(message = msg)
                     }

@@ -28,9 +28,13 @@ import com.fenix.mobilemcp.data.model.ServerStatus
 import com.fenix.mobilemcp.security.EmergencyKillSwitchManager
 import com.fenix.mobilemcp.ui.components.ServerLogsSection
 import com.fenix.mobilemcp.ui.components.EmergencyLatchCard
+import com.fenix.mobilemcp.mcp.oauth.OAuthClient
 import com.fenix.mobilemcp.ui.viewmodels.LogsViewModel
 import com.fenix.mobilemcp.ui.viewmodels.MainViewModel
+import com.fenix.mobilemcp.ui.viewmodels.OAuthClientsViewModel
 import com.fenix.mobilemcp.utils.NetworkUtils
+import java.text.DateFormat
+import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,6 +42,7 @@ fun NetworkServerPanel(
     onDismiss: () -> Unit,
     mainViewModel: MainViewModel = hiltViewModel(),
     logsViewModel: LogsViewModel = hiltViewModel(),
+    oauthClientsViewModel: OAuthClientsViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
@@ -46,6 +51,7 @@ fun NetworkServerPanel(
     val serverConfig by mainViewModel.serverConfig.collectAsStateWithLifecycle()
     val isEmergencyHalted by EmergencyKillSwitchManager.isEmergencyHaltedFlow.collectAsStateWithLifecycle()
     val recentServerLogs by logsViewModel.recentServerLogs.collectAsStateWithLifecycle()
+    val oauthClients by oauthClientsViewModel.clients.collectAsStateWithLifecycle()
     
     val isServerRunning = serverStatus is ServerStatus.Running
     val deviceIp = remember(context) { NetworkUtils.getDeviceIpAddress(context) ?: "N/A" }
@@ -135,6 +141,15 @@ fun NetworkServerPanel(
                 )
             }
             
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Connected Clients
+            ConnectedClientsSection(
+                clients = oauthClients,
+            onRevokeClient = { oauthClientsViewModel.revoke(it) },
+            onSavePermissions = { clientId, perms -> oauthClientsViewModel.updateClientPermissions(clientId, perms) }
+            )
+
             Spacer(modifier = Modifier.height(24.dp))
             
             // KillSwitch
@@ -262,6 +277,129 @@ fun AdvancedOptionsSection(
             onCheckedChange = { mainViewModel.updateTunnelEnabled(it) }
         )
         ContextualHelpButton("Permite acceso seguro desde internet al servidor MCP sin necesidad de IP pública.", showLegal = false)
+    }
+}
+
+@Composable
+fun ConnectedClientsSection(
+    clients: List<OAuthClient>,
+    onRevokeClient: (String) -> Unit,
+    onSavePermissions: (String, Set<String>) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "Aplicaciones y Clientes Conectados",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        if (clients.isEmpty()) {
+            Text(
+                text = "No hay clientes conectados actualmente.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        } else {
+            val dateFormat = remember { DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT) }
+            
+            clients.forEach { client ->
+                var expanded by remember { mutableStateOf(false) }
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = client.clientName ?: "Cliente Desconocido",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    text = "Última conexión: ${dateFormat.format(Date(client.lastUsedAtMs))}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            TextButton(onClick = { expanded = !expanded }) {
+                                Text(if (expanded) "Ocultar" else "Editar")
+                            }
+                        }
+
+                        if (expanded) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            HorizontalDivider()
+                            Spacer(modifier = Modifier.height(8.dp))
+                            
+                            Text("Permisos Otorgados:", style = MaterialTheme.typography.labelMedium)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            val perms = client.grantedPermissions
+                            
+                            var accessibilityGranted by remember(perms) { mutableStateOf(perms.contains("accessibility")) }
+                            var micGranted by remember(perms) { mutableStateOf(perms.contains("microphone")) }
+                            var screenGranted by remember(perms) { mutableStateOf(perms.contains("screen")) }
+                            var storageGranted by remember(perms) { mutableStateOf(perms.contains("storage")) }
+                            var controlGranted by remember(perms) { mutableStateOf(perms.contains("control")) }
+
+                            PermissionToggle("Accesibilidad", accessibilityGranted) { accessibilityGranted = it }
+                            PermissionToggle("Micrófono / Audio", micGranted) { micGranted = it }
+                            PermissionToggle("Pantalla / Capturas", screenGranted) { screenGranted = it }
+                            PermissionToggle("Almacenamiento / Archivos", storageGranted) { storageGranted = it }
+                            PermissionToggle("Control del Dispositivo", controlGranted) { controlGranted = it }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(
+                                onClick = { 
+                                    val newPerms = mutableSetOf<String>()
+                                    if (accessibilityGranted) newPerms.add("accessibility")
+                                    if (micGranted) newPerms.add("microphone")
+                                    if (screenGranted) newPerms.add("screen")
+                                    if (storageGranted) newPerms.add("storage")
+                                    if (controlGranted) newPerms.add("control")
+                                    onSavePermissions(client.clientId, newPerms)
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Guardar Permisos")
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            OutlinedButton(
+                                onClick = { onRevokeClient(client.clientId) },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                            ) {
+                                Text("Revocar Acceso")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PermissionToggle(
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+    ) {
+        Text(label, style = MaterialTheme.typography.bodyMedium)
+        Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
 

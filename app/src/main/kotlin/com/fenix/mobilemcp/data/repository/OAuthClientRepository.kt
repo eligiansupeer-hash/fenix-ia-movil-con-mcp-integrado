@@ -45,4 +45,10 @@ interface OAuthClientRepository {
         clientId: String,
         jti: String,
     )
+
+    /** Updates the granted granular permissions for the client. */
+    suspend fun updatePermissions(
+        clientId: String,
+        permissions: Set<String>,
+    )
 }

@@ -9,8 +9,11 @@ import com.fenix.mobilemcp.llm.LlmMessage
 import com.fenix.mobilemcp.llm.LlmResponse
 import com.fenix.mobilemcp.mcp.registry.FenixToolRegistry
 import com.fenix.mobilemcp.memory.FenixMemoryDb
+import com.fenix.mobilemcp.mcp.oauth.OAuthApprovalCoordinator
+import com.fenix.mobilemcp.mcp.oauth.PendingApproval
 import com.fenix.mobilemcp.security.SecureKeyStore
 import com.fenix.mobilemcp.security.StreetImmunityChecker
+import com.fenix.mobilemcp.data.repository.OAuthClientRepository
 import com.fenix.mobilemcp.security.StreetImmunityReport
 import com.fenix.mobilemcp.ui.components.ToolCallUi
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -51,6 +54,8 @@ class ChatViewModel @Inject constructor(
     private val streetImmunityChecker: StreetImmunityChecker,
     private val voiceActivationManager: FenixVoiceActivationManager,
     private val memoryDb: FenixMemoryDb,
+    private val oauthApprovalCoordinator: OAuthApprovalCoordinator,
+    private val oauthClientRepository: OAuthClientRepository,
 ) : ViewModel() {
 
     private val jsonParser = Json { ignoreUnknownKeys = true }
@@ -79,6 +84,8 @@ class ChatViewModel @Inject constructor(
     private val _configuredProviders = MutableStateFlow<Set<String>>(emptySet())
     val configuredProviders: StateFlow<Set<String>> = _configuredProviders.asStateFlow()
 
+    val pendingApprovals: StateFlow<List<PendingApproval>> = oauthApprovalCoordinator.observePending()
+
     private val _activeSkills = MutableStateFlow<Set<com.fenix.mobilemcp.mcp.registry.FenixSkillCategory>>(emptySet())
     val activeSkills: StateFlow<Set<com.fenix.mobilemcp.mcp.registry.FenixSkillCategory>> = _activeSkills.asStateFlow()
 
@@ -89,6 +96,24 @@ class ChatViewModel @Inject constructor(
 
     fun clearTranscribedText() {
         _transcribedText.value = ""
+    }
+
+    fun approveOAuthClient(id: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            oauthApprovalCoordinator.approve(id, System.currentTimeMillis())
+        }
+    }
+
+    fun denyOAuthClient(id: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            oauthApprovalCoordinator.deny(id)
+        }
+    }
+
+    fun updateClientPermissions(clientId: String, permissions: Set<String>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            oauthClientRepository.updatePermissions(clientId, permissions)
+        }
     }
 
     init {
