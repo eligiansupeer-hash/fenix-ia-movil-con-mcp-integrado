@@ -240,8 +240,8 @@ fun AdvancedOptionsSection(
 
         ToggleWithHelp(
             label = "Iniciar al prender el teléfono",
-            checked = serverConfig.autoStart,
-            onCheckedChange = { mainViewModel.updateAutoStart(it) },
+            checked = serverConfig.autoStartOnBoot,
+            onCheckedChange = { mainViewModel.updateAutoStartOnBoot(it) },
             helpText = "El servidor MCP se iniciará automáticamente cuando el dispositivo termine de arrancar."
         )
 
