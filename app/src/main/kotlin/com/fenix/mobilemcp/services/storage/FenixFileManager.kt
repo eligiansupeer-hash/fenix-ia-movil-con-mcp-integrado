@@ -25,7 +25,11 @@ import java.util.Locale
 object FenixFileManager {
 
     private val storageRoot: File by lazy {
-        Environment.getExternalStorageDirectory() ?: File("/sdcard")
+        File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "fenix").apply {
+            if (!exists()) {
+                mkdirs()
+            }
+        }
     }
 
     private fun resolveTarget(path: String): File {

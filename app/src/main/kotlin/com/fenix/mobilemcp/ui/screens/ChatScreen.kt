@@ -78,6 +78,7 @@ import com.fenix.mobilemcp.ui.components.ToolCallCard
 import com.fenix.mobilemcp.ui.components.ModesBar
 import com.fenix.mobilemcp.ui.components.CompactBar
 import com.fenix.mobilemcp.ui.components.QuotaSolutionCard
+import com.fenix.mobilemcp.ui.components.MarkdownTextRenderer
 import com.fenix.mobilemcp.ui.viewmodels.ChatMessageUi
 import com.fenix.mobilemcp.ui.viewmodels.ChatViewModel
 
@@ -97,9 +98,17 @@ fun ChatScreen(
     val configuredProviders by viewModel.configuredProviders.collectAsStateWithLifecycle()
     val voiceState by viewModel.voiceState.collectAsStateWithLifecycle()
     val activeSkills by viewModel.activeSkills.collectAsStateWithLifecycle()
+    val transcribedText by viewModel.transcribedText.collectAsStateWithLifecycle()
 
     var inputText by remember { mutableStateOf("") }
     var showModelDropdown by remember { mutableStateOf(false) }
+
+    LaunchedEffect(transcribedText) {
+        if (transcribedText.isNotBlank()) {
+            inputText = if (inputText.isBlank()) transcribedText else "$inputText $transcribedText"
+            viewModel.clearTranscribedText()
+        }
+    }
     var showKeyVaultDialog by remember { mutableStateOf(false) }
     var showImmunityDialog by remember { mutableStateOf(false) }
     var showSessionsDialog by remember { mutableStateOf(false) }
@@ -385,63 +394,56 @@ fun ChatScreen(
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(24.dp),
                 maxLines = 4,
+                trailingIcon = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        // Botón de activación F-Voz (Micrófono)
+                        IconButton(
+                            onClick = { viewModel.toggleVoiceListening() },
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .background(
+                                    if (voiceState == com.fenix.mobilemcp.voice.VoiceState.LISTENING) {
+                                        MaterialTheme.colorScheme.errorContainer
+                                    } else {
+                                        Color.Transparent
+                                    },
+                                ),
+                        ) {
+                            Icon(
+                                Icons.Default.Mic,
+                                contentDescription = "F-Voz",
+                                tint = if (voiceState == com.fenix.mobilemcp.voice.VoiceState.LISTENING) {
+                                    MaterialTheme.colorScheme.error
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
+                            )
+                        }
+
+                        // Botón de envío
+                        IconButton(
+                            onClick = {
+                                if (inputText.isNotBlank() && !isGenerating) {
+                                    val text = inputText
+                                    inputText = ""
+                                    viewModel.sendMessage(text)
+                                }
+                            },
+                            enabled = inputText.isNotBlank() && !isGenerating,
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.Send,
+                                contentDescription = "Enviar",
+                                tint = if (inputText.isNotBlank() && !isGenerating) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                },
+                            )
+                        }
+                    }
+                }
             )
-
-            Spacer(Modifier.width(8.dp))
-
-            // Botón de activación F-Voz (Micrófono)
-            IconButton(
-                onClick = { viewModel.toggleVoiceListening() },
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .background(
-                        if (voiceState == com.fenix.mobilemcp.voice.VoiceState.LISTENING) {
-                            MaterialTheme.colorScheme.errorContainer
-                        } else {
-                            MaterialTheme.colorScheme.surfaceVariant
-                        },
-                    ),
-            ) {
-                Icon(
-                    Icons.Default.Mic,
-                    contentDescription = "F-Voz",
-                    tint = if (voiceState == com.fenix.mobilemcp.voice.VoiceState.LISTENING) {
-                        MaterialTheme.colorScheme.error
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-                )
-            }
-
-            Spacer(Modifier.width(8.dp))
-
-            IconButton(
-                onClick = {
-                    val text = inputText
-                    inputText = ""
-                    viewModel.sendMessage(text)
-                },
-                enabled = inputText.isNotBlank() && !isGenerating,
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .background(
-                        if (inputText.isNotBlank() && !isGenerating) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.surfaceVariant
-                        },
-                    ),
-            ) {
-                Icon(
-                    Icons.AutoMirrored.Filled.Send,
-                    contentDescription = "Enviar",
-                    tint = if (inputText.isNotBlank() && !isGenerating) {
-                        MaterialTheme.colorScheme.onPrimary
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    },
-                )
-            }
         }
     }
 
@@ -528,15 +530,20 @@ fun ChatMessageBubble(message: ChatMessageUi) {
 
                     Spacer(Modifier.height(4.dp))
 
-                    Text(
-                        text = message.content,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = if (isUser) {
-                            MaterialTheme.colorScheme.onPrimaryContainer
-                        } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        },
-                    )
+                    val cleanText = message.content.replace(com.fenix.mobilemcp.mcp.tools.McpToolUtils.UNTRUSTED_CONTENT_WARNING, "")
+                    
+                    if (isUser) {
+                        Text(
+                            text = cleanText,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                    } else {
+                        MarkdownTextRenderer(
+                            text = cleanText,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
 
                     // Renderizar llamadas a herramientas si existen
                     message.toolCalls?.let { tools ->

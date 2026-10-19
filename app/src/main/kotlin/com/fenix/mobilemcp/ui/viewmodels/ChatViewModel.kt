@@ -84,6 +84,13 @@ class ChatViewModel @Inject constructor(
 
     val voiceState: StateFlow<VoiceState> = voiceActivationManager.voiceState
 
+    private val _transcribedText = MutableStateFlow("")
+    val transcribedText: StateFlow<String> = _transcribedText.asStateFlow()
+
+    fun clearTranscribedText() {
+        _transcribedText.value = ""
+    }
+
     init {
         checkStreetImmunity()
         refreshConfiguredProviders()
@@ -96,7 +103,7 @@ class ChatViewModel @Inject constructor(
         viewModelScope.launch {
             voiceActivationManager.transcribedText.collect { recognizedText ->
                 if (recognizedText.isNotBlank()) {
-                    sendMessage(recognizedText)
+                    _transcribedText.value = recognizedText
                 }
             }
         }

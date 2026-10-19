@@ -162,9 +162,10 @@ class FenixLlmClient @Inject constructor(
                 setBody(requestPayload.toString())
             }
 
-            if (response.status == HttpStatusCode.TooManyRequests) {
-                memoryDb.setProviderCooldown(provider.id, 60L, "HTTP 429 Rate Limit")
-                return@withContext LlmResponse.RateLimited(provider.id, "Límite de tasa excedido en ${provider.displayName}")
+            if (response.status == HttpStatusCode.TooManyRequests || response.status == HttpStatusCode.PaymentRequired) {
+                val reason = if (response.status == HttpStatusCode.TooManyRequests) "HTTP 429 Rate Limit" else "HTTP 402 Payment Required"
+                memoryDb.setProviderCooldown(provider.id, 60L, reason)
+                return@withContext LlmResponse.RateLimited(provider.id, "Limite de cuota excedido en ${provider.displayName}")
             }
 
             if (response.status == HttpStatusCode.OK) {
@@ -205,9 +206,14 @@ class FenixLlmClient @Inject constructor(
                 if (includeTools && (provider.isLocal || response.status == HttpStatusCode.BadRequest || response.status == HttpStatusCode.InternalServerError)) {
                     return@withContext sendChatCompletion(model, conversation, includeTools = false)
                 }
-                val errorBody = response.bodyAsText()
                 memoryDb.reportProviderFailure(provider.id, "HTTP ${response.status.value}")
-                return@withContext LlmResponse.Error("Error HTTP ${response.status.value}: $errorBody")
+                val userErrorMessage = when (response.status) {
+                    HttpStatusCode.InternalServerError -> "Error interno del servidor. Por favor, intenta de nuevo mas tarde."
+                    HttpStatusCode.BadRequest -> "Solicitud invalida. Verifica los parametros."
+                    HttpStatusCode.Unauthorized -> "No autorizado. Verifica tu API Key."
+                    else -> "Hubo un error de comunicacion (${response.status.value}). Por favor, intenta nuevamente."
+                }
+                return@withContext LlmResponse.Error(userErrorMessage)
             }
         } catch (e: Exception) {
             if (includeTools && provider.isLocal) {
