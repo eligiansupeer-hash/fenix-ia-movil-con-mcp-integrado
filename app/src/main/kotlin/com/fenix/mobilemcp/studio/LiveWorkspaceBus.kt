@@ -197,19 +197,76 @@ object LiveWorkspaceBus {
         """.trimIndent()
 
         val pyContent = """
-            # Ejemplo Python 3.12 en F-Studio
-            import platform
-            import math
+            # Juego Snake Táctil en F-Studio
+            # Para jugar, ejecuta este script en un entorno con curses o terminal interactiva.
+            import curses
+            import random
+            import time
 
-            def analizar_sistema():
-                print("=== Fénix Polyglot Runtime ===")
-                print(f"Python Version : {platform.python_version()}")
-                print(f"Arquitectura   : {platform.machine()}")
-                primos = [n for n in range(2, 50) if all(n % d != 0 for d in range(2, int(math.isqrt(n)) + 1))]
-                print(f"Primos calculados ({len(primos)}): {primos}")
+            def main(stdscr):
+                curses.curs_set(0)
+                stdscr.nodelay(1)
+                stdscr.timeout(100)
+                sh, sw = stdscr.getmaxyx()
+
+                w = curses.newwin(sh, sw, 0, 0)
+                w.keypad(1)
+                w.timeout(100)
+
+                snk_x = sw // 4
+                snk_y = sh // 2
+                snake = [
+                    [snk_y, snk_x],
+                    [snk_y, snk_x - 1],
+                    [snk_y, snk_x - 2]
+                ]
+
+                food = [sh // 2, sw // 2]
+                w.addch(food[0], food[1], curses.ACS_PI)
+
+                key = curses.KEY_RIGHT
+                score = 0
+
+                while True:
+                    next_key = w.getch()
+                    key = key if next_key == -1 else next_key
+
+                    if snake[0][0] in [0, sh] or snake[0][1]  in [0, sw] or snake[0] in snake[1:]:
+                        curses.endwin()
+                        print(f"Game Over! Puntuación final: {score}")
+                        quit()
+
+                    new_head = [snake[0][0], snake[0][1]]
+
+                    if key == curses.KEY_DOWN:
+                        new_head[0] += 1
+                    if key == curses.KEY_UP:
+                        new_head[0] -= 1
+                    if key == curses.KEY_LEFT:
+                        new_head[1] -= 1
+                    if key == curses.KEY_RIGHT:
+                        new_head[1] += 1
+
+                    snake.insert(0, new_head)
+
+                    if snake[0] == food:
+                        score += 1
+                        food = None
+                        while food is None:
+                            nf = [
+                                random.randint(1, sh - 2),
+                                random.randint(1, sw - 2)
+                            ]
+                            food = nf if nf not in snake else None
+                        w.addch(food[0], food[1], curses.ACS_PI)
+                    else:
+                        tail = snake.pop()
+                        w.addch(tail[0], tail[1], ' ')
+
+                    w.addch(snake[0][0], snake[0][1], curses.ACS_CKBOARD)
 
             if __name__ == "__main__":
-                analizar_sistema()
+                curses.wrapper(main)
         """.trimIndent()
 
         val cContent = """

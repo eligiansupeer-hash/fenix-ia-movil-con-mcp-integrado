@@ -36,10 +36,16 @@ import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -61,6 +67,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -76,6 +83,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -112,6 +121,7 @@ fun StudioIdeScreen(
     var showProviderMenu by remember { mutableStateOf(false) }
     var showNewFileDialog by remember { mutableStateOf(false) }
     var showOpenFileDialog by remember { mutableStateOf(false) }
+    var showAiAssistantBottomSheet by remember { mutableStateOf(false) }
 
     var hwProfile by remember { mutableStateOf(HardwareCapabilitiesDetector.inspectHardware(context)) }
 
@@ -160,27 +170,43 @@ fun StudioIdeScreen(
                         )
                     }
 
-                    Surface(
-                        color = Color(0xFF313244),
-                        shape = RoundedCornerShape(6.dp),
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                            verticalAlignment = Alignment.CenterVertically,
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(
+                            color = Color(0xFF313244),
+                            shape = RoundedCornerShape(6.dp),
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Memory,
+                                    contentDescription = null,
+                                    tint = if (hwProfile.isLowMemoryState) Color(0xFFF38BA8) else Color(0xFFA6E3A1),
+                                    modifier = Modifier.size(13.dp),
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "RAM ${hwProfile.availableRamMb}MB • ${hwProfile.efficiencyCoreIndices.size}E+${hwProfile.performanceCoreIndices.size + hwProfile.primeCoreIndices.size}P",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = Color(0xFFBAC2DE),
+                                    maxLines = 1,
+                                    softWrap = false,
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        IconButton(
+                            onClick = { showAiAssistantBottomSheet = true },
+                            modifier = Modifier.size(24.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Memory,
-                                contentDescription = null,
-                                tint = if (hwProfile.isLowMemoryState) Color(0xFFF38BA8) else Color(0xFFA6E3A1),
-                                modifier = Modifier.size(13.dp),
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = "RAM ${hwProfile.availableRamMb}MB • ${hwProfile.efficiencyCoreIndices.size}E+${hwProfile.performanceCoreIndices.size + hwProfile.primeCoreIndices.size}P",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = Color(0xFFBAC2DE),
-                                maxLines = 1,
-                                softWrap = false,
+                                imageVector = Icons.Default.LocalFireDepartment,
+                                contentDescription = "Fénix IA Assistant",
+                                tint = Color(0xFFFAB387),
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                     }
@@ -611,38 +637,274 @@ fun StudioIdeScreen(
         }
     }
 
-    if (showNewFileDialog) {
-        NewFileDialog(
-            onDismiss = { showNewFileDialog = false },
-            onCreate = { fileName, templateContent ->
-                val target = File(LiveWorkspaceBus.getWorkspaceRootPath(), fileName)
+    var showNewFolderDialog by remember { mutableStateOf(false) }
+
+    val openDocumentLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            val contentResolver = context.contentResolver
+            val fileName = runCatching {
+                contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                    val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                    if (cursor.moveToFirst() && nameIndex >= 0) {
+                        cursor.getString(nameIndex)
+                    } else "archivo_importado"
+                } ?: "archivo_importado"
+            }.getOrDefault("archivo_importado")
+
+            val fileContent = runCatching {
+                contentResolver.openInputStream(uri)?.use {
+                    it.bufferedReader().readText()
+                } ?: ""
+            }.getOrDefault("")
+
+            val tempFile = File(LiveWorkspaceBus.getWorkspaceRootPath(), fileName)
+            tempFile.writeText(fileContent)
+
+            LiveWorkspaceBus.notifyFileTouched(
+                file = tempFile,
+                action = DocumentActionType.OPENED_BY_USER,
+                actor = "Usuario"
+            )
+        }
+        showOpenFileDialog = false
+    }
+
+    val openDocumentTreeLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        if (uri != null) {
+            val rootDoc = androidx.documentfile.provider.DocumentFile.fromTreeUri(context, uri)
+            val files = rootDoc?.listFiles()?.filter { !it.isDirectory } ?: emptyList()
+            var loadedCount = 0
+            files.forEach { doc ->
                 runCatching {
-                    FenixFileManager.writeUniversal(target.absolutePath, templateContent, false)
-                }.onFailure {
-                    LiveWorkspaceBus.notifyFileTouched(
-                        file = target,
-                        action = DocumentActionType.CREATED,
-                        actor = "Usuario (F-Code)",
-                        contentOverride = templateContent,
-                    )
+                    context.contentResolver.openInputStream(doc.uri)?.use { stream ->
+                        val content = stream.bufferedReader().readText()
+                        val targetFile = File(LiveWorkspaceBus.getWorkspaceRootPath(), doc.name ?: "archivo_${System.currentTimeMillis()}")
+                        targetFile.writeText(content)
+                        LiveWorkspaceBus.notifyFileTouched(
+                            file = targetFile,
+                            action = DocumentActionType.OPENED_BY_USER,
+                            actor = "Usuario"
+                        )
+                        loadedCount++
+                    }
                 }
-                showNewFileDialog = false
+            }
+            Toast.makeText(context, "Carpeta cargada: $loadedCount archivo(s) importados de ${rootDoc?.name ?: "carpeta"}", Toast.LENGTH_SHORT).show()
+        }
+        showOpenFileDialog = false
+    }
+
+    val createDocumentLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("*/*")
+    ) { uri ->
+        if (uri != null) {
+             val contentResolver = context.contentResolver
+             runCatching {
+                 contentResolver.openOutputStream(uri)?.use { out ->
+                     out.write("".toByteArray())
+                 }
+             }
+             val fileName = runCatching {
+                contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                    val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                    if (cursor.moveToFirst() && nameIndex >= 0) {
+                        cursor.getString(nameIndex)
+                    } else "nuevo_archivo"
+                } ?: "nuevo_archivo"
+            }.getOrDefault("nuevo_archivo")
+
+            val tempFile = File(LiveWorkspaceBus.getWorkspaceRootPath(), fileName)
+            tempFile.writeText("")
+             LiveWorkspaceBus.notifyFileTouched(
+                file = tempFile,
+                action = DocumentActionType.CREATED,
+                actor = "Usuario"
+            )
+        }
+        showNewFileDialog = false
+    }
+
+
+    if (showNewFileDialog) {
+        AlertDialog(
+            onDismissRequest = { showNewFileDialog = false },
+            title = { Text("Crear Nuevo") },
+            text = { Text("¿Qué deseas crear en tu espacio de trabajo?") },
+            confirmButton = {
+                Button(onClick = { createDocumentLauncher.launch("nuevo_archivo.txt") }) {
+                    Text("Nuevo Archivo")
+                }
             },
+            dismissButton = {
+                Button(onClick = {
+                    showNewFileDialog = false
+                    showNewFolderDialog = true
+                }) {
+                    Text("Nueva Carpeta")
+                }
+            }
+        )
+    }
+
+    if (showNewFolderDialog) {
+        var folderName by remember { mutableStateOf("nueva_carpeta") }
+        AlertDialog(
+            onDismissRequest = { showNewFolderDialog = false },
+            title = { Text("Crear Nueva Carpeta") },
+            text = {
+                OutlinedTextField(
+                    value = folderName,
+                    onValueChange = { folderName = it },
+                    label = { Text("Nombre de la carpeta") },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    val clean = folderName.trim().ifEmpty { "carpeta" }
+                    val targetDir = File(LiveWorkspaceBus.getWorkspaceRootPath(), clean)
+                    targetDir.mkdirs()
+                    Toast.makeText(context, "Carpeta creada: $clean", Toast.LENGTH_SHORT).show()
+                    showNewFolderDialog = false
+                }) {
+                    Text("Crear")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showNewFolderDialog = false }) { Text("Cancelar") }
+            }
         )
     }
 
     if (showOpenFileDialog) {
-        OpenWorkspaceFileDialog(
-            onDismiss = { showOpenFileDialog = false },
-            onSelectFile = { file ->
-                LiveWorkspaceBus.notifyFileTouched(
-                    file = file,
-                    action = DocumentActionType.OPENED_BY_USER,
-                    actor = "Usuario",
-                )
-                showOpenFileDialog = false
+        AlertDialog(
+            onDismissRequest = { showOpenFileDialog = false },
+            title = { Text("Abrir desde Almacenamiento") },
+            text = { Text("Selecciona si deseas abrir un archivo o una carpeta (proyecto).") },
+            confirmButton = {
+                Button(onClick = { openDocumentLauncher.launch(arrayOf("*/*")) }) {
+                    Text("Abrir Archivo")
+                }
             },
+            dismissButton = {
+                Button(onClick = { openDocumentTreeLauncher.launch(null) }) {
+                    Text("Abrir Carpeta")
+                }
+            }
         )
+    }
+
+    if (showAiAssistantBottomSheet) {
+        AiContextualAssistantBottomSheet(
+            onDismiss = { showAiAssistantBottomSheet = false },
+            contextContent = activeTab?.content ?: "No hay documento activo.",
+            fileName = activeTab?.name ?: "Sin Archivo"
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AiContextualAssistantBottomSheet(
+    onDismiss: () -> Unit,
+    contextContent: String,
+    fileName: String
+) {
+    val context = LocalContext.current
+    var query by remember { mutableStateOf("") }
+    var isSimulatingResponse by remember { mutableStateOf(false) }
+    var responseText by remember { mutableStateOf("") }
+
+    val scope = rememberCoroutineScope()
+
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = Color(0xFF1E1E2E)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.LocalFireDepartment, contentDescription = null, tint = Color(0xFFFAB387))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Fénix IA - Asistente Contextual", style = MaterialTheme.typography.titleMedium, color = Color(0xFFCDD6F4))
+            }
+            Text("Contexto activo: $fileName", style = MaterialTheme.typography.bodySmall, color = Color(0xFF89B4FA))
+
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("Ej: Explicar este código, Optimizar algoritmo...") },
+                trailingIcon = {
+                    IconButton(
+                        onClick = {
+                            if (query.isNotBlank()) {
+                                isSimulatingResponse = true
+                                responseText = ""
+                                scope.launch {
+                                    kotlinx.coroutines.delay(1500)
+                                    responseText = """
+                                        **Respuesta simulada sobre: "$fileName"**
+                                        
+                                        Has preguntado: _"$query"_
+                                        
+                                        Análisis del contenido (tamaño: ${contextContent.length} caracteres):
+                                        ```
+                                        // Aquí irá el resultado real de la IA
+                                        ¡Análisis completado exitosamente!
+                                        ```
+                                    """.trimIndent()
+                                    isSimulatingResponse = false
+                                }
+                            }
+                        }
+                    ) {
+                        Icon(Icons.Default.Send, contentDescription = "Enviar", tint = Color(0xFF89B4FA))
+                    }
+                },
+                singleLine = true
+            )
+
+            if (isSimulatingResponse) {
+                CircularProgressIndicator(color = Color(0xFFFAB387), modifier = Modifier.align(Alignment.CenterHorizontally))
+            }
+
+            if (responseText.isNotBlank()) {
+                Surface(
+                    color = Color(0xFF11111B),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Respuesta de IA:", style = MaterialTheme.typography.labelSmall, color = Color(0xFFA6E3A1))
+                            IconButton(
+                                onClick = {
+                                    copyToClipboard(context, "Respuesta de Fénix IA", responseText)
+                                    Toast.makeText(context, "Respuesta copiada", Toast.LENGTH_SHORT).show()
+                                },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(Icons.Default.ContentCopy, contentDescription = "Copiar", tint = Color(0xFFCDD6F4), modifier = Modifier.size(16.dp))
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(responseText, style = MaterialTheme.typography.bodySmall, color = Color(0xFFCDD6F4))
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+        }
     }
 }
 
@@ -709,97 +971,6 @@ private fun LiveDocumentPreviewPane(
     }
 }
 
-@Composable
-private fun NewFileDialog(
-    onDismiss: () -> Unit,
-    onCreate: (String, String) -> Unit,
-) {
-    var fileName by remember { mutableStateOf("script_nuevo.py") }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Crear Nuevo Archivo en F-Code") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    "Escribe el nombre con su extensión (.py, .c, .cpp, .js, .rs, .go, .md, .html, .sql):",
-                    style = MaterialTheme.typography.bodySmall,
-                )
-                OutlinedTextField(
-                    value = fileName,
-                    onValueChange = { fileName = it },
-                    singleLine = true,
-                    label = { Text("Nombre del archivo") },
-                )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    val clean = fileName.trim().ifEmpty { "nuevo.py" }
-                    onCreate(clean, "")
-                },
-            ) {
-                Text("Crear")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancelar") }
-        },
-    )
-}
-
-@Composable
-private fun OpenWorkspaceFileDialog(
-    onDismiss: () -> Unit,
-    onSelectFile: (File) -> Unit,
-) {
-    val foundFiles = remember {
-        runCatching {
-            FenixFileManager.searchFiles(startPath = "", maxResults = 40, maxDepth = 4)
-                .filter { !it.isDirectory }
-                .map { File(it.path) }
-        }.getOrDefault(emptyList())
-    }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Abrir Documento o Código del Teléfono") },
-        text = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(280.dp)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                if (foundFiles.isEmpty()) {
-                    Text("No se encontraron archivos recientes en el almacenamiento.")
-                } else {
-                    foundFiles.forEach { file ->
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onSelectFile(file) },
-                        ) {
-                            Column(modifier = Modifier.padding(10.dp)) {
-                                Text(file.name, fontWeight = FontWeight.Bold)
-                                Text(
-                                    file.absolutePath,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Cerrar") }
-        },
-    )
-}
 
 /**
  * Transformación visual de resaltado de sintaxis multi-lenguaje estilo VS Code Dark+ (Rosemoe / TextMate).
