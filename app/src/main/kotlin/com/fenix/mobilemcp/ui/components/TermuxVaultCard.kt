@@ -1,13 +1,12 @@
 package com.fenix.mobilemcp.ui.components
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,6 +32,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,8 +44,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fenix.mobilemcp.termux.TermuxBridgeStatus
@@ -77,7 +77,7 @@ fun TermuxVaultCard(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(bottom = 12.dp)
+            .padding(bottom = 8.dp)
     ) {
         // Encabezado de Sección
         Row(
@@ -87,19 +87,23 @@ fun TermuxVaultCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
                     imageVector = Icons.Default.Terminal,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(18.dp)
                 )
                 Spacer(Modifier.width(6.dp))
                 Text(
-                    text = "Motores Locales Soberanos (Termux)",
-                    style = MaterialTheme.typography.titleMedium,
+                    text = "Motores Locales Soberanos",
+                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 1
                 )
             }
             IconButton(
@@ -122,9 +126,9 @@ fun TermuxVaultCard(
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)
             ),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(10.dp)
         ) {
-            Column(modifier = Modifier.padding(12.dp)) {
+            Column(modifier = Modifier.padding(10.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -133,14 +137,25 @@ fun TermuxVaultCard(
                     Text(
                         text = "📟 Entorno Local Termux",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp
+                        fontSize = 14.sp
                     )
-                    Text(
-                        text = if (status.isBridgeActive) "● Activo (127.0.0.1:8081)" else if (status.isAppInstalled) "○ En espera" else "○ No instalado",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = if (status.isBridgeActive) Color(0xFF2E7D32) else if (status.isAppInstalled) Color(0xFFE65100) else MaterialTheme.colorScheme.error
-                    )
+                    
+                    val termuxBadgeColor = if (status.isBridgeActive) Color(0xFF2E7D32) else if (status.isAppInstalled) Color(0xFFE65100) else MaterialTheme.colorScheme.error
+                    val termuxBadgeText = if (status.isBridgeActive) "● Activo (8081)" else if (status.isAppInstalled) "○ En espera" else "○ No instalado"
+
+                    Surface(
+                        color = termuxBadgeColor.copy(alpha = 0.15f),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = termuxBadgeText,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = termuxBadgeColor,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                            maxLines = 1
+                        )
+                    }
                 }
 
                 Spacer(Modifier.height(6.dp))
@@ -148,12 +163,12 @@ fun TermuxVaultCard(
                 Text(
                     text = "Termux permite ejecutar agentes de IA (OpenCode y Antigravity) directamente en el procesador de tu móvil, pudiendo usar sus cuotas gratuitas amplias en el chat. También permite realizar tareas de programación en distintos lenguajes de código, instalar librerías, etc.; es una herramienta pensada para la programación y la ejecución de código.",
                     style = MaterialTheme.typography.bodySmall,
-                    fontSize = 12.sp,
+                    fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    lineHeight = 16.sp
+                    lineHeight = 15.sp
                 )
 
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(8.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -164,11 +179,13 @@ fun TermuxVaultCard(
                         OutlinedButton(
                             onClick = {},
                             enabled = false,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
                         ) {
                             Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(14.dp))
                             Spacer(Modifier.width(4.dp))
-                            Text("Instalado ✓", fontSize = 12.sp)
+                            Text("Instalado ✓", fontSize = 11.sp, maxLines = 1)
                         }
                     } else {
                         Button(
@@ -182,16 +199,18 @@ fun TermuxVaultCard(
                                 }
                             },
                             enabled = !isDownloadingTermux,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
                         ) {
                             if (isDownloadingTermux) {
-                                CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp)
+                                CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 2.dp)
                                 Spacer(Modifier.width(4.dp))
-                                Text("Descargando...", fontSize = 11.sp)
+                                Text("Descargando...", fontSize = 11.sp, maxLines = 1)
                             } else {
                                 Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(14.dp))
                                 Spacer(Modifier.width(4.dp))
-                                Text("Descargar APK", fontSize = 12.sp)
+                                Text("Descargar APK", fontSize = 11.sp, maxLines = 1)
                             }
                         }
                     }
@@ -209,29 +228,31 @@ fun TermuxVaultCard(
                         },
                         enabled = status.isAppInstalled && !isActivatingTermux,
                         modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (status.isBridgeActive) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary
                         )
                     ) {
                         if (isActivatingTermux) {
-                            CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = Color.White)
+                            CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 2.dp, color = Color.White)
                             Spacer(Modifier.width(4.dp))
-                            Text("Activando...", fontSize = 11.sp)
+                            Text("Activando...", fontSize = 11.sp, maxLines = 1)
                         } else if (status.isBridgeActive) {
                             Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(14.dp))
                             Spacer(Modifier.width(4.dp))
-                            Text("Activo ●", fontSize = 12.sp)
+                            Text("Activo ●", fontSize = 11.sp, maxLines = 1)
                         } else {
                             Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(14.dp))
                             Spacer(Modifier.width(4.dp))
-                            Text("Activar Termux", fontSize = 12.sp)
+                            Text("Activar Termux", fontSize = 11.sp, maxLines = 1)
                         }
                     }
                 }
             }
         }
 
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(4.dp))
 
         // 2. TARJETA OPENCODE
         Card(
@@ -241,9 +262,9 @@ fun TermuxVaultCard(
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             ),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(10.dp)
         ) {
-            Column(modifier = Modifier.padding(12.dp)) {
+            Column(modifier = Modifier.padding(10.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -252,14 +273,25 @@ fun TermuxVaultCard(
                     Text(
                         text = "🤖 OpenCode CLI",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp
+                        fontSize = 13.sp
                     )
-                    Text(
-                        text = if (status.opencodeConnected) "● Conectado" else if (status.opencodeInstalled) "○ Instalado" else "○ No instalado",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = if (status.opencodeConnected) Color(0xFF2E7D32) else if (status.opencodeInstalled) Color(0xFF1565C0) else MaterialTheme.colorScheme.error
-                    )
+
+                    val ocBadgeColor = if (status.opencodeConnected) Color(0xFF2E7D32) else if (status.opencodeInstalled) Color(0xFF1565C0) else MaterialTheme.colorScheme.error
+                    val ocBadgeText = if (status.opencodeConnected) "● Conectado" else if (status.opencodeInstalled) "○ Instalado" else "○ No instalado"
+
+                    Surface(
+                        color = ocBadgeColor.copy(alpha = 0.15f),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = ocBadgeText,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = ocBadgeColor,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                            maxLines = 1
+                        )
+                    }
                 }
 
                 Spacer(Modifier.height(4.dp))
@@ -272,7 +304,7 @@ fun TermuxVaultCard(
                 )
 
                 if (!status.isAppInstalled) {
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(6.dp))
                     Card(
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.7f)),
                         shape = RoundedCornerShape(6.dp)
@@ -294,11 +326,13 @@ fun TermuxVaultCard(
                             OutlinedButton(
                                 onClick = {},
                                 enabled = false,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
                             ) {
                                 Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(14.dp))
                                 Spacer(Modifier.width(4.dp))
-                                Text("Instalado ✓", fontSize = 11.sp)
+                                Text("Instalado ✓", fontSize = 11.sp, maxLines = 1)
                             }
                         } else {
                             Button(
@@ -312,16 +346,18 @@ fun TermuxVaultCard(
                                     }
                                 },
                                 enabled = status.isBridgeActive && !isDownloadingOpenCode,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
                             ) {
                                 if (isDownloadingOpenCode) {
-                                    CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp)
+                                    CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 2.dp)
                                     Spacer(Modifier.width(4.dp))
-                                    Text("Descargando...", fontSize = 11.sp)
+                                    Text("Descargando...", fontSize = 11.sp, maxLines = 1)
                                 } else {
                                     Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(14.dp))
                                     Spacer(Modifier.width(4.dp))
-                                    Text("Descargar", fontSize = 11.sp)
+                                    Text("Descargar", fontSize = 11.sp, maxLines = 1)
                                 }
                             }
                         }
@@ -339,20 +375,22 @@ fun TermuxVaultCard(
                             },
                             enabled = status.opencodeInstalled && !isConnectingOpenCode,
                             modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = if (status.opencodeConnected) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary
                             )
                         ) {
                             if (isConnectingOpenCode) {
-                                CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = Color.White)
+                                CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 2.dp, color = Color.White)
                                 Spacer(Modifier.width(4.dp))
-                                Text("Conectando...", fontSize = 11.sp)
+                                Text("Conectando...", fontSize = 11.sp, maxLines = 1)
                             } else if (status.opencodeConnected) {
                                 Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(14.dp))
                                 Spacer(Modifier.width(4.dp))
-                                Text("Conectado ●", fontSize = 11.sp)
+                                Text("Conectado ●", fontSize = 11.sp, maxLines = 1)
                             } else {
-                                Text("Conectar", fontSize = 11.sp)
+                                Text("Conectar", fontSize = 11.sp, maxLines = 1)
                             }
                         }
                     }
@@ -360,7 +398,7 @@ fun TermuxVaultCard(
             }
         }
 
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(4.dp))
 
         // 3. TARJETA ANTIGRAVITY
         Card(
@@ -370,9 +408,9 @@ fun TermuxVaultCard(
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             ),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(10.dp)
         ) {
-            Column(modifier = Modifier.padding(12.dp)) {
+            Column(modifier = Modifier.padding(10.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -381,14 +419,25 @@ fun TermuxVaultCard(
                     Text(
                         text = "🌌 Antigravity CLI",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp
+                        fontSize = 13.sp
                     )
-                    Text(
-                        text = if (status.antigravityConnected) "● Conectado" else if (status.antigravityInstalled) "○ Instalado" else "○ No instalado",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = if (status.antigravityConnected) Color(0xFF2E7D32) else if (status.antigravityInstalled) Color(0xFF1565C0) else MaterialTheme.colorScheme.error
-                    )
+
+                    val agyBadgeColor = if (status.antigravityConnected) Color(0xFF2E7D32) else if (status.antigravityInstalled) Color(0xFF1565C0) else MaterialTheme.colorScheme.error
+                    val agyBadgeText = if (status.antigravityConnected) "● Conectado" else if (status.antigravityInstalled) "○ Instalado" else "○ No instalado"
+
+                    Surface(
+                        color = agyBadgeColor.copy(alpha = 0.15f),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = agyBadgeText,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = agyBadgeColor,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                            maxLines = 1
+                        )
+                    }
                 }
 
                 Spacer(Modifier.height(4.dp))
@@ -401,7 +450,7 @@ fun TermuxVaultCard(
                 )
 
                 if (!status.isAppInstalled) {
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(6.dp))
                     Card(
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.7f)),
                         shape = RoundedCornerShape(6.dp)
@@ -423,11 +472,13 @@ fun TermuxVaultCard(
                             OutlinedButton(
                                 onClick = {},
                                 enabled = false,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
                             ) {
                                 Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(14.dp))
                                 Spacer(Modifier.width(4.dp))
-                                Text("Instalado ✓", fontSize = 11.sp)
+                                Text("Instalado ✓", fontSize = 11.sp, maxLines = 1)
                             }
                         } else {
                             Button(
@@ -441,16 +492,18 @@ fun TermuxVaultCard(
                                     }
                                 },
                                 enabled = status.isBridgeActive && !isDownloadingAntigravity,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp)
                             ) {
                                 if (isDownloadingAntigravity) {
-                                    CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp)
+                                    CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 2.dp)
                                     Spacer(Modifier.width(4.dp))
-                                    Text("Descargando...", fontSize = 11.sp)
+                                    Text("Descargando...", fontSize = 11.sp, maxLines = 1)
                                 } else {
                                     Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(14.dp))
                                     Spacer(Modifier.width(4.dp))
-                                    Text("Descargar", fontSize = 11.sp)
+                                    Text("Descargar", fontSize = 11.sp, maxLines = 1)
                                 }
                             }
                         }
@@ -468,32 +521,34 @@ fun TermuxVaultCard(
                             },
                             enabled = status.antigravityInstalled && !isConnectingAntigravity,
                             modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = if (status.antigravityConnected) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary
                             )
                         ) {
                             if (isConnectingAntigravity) {
-                                CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp, color = Color.White)
+                                CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 2.dp, color = Color.White)
                                 Spacer(Modifier.width(4.dp))
-                                Text("Conectando...", fontSize = 11.sp)
+                                Text("Conectando...", fontSize = 11.sp, maxLines = 1)
                             } else if (status.antigravityConnected) {
                                 Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(14.dp))
                                 Spacer(Modifier.width(4.dp))
-                                Text("Conectado ●", fontSize = 11.sp)
+                                Text("Conectado ●", fontSize = 11.sp, maxLines = 1)
                             } else {
-                                Text("Conectar", fontSize = 11.sp)
+                                Text("Conectar", fontSize = 11.sp, maxLines = 1)
                             }
                         }
                     }
 
                     // SLOTS DE CUENTAS (SOLO VISIBLES TRAS CONECTARSE EFECTIVAMENTE)
                     if (status.antigravityConnected) {
-                        Spacer(Modifier.height(12.dp))
+                        Spacer(Modifier.height(10.dp))
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
-                                .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+                                .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
                                 .padding(10.dp)
                         ) {
                             Column {
@@ -544,18 +599,22 @@ fun TermuxVaultCard(
                                 ) {
                                     Button(
                                         onClick = { onStartLoginAntigravity(status.activeSlot) },
-                                        modifier = Modifier.weight(1f)
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(8.dp),
+                                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp)
                                     ) {
                                         Icon(Icons.Default.Lock, contentDescription = null, modifier = Modifier.size(12.dp))
                                         Spacer(Modifier.width(4.dp))
-                                        Text("Login Google", fontSize = 11.sp)
+                                        Text("Login Google", fontSize = 11.sp, maxLines = 1)
                                     }
 
                                     OutlinedButton(
                                         onClick = { onLogoutAntigravity(status.activeSlot) },
-                                        modifier = Modifier.weight(1f)
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(8.dp),
+                                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp)
                                     ) {
-                                        Text("Cerrar Sesión", fontSize = 11.sp)
+                                        Text("Cerrar Sesión", fontSize = 11.sp, maxLines = 1)
                                     }
                                 }
 
@@ -567,7 +626,7 @@ fun TermuxVaultCard(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "Auto-failover ante límite de cuota (429)",
+                                        text = "Auto-failover por límite de cuota (429)",
                                         fontSize = 11.sp,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )

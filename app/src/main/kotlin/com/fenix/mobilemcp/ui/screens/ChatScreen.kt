@@ -861,6 +861,10 @@ fun KeyVaultDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier
+            .fillMaxWidth(0.96f)
+            .padding(vertical = 12.dp),
+        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false),
         title = {
             Text(
                 "Bóveda Segura",
