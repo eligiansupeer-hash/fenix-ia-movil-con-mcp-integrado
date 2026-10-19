@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Mic
@@ -156,6 +157,7 @@ fun ChatScreen(
     var showKeyVaultDialog by remember { mutableStateOf(false) }
     var showNetworkServerPanel by remember { mutableStateOf(false) }
     var showSessionsDialog by remember { mutableStateOf(false) }
+    var showUserProfileDialog by remember { mutableStateOf(false) }
 
     val projectPickerLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
         contract = androidx.activity.result.contract.ActivityResultContracts.OpenDocumentTree()
@@ -306,11 +308,11 @@ fun ChatScreen(
                     )
                 }
 
-                // Limpiar conversación
-                IconButton(onClick = { viewModel.clearConversation() }) {
+                // Perfil de Usuario
+                IconButton(onClick = { showUserProfileDialog = true }) {
                     Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Limpiar Chat",
+                        imageVector = Icons.Default.AccountCircle,
+                        contentDescription = "Perfil de Usuario",
                     )
                 }
             },
@@ -624,6 +626,12 @@ fun ChatScreen(
     }
 
     // Diálogo de Sesiones Persistentes y Memoria
+    if (showUserProfileDialog) {
+        com.fenix.mobilemcp.ui.components.UserProfileDialog(
+            onDismiss = { showUserProfileDialog = false }
+        )
+    }
+
     if (showSessionsDialog) {
         SessionsDialog(
             sessions = sessions,
