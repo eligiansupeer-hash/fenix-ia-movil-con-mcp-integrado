@@ -151,7 +151,7 @@ fun StudioIdeScreen(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "F-Studio IDE",
+                            text = "F-Code IDE",
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFFCDD6F4),
@@ -622,7 +622,7 @@ fun StudioIdeScreen(
                     LiveWorkspaceBus.notifyFileTouched(
                         file = target,
                         action = DocumentActionType.CREATED,
-                        actor = "Usuario (F-Studio)",
+                        actor = "Usuario (F-Code)",
                         contentOverride = templateContent,
                     )
                 }
@@ -717,7 +717,7 @@ private fun NewFileDialog(
     var fileName by remember { mutableStateOf("script_nuevo.py") }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Crear Nuevo Archivo en F-Studio") },
+        title = { Text("Crear Nuevo Archivo en F-Code") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(

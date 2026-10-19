@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.Forum
+import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -50,7 +52,6 @@ fun MainScreen(
     var pendingSettingsRoute by rememberSaveable { mutableStateOf<String?>(null) }
     val availableUpdate by updateViewModel.availableUpdate.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    var showFloatingBanner by rememberSaveable { mutableStateOf(true) } // Simulacion inicial para QA
 
     // Back on the other tabs returns to the Chat tab instead of leaving the app.
     BackHandler(enabled = selectedTabRoute != TopLevelRoute.Chat.route) {
@@ -60,15 +61,6 @@ fun MainScreen(
     Scaffold(
         topBar = {
             Column {
-                if (showFloatingBanner) {
-                    FloatingOverlayBanner(
-                        title = "\uD83D\uDD14 Solicitud de Conexión Externa",
-                        scope = "Read-Only",
-                        description = "Claude Desktop solicita vincularse al MCP local vía túnel persistente.",
-                        onAllow = { showFloatingBanner = false },
-                        onReject = { showFloatingBanner = false }
-                    )
-                }
                 availableUpdate?.let { update ->
                     UpdateAvailableBanner(
                         versionName = update.versionName,
@@ -84,10 +76,10 @@ fun MainScreen(
             NavigationBar {
                 listOf(
                     Triple(TopLevelRoute.Chat, Icons.Default.Forum, stringResource(R.string.tab_chat)),
-                    Triple(TopLevelRoute.Studio, Icons.Default.Code, stringResource(R.string.tab_studio)),
+                    Triple(TopLevelRoute.Code, Icons.Default.Code, "F-Code"),
+                    Triple(TopLevelRoute.Docs, Icons.Default.Description, "F-Docs"),
                     Triple(TopLevelRoute.Marketplace, Icons.Default.Extension, "F-Market"),
-                    Triple(TopLevelRoute.Server, Icons.Default.Dns, stringResource(R.string.tab_server)),
-                    Triple(TopLevelRoute.Settings, Icons.Default.Settings, stringResource(R.string.tab_settings)),
+                    Triple(TopLevelRoute.Help, Icons.Default.HelpOutline, "Ayuda"),
                 ).forEach { (route, icon, label) ->
                     NavigationBarItem(
                         selected = selectedTabRoute == route.route,
@@ -104,17 +96,25 @@ fun MainScreen(
                 ChatScreen(modifier = Modifier.padding(paddingValues))
             }
 
-            TopLevelRoute.Studio.route -> {
+            TopLevelRoute.Code.route, TopLevelRoute.Studio.route -> {
                 StudioIdeScreen(modifier = Modifier.padding(paddingValues))
+            }
+            
+            TopLevelRoute.Docs.route -> {
+                FDocsScreen(modifier = Modifier.padding(paddingValues))
             }
 
             TopLevelRoute.Marketplace.route -> {
                 MarketplaceScreen(
                     onOpenInStudio = {
-                        selectedTabRoute = TopLevelRoute.Studio.route
+                        selectedTabRoute = TopLevelRoute.Code.route
                     },
                     modifier = Modifier.padding(paddingValues),
                 )
+            }
+            
+            TopLevelRoute.Help.route -> {
+                HelpScreen(modifier = Modifier.padding(paddingValues))
             }
 
             TopLevelRoute.Server.route -> {
