@@ -98,3 +98,4 @@ fenix-secrets/
 
 # Fuentes y artefactos del build nativo (proot/talloc/termux)
 .build-native/
+build_outputs/
