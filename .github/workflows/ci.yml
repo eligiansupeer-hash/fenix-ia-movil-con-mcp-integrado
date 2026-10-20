@@ -207,6 +207,10 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
+      - name: Install Android NDK (required by native tunnel builds)
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "ndk;27.2.12479018" > /dev/null
+
       - name: Compile cloudflared for Android
         if: steps.cache-cloudflared.outputs.cache-hit != 'true'
         run: make compile-cloudflared
@@ -362,6 +366,10 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
+
+      - name: Install Android NDK (required by native tunnel builds)
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "ndk;27.2.12479018" > /dev/null
 
       - name: Compile cloudflared for Android
         if: steps.cache-cloudflared.outputs.cache-hit != 'true'
