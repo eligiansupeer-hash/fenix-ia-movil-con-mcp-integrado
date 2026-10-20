@@ -9,7 +9,7 @@ package com.fenix.mobilemcp.sandbox
  * Nothing from a third-party rootfs is used.
  */
 object SandboxManifest {
-    const val VERSION: String = "debian12-bookworm-arm64-20261020"
+    const val VERSION: String = "debian12-bookworm-arm64-20261020-1"
 
     const val ROOTFS_URL: String =
         "https://github.com/eligiansupeer-hash/fenix-ia-movil-con-mcp-integrado/" +
