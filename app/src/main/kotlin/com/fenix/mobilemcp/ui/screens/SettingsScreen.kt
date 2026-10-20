@@ -23,6 +23,8 @@ import com.fenix.mobilemcp.ui.screens.settings.SettingsIndexScreen
 import com.fenix.mobilemcp.ui.screens.settings.StorageSettingsScreen
 import com.fenix.mobilemcp.ui.screens.settings.TunnelSettingsScreen
 import com.fenix.mobilemcp.ui.screens.settings.WifiMonitorScreen
+import com.fenix.mobilemcp.ui.screens.sandbox.SandboxConsoleScreen
+import com.fenix.mobilemcp.ui.screens.sandbox.SandboxSettingsScreen
 import com.fenix.mobilemcp.ui.screens.settings.geofenceDestinations
 import com.fenix.mobilemcp.ui.viewmodels.ChannelViewModel
 import com.fenix.mobilemcp.ui.viewmodels.MainViewModel
@@ -122,6 +124,15 @@ fun SettingsScreen(
                 viewModel = channelViewModel,
                 onNavigateBack = { navController.popBackStack() },
             )
+        }
+        composable(SettingsRoute.Sandbox.route) {
+            SandboxSettingsScreen(
+                onBack = { navController.popBackStack() },
+                onOpenConsole = { navController.navigate(SettingsRoute.SandboxConsole.route) },
+            )
+        }
+        composable(SettingsRoute.SandboxConsole.route) {
+            SandboxConsoleScreen(onBack = { navController.popBackStack() })
         }
         geofenceDestinations(navController)
     }

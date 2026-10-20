@@ -1,0 +1,16 @@
+[Unit]
+Description=Jules Task Monitor for Fenix Mobile
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/eli/Documentos/fenix-mobile-mcp
+ExecStart=/home/eli/Documentos/fenix-mobile-mcp/run_jules_monitor.sh
+User=eli
+Group=eli
+Environment=PATH=/home/eli/.local/bin:/usr/local/bin:/usr/bin:/bin
+Environment=HOME=/home/eli
+
+[Install]
+WantedBy=default.target

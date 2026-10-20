@@ -93,7 +93,17 @@ fun MainScreen(
     ) { paddingValues ->
         when (selectedTabRoute) {
             TopLevelRoute.Chat.route -> {
-                ChatScreen(modifier = Modifier.padding(paddingValues))
+                ChatScreen(
+                    modifier = Modifier.padding(paddingValues),
+                    onOpenSettings = {
+                        pendingSettingsRoute = null
+                        selectedTabRoute = TopLevelRoute.Settings.route
+                    },
+                    onOpenTerminal = {
+                        pendingSettingsRoute = SettingsRoute.SandboxConsole.route
+                        selectedTabRoute = TopLevelRoute.Settings.route
+                    },
+                )
             }
 
             TopLevelRoute.Code.route, TopLevelRoute.Studio.route -> {

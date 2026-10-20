@@ -224,6 +224,11 @@ android {
         targetSdk = 34
         versionCode = versionCodeProp
         versionName = versionNameProp
+
+        // El sandbox Linux y los binarios nativos (proot, talloc, PTY) son arm64.
+        ndk {
+            abiFilters += "arm64-v8a"
+        }
     }
 
     // Distribution flavors: `gms` (full app, GitHub/Play) and `foss` (F-Droid, no Google Play Services).
@@ -412,6 +417,9 @@ dependencies {
     // OAuth client logos (SSRF-guarded remote image loading)
     implementation(libs.coil.compose)
     implementation(libs.coil.network)
+
+    // Sandbox rootfs extraction (tar.gz)
+    implementation(libs.commons.compress)
 
     // Kotlinx
     implementation(libs.kotlinx.serialization.json)

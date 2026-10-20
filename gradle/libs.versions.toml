@@ -1,4 +1,7 @@
 [versions]
+# Apache Commons Compress (extracción segura de rootfs tar)
+commons-compress = "1.27.1"
+
 # Build tools
 agp = "9.3.2"
 kotlin = "2.4.10"
@@ -80,6 +83,7 @@ onnxruntime = "1.29.0"
 libphonenumber = "9.0.38"
 
 [libraries]
+commons-compress = { group = "org.apache.commons", name = "commons-compress", version.ref = "commons-compress" }
 # AndroidX Core
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }

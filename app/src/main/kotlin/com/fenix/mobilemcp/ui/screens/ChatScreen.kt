@@ -38,6 +38,8 @@ import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -98,6 +100,8 @@ import com.fenix.mobilemcp.ui.viewmodels.ChatViewModel
 @Composable
 fun ChatScreen(
     modifier: Modifier = Modifier,
+    onOpenSettings: () -> Unit = {},
+    onOpenTerminal: () -> Unit = {},
     viewModel: ChatViewModel = hiltViewModel(),
     mainViewModel: com.fenix.mobilemcp.ui.viewmodels.MainViewModel = hiltViewModel(),
 ) {
@@ -310,6 +314,23 @@ fun ChatScreen(
                     Icon(
                         imageVector = Icons.Default.Forum,
                         contentDescription = "Sesiones y Memoria",
+                    )
+                }
+
+                // Terminal Linux Sandbox (acceso directo)
+                IconButton(onClick = onOpenTerminal) {
+                    Icon(
+                        imageVector = Icons.Default.Terminal,
+                        contentDescription = "Terminal Linux",
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                }
+
+                // Ajustes de la app
+                IconButton(onClick = onOpenSettings) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Ajustes",
                     )
                 }
 

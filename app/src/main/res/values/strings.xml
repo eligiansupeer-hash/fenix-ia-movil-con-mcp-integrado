@@ -40,6 +40,8 @@
     <string name="settings_mcp_tools_param_missing_permission">Permission not granted — this option is unavailable. Tap to grant.</string>
     <string name="settings_permissions_title">Permissions</string>
     <string name="settings_permissions_subtitle">Accessibility, camera, microphone</string>
+    <string name="settings_sandbox_title">Linux Sandbox</string>
+    <string name="settings_sandbox_subtitle">Debian 12 + proot para agentes CLI</string>
     <string name="settings_storage_title">Storage</string>
     <string name="settings_storage_subtitle">Storage locations, file limits</string>
 

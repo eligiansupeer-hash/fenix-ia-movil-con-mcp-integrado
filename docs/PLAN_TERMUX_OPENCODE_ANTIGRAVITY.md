@@ -93,3 +93,4 @@ Integrar de forma 100% funcional y verificada en la aplicación Android **Fénix
 ### FASE 6: Compilación en CI y Validación en Dispositivos Físicos
 - Compilación en GitHub Actions sin consumo de recursos locales.
 - Instalación en dispositivo físico y comprobación funcional pantalla por pantalla.
+

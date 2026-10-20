@@ -1,9 +1,16 @@
 package com.fenix.mobilemcp.termux
 
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Handler
+import android.os.IBinder
+import android.os.Looper
+import android.os.Message
+import android.os.Messenger
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
@@ -16,6 +23,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.booleanOrNull
@@ -26,6 +34,7 @@ import kotlinx.serialization.json.put
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.resume
 
 data class AccountSlotStatus(
     val id: String,
@@ -71,6 +80,24 @@ class TermuxBridgeManager @Inject constructor(
     private val directDownloadUrl =
         "https://github.com/termux/termux-app/releases/download/v0.118.1/termux-app_v0.118.1+github-debug_arm64-v8a.apk"
 
+    private val companionPackage = "com.fenix.runtime"
+    private val companionControlAction = "com.fenix.runtime.CONTROL"
+    private val companionPort = 8766
+    private val msgGetToken = 2
+    private val msgStart = 3
+
+    @Volatile
+    private var companionToken: String? = null
+
+    fun isCompanionInstalled(): Boolean {
+        return try {
+            context.packageManager.getPackageInfo(companionPackage, 0)
+            true
+        } catch (e: PackageManager.NameNotFoundException) {
+            false
+        }
+    }
+
     fun isTermuxInstalled(): Boolean {
         return try {
             context.packageManager.getPackageInfo("com.termux", 0)
@@ -83,14 +110,23 @@ class TermuxBridgeManager @Inject constructor(
     fun getDirectDownloadUri(): Uri = Uri.parse(directDownloadUrl)
 
     suspend fun activateTermux(): Boolean = withContext(Dispatchers.IO) {
+        if (isCompanionInstalled()) {
+            val token = obtainCompanionToken()
+            if (token != null && sendCompanionCommand(msgStart)) {
+                return@withContext true
+            }
+        }
         if (!isTermuxInstalled()) return@withContext false
 
         try {
             // Intentar disparar el comando de activación por RUN_COMMAND de Termux
             val intent = Intent("com.termux.RUN_COMMAND").apply {
                 setClassName("com.termux", "com.termux.app.RunCommandService")
-                putExtra("com.termux.RUN_COMMAND_PATH", "/data/data/com.termux/files/usr/bin/python")
-                putExtra("com.termux.RUN_COMMAND_ARGUMENTS", arrayOf("-m", "http.server", "8081"))
+                putExtra("com.termux.RUN_COMMAND_PATH", "/data/data/com.termux/files/usr/bin/bash")
+                putExtra(
+                    "com.termux.RUN_COMMAND_ARGUMENTS",
+                    arrayOf("-c", "python /sdcard/Documents/fenix/termux/fenix_termux_bridge.py")
+                )
                 putExtra("com.termux.RUN_COMMAND_WORKDIR", "/data/data/com.termux/files/home")
                 putExtra("com.termux.RUN_COMMAND_BACKGROUND", true)
                 putExtra("com.termux.RUN_COMMAND_SESSION_ACTION", "0")
@@ -115,6 +151,10 @@ class TermuxBridgeManager @Inject constructor(
     }
 
     suspend fun queryStatus(): TermuxBridgeStatus = withContext(Dispatchers.IO) {
+        if (isCompanionInstalled()) {
+            return@withContext queryCompanionStatus()
+        }
+
         val installed = isTermuxInstalled()
         if (!installed) {
             return@withContext TermuxBridgeStatus(isAppInstalled = false)
@@ -175,6 +215,9 @@ class TermuxBridgeManager @Inject constructor(
     }
 
     suspend fun installOpenCode(): Boolean = withContext(Dispatchers.IO) {
+        if (isCompanionInstalled()) {
+            return@withContext companionPost("/v1/opencode/install")
+        }
         try {
             val resp = httpClient.post("http://127.0.0.1:8081/v1/opencode/install")
             resp.status == HttpStatusCode.Accepted || resp.status == HttpStatusCode.OK
@@ -184,11 +227,166 @@ class TermuxBridgeManager @Inject constructor(
     }
 
     suspend fun installAntigravity(): Boolean = withContext(Dispatchers.IO) {
+        if (isCompanionInstalled()) {
+            return@withContext companionPost("/v1/antigravity/install")
+        }
         try {
             val resp = httpClient.post("http://127.0.0.1:8081/v1/antigravity/install")
             resp.status == HttpStatusCode.Accepted || resp.status == HttpStatusCode.OK
         } catch (e: Exception) {
             false
+        }
+    }
+
+    private suspend fun queryCompanionStatus(retryAuth: Boolean = true): TermuxBridgeStatus {
+        if (!isCompanionInstalled()) {
+            return TermuxBridgeStatus(isAppInstalled = false)
+        }
+        val token = obtainCompanionToken()
+            ?: return TermuxBridgeStatus(isAppInstalled = true, isBridgeActive = false)
+        return try {
+            val response = httpClient.get("http://127.0.0.1:$companionPort/v1/status") {
+                header("Authorization", "Bearer $token")
+            }
+            if (response.status == HttpStatusCode.Unauthorized && retryAuth) {
+                companionToken = null
+                return queryCompanionStatus(retryAuth = false)
+            }
+            if (response.status == HttpStatusCode.OK) {
+                val obj = json.parseToJsonElement(response.bodyAsText()).jsonObject
+                val opencodeInst = obj["opencode_installed"]?.jsonPrimitive?.booleanOrNull ?: false
+                val agyInst = obj["antigravity_installed"]?.jsonPrimitive?.booleanOrNull ?: false
+                TermuxBridgeStatus(
+                    isAppInstalled = true,
+                    isBridgeActive = true,
+                    opencodeInstalled = opencodeInst,
+                    opencodeConnected = opencodeInst,
+                    antigravityInstalled = agyInst,
+                    antigravityConnected = agyInst,
+                )
+            } else {
+                TermuxBridgeStatus(isAppInstalled = true, isBridgeActive = false)
+            }
+        } catch (e: Exception) {
+            TermuxBridgeStatus(isAppInstalled = true, isBridgeActive = false)
+        }
+    }
+
+    private suspend fun companionPost(path: String, retryAuth: Boolean = true): Boolean {
+        val token = obtainCompanionToken() ?: return false
+        return try {
+            val response = httpClient.post("http://127.0.0.1:$companionPort$path") {
+                header("Authorization", "Bearer $token")
+            }
+            if (response.status == HttpStatusCode.Unauthorized && retryAuth) {
+                companionToken = null
+                return companionPost(path, retryAuth = false)
+            }
+            response.status == HttpStatusCode.Accepted || response.status == HttpStatusCode.OK
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private suspend fun obtainCompanionToken(): String? {
+        companionToken?.let { return it }
+        if (!isCompanionInstalled()) {
+            return null
+        }
+        val token = withContext(Dispatchers.IO) {
+            suspendCancellableCoroutine<String?> { continuation ->
+                val connection = object : ServiceConnection {
+                    override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
+                        if (binder == null) {
+                            if (continuation.isActive) continuation.resume(null)
+                            return
+                        }
+                        val messenger = Messenger(binder)
+                        val reply = Messenger(Handler(Looper.getMainLooper()) { message ->
+                            val value = message.data.getString("token")
+                            if (continuation.isActive) continuation.resume(value)
+                            try {
+                                context.unbindService(this)
+                            } catch (_: Exception) {
+                            }
+                            true
+                        })
+                        try {
+                            messenger.send(Message.obtain(null, msgGetToken).apply { replyTo = reply })
+                        } catch (e: Exception) {
+                            if (continuation.isActive) continuation.resume(null)
+                        }
+                    }
+
+                    override fun onServiceDisconnected(name: ComponentName?) {
+                        if (continuation.isActive) continuation.resume(null)
+                    }
+                }
+                val intent = Intent(companionControlAction).setPackage(companionPackage)
+                try {
+                    context.bindService(intent, connection, Context.BIND_AUTO_CREATE)
+                } catch (e: Exception) {
+                    if (continuation.isActive) continuation.resume(null)
+                }
+                continuation.invokeOnCancellation {
+                    try {
+                        context.unbindService(connection)
+                    } catch (_: Exception) {
+                    }
+                }
+            }
+        }
+        if (!token.isNullOrBlank()) {
+            companionToken = token
+        }
+        return token
+    }
+
+    private suspend fun sendCompanionCommand(what: Int): Boolean {
+        if (!isCompanionInstalled()) {
+            return false
+        }
+        return withContext(Dispatchers.IO) {
+            suspendCancellableCoroutine<Boolean> { continuation ->
+                val connection = object : ServiceConnection {
+                    override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
+                        if (binder == null) {
+                            if (continuation.isActive) continuation.resume(false)
+                            return
+                        }
+                        val messenger = Messenger(binder)
+                        val reply = Messenger(Handler(Looper.getMainLooper()) { _ ->
+                            if (continuation.isActive) continuation.resume(true)
+                            try {
+                                context.unbindService(this)
+                            } catch (_: Exception) {
+                            }
+                            true
+                        })
+                        try {
+                            messenger.send(Message.obtain(null, what).apply { replyTo = reply })
+                        } catch (e: Exception) {
+                            if (continuation.isActive) continuation.resume(false)
+                        }
+                    }
+
+                    override fun onServiceDisconnected(name: ComponentName?) {
+                        if (continuation.isActive) continuation.resume(false)
+                    }
+                }
+                val intent = Intent(companionControlAction).setPackage(companionPackage)
+                try {
+                    context.bindService(intent, connection, Context.BIND_AUTO_CREATE)
+                } catch (e: Exception) {
+                    if (continuation.isActive) continuation.resume(false)
+                }
+                continuation.invokeOnCancellation {
+                    try {
+                        context.unbindService(connection)
+                    } catch (_: Exception) {
+                    }
+                }
+            }
         }
     }
 

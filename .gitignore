@@ -95,3 +95,6 @@ fenix-secrets/
 *-local.json
 **/G77-REF*
 **/14C-REF*
+
+# Fuentes y artefactos del build nativo (proot/talloc/termux)
+.build-native/

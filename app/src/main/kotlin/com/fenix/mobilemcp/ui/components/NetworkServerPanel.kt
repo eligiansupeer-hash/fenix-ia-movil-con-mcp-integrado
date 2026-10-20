@@ -113,6 +113,8 @@ fun NetworkServerPanel(
                 readOnly = true,
                 label = { Text("URL del Servidor") },
                 modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                maxLines = 1,
                 trailingIcon = {
                     IconButton(onClick = {
                         clipboardManager.setText(AnnotatedString(serverUrl))

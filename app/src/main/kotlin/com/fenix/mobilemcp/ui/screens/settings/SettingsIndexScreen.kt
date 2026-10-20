@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -105,6 +106,12 @@ private fun SettingsEntriesColumn(
             title = stringResource(R.string.settings_storage_title),
             subtitle = stringResource(R.string.settings_storage_subtitle),
             onClick = { onNavigate(SettingsRoute.Storage.route) },
+        )
+        SettingsEntry(
+            icon = Icons.Default.Terminal,
+            title = stringResource(R.string.settings_sandbox_title),
+            subtitle = stringResource(R.string.settings_sandbox_subtitle),
+            onClick = { onNavigate(SettingsRoute.Sandbox.route) },
         )
         SettingsEntry(
             icon = Icons.Default.CellTower,
